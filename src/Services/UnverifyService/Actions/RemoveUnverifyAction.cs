@@ -1,22 +1,24 @@
-﻿using AuditLog.Enums;
-using AuditLog.Models.Events.Create;
+﻿using GrillBot.Contracts.AuditLog.Enums;
+using UnverifyService.Models.Events;
+using UnverifyService.Models;
+using GrillBot.Contracts.AuditLog.Events.Create;
 using Discord;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Extensions.Discord;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
-using GrillBot.Models;
-using GrillBot.Models.Events.Messages;
+using GrillBot.Contracts.Bot;
+using GrillBot.Contracts.Bot.Events.Messages;
 using GrillBot.Services.Common.Discord;
 using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.EntityFrameworkCore;
 using UnverifyService.Core.Entity;
 using UnverifyService.Core.Entity.Logs;
-using UnverifyService.Core.Enums;
-using UnverifyService.Models;
-using UnverifyService.Models.Events;
-using UnverifyService.Models.Response;
-using UserMeasures.Models.Events;
+using GrillBot.Contracts.Unverify.Enums;
+using GrillBot.Contracts.Unverify;
+using GrillBot.Contracts.Unverify.Events;
+using GrillBot.Contracts.Unverify.Responses;
+using GrillBot.Contracts.UserMeasures.Events;
 
 namespace UnverifyService.Actions;
 

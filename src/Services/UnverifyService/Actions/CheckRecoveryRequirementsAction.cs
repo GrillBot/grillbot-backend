@@ -1,10 +1,10 @@
 ﻿using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Models;
+using GrillBot.Contracts.Bot;
 using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.EntityFrameworkCore;
 using UnverifyService.Core.Entity;
 using UnverifyService.Core.Entity.Logs;
-using UnverifyService.Core.Enums;
+using GrillBot.Contracts.Unverify.Enums;
 
 namespace UnverifyService.Actions;
 

@@ -1,8 +1,8 @@
 ﻿using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.Common;
 using GrillBot.Core.Services.Common.Attributes;
-using RubbergodService.Models.Help;
-using RubbergodService.Models.Karma;
+using GrillBot.Contracts.Rubbergod.Help;
+using GrillBot.Contracts.Rubbergod.Karma;
 using Refit;
 
 namespace RubbergodService;

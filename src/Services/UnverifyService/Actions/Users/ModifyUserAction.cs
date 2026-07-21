@@ -1,11 +1,12 @@
-﻿using AuditLog.Enums;
-using AuditLog.Models.Events.Create;
+﻿using GrillBot.Contracts.AuditLog.Enums;
+using UnverifyService.Models.Events;
+using GrillBot.Contracts.AuditLog.Events.Create;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Services.Common.Infrastructure.Api;
 using UnverifyService.Core.Entity;
-using UnverifyService.Models.Events;
-using UnverifyService.Models.Request.Users;
+using GrillBot.Contracts.Unverify.Events;
+using GrillBot.Contracts.Unverify.Requests.Users;
 
 namespace UnverifyService.Actions.Users;
 

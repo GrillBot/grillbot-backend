@@ -1,8 +1,8 @@
 using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Core.Models.Pagination;
 using MessageService;
-using MessageService.Models.Request.AutoReply;
-using MessageService.Models.Response.AutoReply;
+using GrillBot.Contracts.Message.Requests.AutoReply;
+using GrillBot.Contracts.Message.Responses.AutoReply;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

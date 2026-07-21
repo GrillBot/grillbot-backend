@@ -1,7 +1,7 @@
 ﻿using EmoteService.Core.Entity;
 using EmoteService.Core.Entity.Suggestions;
-using EmoteService.Models.Request.EmoteSuggestions;
-using EmoteService.Models.Response.EmoteSuggestions;
+using GrillBot.Contracts.Emote.Requests.EmoteSuggestions;
+using GrillBot.Contracts.Emote.Responses.EmoteSuggestions;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Managers.Performance;

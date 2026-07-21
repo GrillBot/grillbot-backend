@@ -2,8 +2,8 @@
 using GrillBot.Core.Validation;
 using Microsoft.AspNetCore.Mvc;
 using RemindService.Actions;
-using RemindService.Models.Request;
-using RemindService.Models.Response;
+using GrillBot.Contracts.Remind.Requests;
+using GrillBot.Contracts.Remind.Responses;
 
 namespace RemindService.Controllers;
 

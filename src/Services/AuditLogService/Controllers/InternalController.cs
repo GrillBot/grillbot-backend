@@ -1,5 +1,5 @@
 ﻿using AuditLogService.Actions.Internal;
-using AuditLogService.Core.Enums;
+using GrillBot.Contracts.AuditLog.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuditLogService.Controllers;

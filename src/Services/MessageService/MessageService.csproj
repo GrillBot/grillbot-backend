@@ -11,8 +11,4 @@
         <ProjectReference Include="..\GrillBot.Services.Common\GrillBot.Services.Common.csproj" />
     </ItemGroup>
 
-    <PropertyGroup>
-        <NoWarn>$(NoWarn);CS0436</NoWarn>
-    </PropertyGroup>
-
 </Project>

@@ -1,6 +1,6 @@
 ﻿using GrillBot.App.Infrastructure.Auth;
 using UserManagementService;
-using UserManagementService.Models.Response;
+using GrillBot.Contracts.UserManagement.Responses;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

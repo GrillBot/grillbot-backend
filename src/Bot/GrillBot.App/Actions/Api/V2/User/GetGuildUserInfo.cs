@@ -66,7 +66,7 @@ public class GetGuildUserInfo(
         }
     }
 
-    private async Task<UserMeasures.Models.User.UserInfo?> GetUserMeasuresInfoAsync(string userId, string guildId)
+    private async Task<GrillBot.Contracts.UserMeasures.User.UserInfo?> GetUserMeasuresInfoAsync(string userId, string guildId)
     {
         try
         {

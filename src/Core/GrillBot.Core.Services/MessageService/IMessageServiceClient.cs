@@ -1,8 +1,8 @@
 ﻿using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.Common;
 using GrillBot.Core.Services.Common.Attributes;
-using MessageService.Models.Request.AutoReply;
-using MessageService.Models.Response.AutoReply;
+using GrillBot.Contracts.Message.Requests.AutoReply;
+using GrillBot.Contracts.Message.Responses.AutoReply;
 using Refit;
 
 namespace MessageService;

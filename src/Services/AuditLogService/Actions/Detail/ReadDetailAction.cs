@@ -1,5 +1,5 @@
 ﻿using AuditLogService.Core.Entity;
-using AuditLogService.Core.Enums;
+using GrillBot.Contracts.AuditLog.Enums;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Services.Common.Infrastructure.Api;
@@ -20,7 +20,7 @@ public partial class ReadDetailAction(
         if (logHeader is null)
             return new ApiResult(StatusCodes.Status404NotFound);
 
-        var result = new Models.Response.Detail.Detail
+        var result = new GrillBot.Contracts.AuditLog.Responses.Detail.Detail
         {
             Type = logHeader.Type
         };

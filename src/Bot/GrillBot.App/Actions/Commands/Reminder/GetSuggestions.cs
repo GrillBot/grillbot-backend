@@ -4,7 +4,7 @@ using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Services.Common.Executor;
 using RemindService;
-using RemindService.Models.Response;
+using GrillBot.Contracts.Remind.Responses;
 
 namespace GrillBot.App.Actions.Commands.Reminder;
 

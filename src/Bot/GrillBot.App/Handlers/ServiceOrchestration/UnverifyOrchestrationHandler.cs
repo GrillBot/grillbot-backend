@@ -21,7 +21,7 @@ public class UnverifyOrchestrationHandler(
     // UserLeft
     public Task ProcessAsync(IGuild guild, IUser user)
     {
-        var message = new UnverifyService.Models.Events.GuildUserLeftMessage
+        var message = new GrillBot.Contracts.Unverify.Events.GuildUserLeftMessage
         {
             GuildId = guild.Id,
             UserId = user.Id
@@ -33,8 +33,8 @@ public class UnverifyOrchestrationHandler(
     // InteractionCommandExecuted
     public Task ProcessAsync(ICommandInfo commandInfo, IInteractionContext context, IResult result)
     {
-        var message = new UnverifyService.Models.Events.SynchronizationMessage([
-            new UnverifyService.Models.Events.UserSyncMessage
+        var message = new GrillBot.Contracts.Unverify.Events.SynchronizationMessage([
+            new GrillBot.Contracts.Unverify.Events.UserSyncMessage
             {
                 IsBot = context.User.IsBot,
                 UserId = context.User.Id,

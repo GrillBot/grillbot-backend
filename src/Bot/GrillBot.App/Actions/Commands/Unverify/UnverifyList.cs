@@ -9,8 +9,8 @@ using GrillBot.Core.Extensions;
 using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Database.Enums;
 using UnverifyService;
-using UnverifyService.Models.Request;
-using UnverifyService.Models.Response;
+using GrillBot.Contracts.Unverify.Requests;
+using GrillBot.Contracts.Unverify.Responses;
 
 namespace GrillBot.App.Actions.Commands.Unverify;
 

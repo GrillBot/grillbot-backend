@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using UnverifyService.Core.Entity.Logs;
-using UnverifyService.Core.Enums;
+using GrillBot.Contracts.Unverify.Enums;
 
 namespace UnverifyService.Actions.Archivation;
 

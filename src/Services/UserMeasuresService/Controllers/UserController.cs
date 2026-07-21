@@ -1,7 +1,7 @@
 ﻿using GrillBot.Core.Validation;
 using Microsoft.AspNetCore.Mvc;
 using UserMeasuresService.Actions.User;
-using UserMeasuresService.Models.User;
+using GrillBot.Contracts.UserMeasures.User;
 
 namespace UserMeasuresService.Controllers;
 

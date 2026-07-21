@@ -2,7 +2,7 @@
 using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.EntityFrameworkCore;
 using UnverifyService.Core.Entity;
-using UnverifyService.Models.Response.Guilds;
+using GrillBot.Contracts.Unverify.Responses.Guilds;
 
 namespace UnverifyService.Actions.Guilds;
 

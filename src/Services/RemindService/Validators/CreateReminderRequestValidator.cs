@@ -1,6 +1,6 @@
 ﻿using GrillBot.Core.Validation;
 using Microsoft.Extensions.Options;
-using RemindService.Models.Request;
+using GrillBot.Contracts.Remind.Requests;
 using RemindService.Options;
 using System.ComponentModel.DataAnnotations;
 

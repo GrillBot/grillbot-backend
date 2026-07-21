@@ -2,7 +2,7 @@
 using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Services.Common.Infrastructure.RabbitMQ;
 using RemindService.Core.Entity;
-using RemindService.Models.Events;
+using GrillBot.Contracts.Remind.Events;
 
 namespace RemindService.Handlers;
 

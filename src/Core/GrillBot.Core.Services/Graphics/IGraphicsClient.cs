@@ -1,6 +1,6 @@
 ﻿using GrillBot.Core.Services.Common;
 using GrillBot.Core.Services.Common.Attributes;
-using Graphics.Models.Chart;
+using GrillBot.Contracts.Graphics.Chart;
 using Refit;
 
 namespace Graphics;

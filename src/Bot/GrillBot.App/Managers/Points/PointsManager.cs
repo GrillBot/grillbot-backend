@@ -1,7 +1,7 @@
 ﻿using GrillBot.Core.RabbitMQ.V2.Messages;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
-using PointsService.Models.Channels;
-using PointsService.Models.Users;
+using GrillBot.Contracts.Points.Channels;
+using GrillBot.Contracts.Points.Users;
 
 namespace GrillBot.App.Managers.Points;
 

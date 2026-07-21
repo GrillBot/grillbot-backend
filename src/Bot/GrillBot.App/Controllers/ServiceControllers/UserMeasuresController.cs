@@ -2,8 +2,8 @@
 using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Core.Models.Pagination;
 using UserMeasures;
-using UserMeasures.Models.Dashboard;
-using UserMeasures.Models.Measures;
+using GrillBot.Contracts.UserMeasures.Dashboard;
+using GrillBot.Contracts.UserMeasures.Measures;
 using GrillBot.Data.Models.API.UserMeasures;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

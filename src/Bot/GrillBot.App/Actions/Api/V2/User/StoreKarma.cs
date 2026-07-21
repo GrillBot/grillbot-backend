@@ -1,7 +1,7 @@
 ﻿using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
-using RubbergodService.Models.Events.Karma;
+using GrillBot.Contracts.Rubbergod.Events.Karma;
 using GrillBot.Data.Models.API.Users;
 
 namespace GrillBot.App.Actions.Api.V2.User;

@@ -1,6 +1,6 @@
 ﻿using EmoteService.Core.Entity;
 using EmoteService.Extensions.QueryExtensions;
-using EmoteService.Models.Response;
+using GrillBot.Contracts.Emote.Responses;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Services.Common.Infrastructure.Api;

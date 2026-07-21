@@ -3,8 +3,8 @@ using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Services.Common.Infrastructure.Api;
 using RemindService.Core.Entity;
-using RemindService.Models.Events;
-using RemindService.Models.Response;
+using GrillBot.Contracts.Remind.Events;
+using GrillBot.Contracts.Remind.Responses;
 
 namespace RemindService.Actions;
 

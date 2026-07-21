@@ -5,7 +5,7 @@ using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Data.Models.API.Selfunverify;
 using Microsoft.AspNetCore.Mvc;
 using UnverifyService;
-using UnverifyService.Models.Request.Keepables;
+using GrillBot.Contracts.Unverify.Requests.Keepables;
 
 namespace GrillBot.App.Actions.Api.V1.Unverify;
 

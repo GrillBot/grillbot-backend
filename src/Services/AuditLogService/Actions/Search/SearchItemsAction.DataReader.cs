@@ -1,6 +1,7 @@
 ﻿using AuditLogService.Core.Entity;
-using AuditLogService.Core.Enums;
-using AuditLogService.Models.Request.Search;
+using AuditLogService.Models.Extensions;
+using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.AuditLog.Requests.Search;
 using Discord;
 using GrillBot.Core.Models.Pagination;
 using Microsoft.EntityFrameworkCore;

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Nodes;
 using AuditLogService.Core.Entity;
-using AuditLogService.Models.Response;
+using GrillBot.Contracts.AuditLog.Responses;
 using File = AuditLogService.Core.Entity.File;
 
 namespace AuditLogService.Actions.Archivation;

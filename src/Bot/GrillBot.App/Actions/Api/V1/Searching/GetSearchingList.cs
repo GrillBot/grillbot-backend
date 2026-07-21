@@ -6,7 +6,7 @@ using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.Common.Executor;
 using SearchingService;
-using SearchingService.Models.Request;
+using GrillBot.Contracts.Searching.Requests;
 using GrillBot.Data.Models.API.Searching;
 
 namespace GrillBot.App.Actions.Api.V1.Searching;

@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Helpers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
-using Emote.Models.Events.Suggestions;
+using GrillBot.Contracts.Emote.Events.Suggestions;
 
 namespace GrillBot.App.Actions.Commands.Emotes.Suggestions;
 

@@ -1,10 +1,11 @@
 ﻿using GrillBot.Core.Infrastructure.Actions;
+using GrillBot.Contracts.Rubbergod.Karma;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.EntityFrameworkCore;
 using RubbergodService.Core.Entity;
-using RubbergodService.Models;
+using GrillBot.Contracts.Rubbergod;
 
 namespace RubbergodService.Actions.Karma;
 

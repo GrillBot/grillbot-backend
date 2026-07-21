@@ -1,6 +1,6 @@
 ﻿using GrillBot.Core.Services.Common;
 using GrillBot.Core.Services.Common.Attributes;
-using ImageProcessing.Models;
+using GrillBot.Contracts.ImageProcessing;
 using Refit;
 
 namespace ImageProcessing;

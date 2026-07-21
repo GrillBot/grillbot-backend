@@ -1,8 +1,8 @@
 ﻿using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.Common;
 using GrillBot.Core.Services.Common.Attributes;
-using InviteService.Models.Request;
-using InviteService.Models.Response;
+using GrillBot.Contracts.Invite.Requests;
+using GrillBot.Contracts.Invite.Responses;
 using Refit;
 
 namespace InviteService;

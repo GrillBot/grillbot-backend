@@ -1,10 +1,11 @@
 ﻿using GrillBot.Core.Extensions;
+using UnverifyService.Models.Events;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Services.Common.Infrastructure.Api;
 using UnverifyService.Core.Entity;
-using UnverifyService.Models.Events;
-using UnverifyService.Models.Response.Guilds;
+using GrillBot.Contracts.Unverify.Events;
+using GrillBot.Contracts.Unverify.Responses.Guilds;
 
 namespace UnverifyService.Actions.Guilds;
 

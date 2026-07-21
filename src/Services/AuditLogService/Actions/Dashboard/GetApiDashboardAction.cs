@@ -1,7 +1,7 @@
 ﻿using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using AuditLogService.Core.Entity;
-using AuditLogService.Models.Response.Info.Dashboard;
+using GrillBot.Contracts.AuditLog.Responses.Info.Dashboard;
 using GrillBot.Core.Managers.Performance;
 
 #pragma warning disable SYSLIB1045 // Convert to 'GeneratedRegexAttribute'.

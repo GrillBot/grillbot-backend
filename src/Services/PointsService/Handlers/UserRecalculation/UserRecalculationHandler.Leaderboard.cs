@@ -1,7 +1,7 @@
 ﻿using GrillBot.Core.Helpers;
 using Microsoft.EntityFrameworkCore;
 using PointsService.Core.Entity;
-using PointsService.Models;
+using GrillBot.Contracts.Points;
 
 namespace PointsService.Handlers.UserRecalculation;
 

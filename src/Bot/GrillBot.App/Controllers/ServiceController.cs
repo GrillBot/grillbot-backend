@@ -1,6 +1,6 @@
 ﻿using GrillBot.App.Actions.Api;
 using AuditLog;
-using AuditLog.Models.Response.Info;
+using GrillBot.Contracts.AuditLog.Responses.Info;
 using GrillBot.Core.Services.Common.Executor;
 using PointsService;
 using GrillBot.Data.Models.API.Services;
@@ -43,7 +43,7 @@ public class ServiceController(IServiceProvider serviceProvider) : Core.Infrastr
     /// </summary>
     /// <response code="200">Returns additional status info.</response>
     [HttpGet("points/status")]
-    [ProducesResponseType(typeof(PointsService.Models.StatusInfo), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(GrillBot.Contracts.Points.StatusInfo), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPointsServiceSatusInfoAsync()
     {
         var executor = new Func<IPointsServiceClient, ServiceExecutorContext, Task<object>>(async (client, ctx) => await client.GetStatusInfoAsync(ctx.CancellationToken));

@@ -2,9 +2,9 @@
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
-using PointsService.Models;
-using PointsService.Models.Channels;
-using PointsService.Models.Events;
+using GrillBot.Contracts.Points;
+using GrillBot.Contracts.Points.Channels;
+using GrillBot.Contracts.Points.Events;
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
 

@@ -5,8 +5,8 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
-using AuditLog.Enums;
-using AuditLog.Models.Events.Create;
+using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.AuditLog.Events.Create;
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
 

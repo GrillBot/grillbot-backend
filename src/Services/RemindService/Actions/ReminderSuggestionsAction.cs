@@ -3,7 +3,7 @@ using GrillBot.Core.Managers.Performance;
 using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.EntityFrameworkCore;
 using RemindService.Core.Entity;
-using RemindService.Models.Response;
+using GrillBot.Contracts.Remind.Responses;
 
 namespace RemindService.Actions;
 

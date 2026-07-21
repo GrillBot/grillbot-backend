@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using UserMeasuresService.Actions.Dashboard;
-using UserMeasuresService.Models.Dashboard;
+using GrillBot.Contracts.UserMeasures.Dashboard;
 using ControllerBase = GrillBot.Core.Infrastructure.Actions.ControllerBase;
 
 namespace UserMeasuresService.Controllers;

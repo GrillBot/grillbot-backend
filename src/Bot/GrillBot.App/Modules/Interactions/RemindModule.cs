@@ -82,7 +82,7 @@ public class RemindModule : InteractionsModuleBase
     }
 
     [ComponentInteraction("remind_copy:*", ignoreGroupNames: true)]
-    public async Task HandleRemindCopyAsync(long remindId)
+    public async Task HandleRemindCopyAsync(int remindId)
     {
         var canDefer = true;
 

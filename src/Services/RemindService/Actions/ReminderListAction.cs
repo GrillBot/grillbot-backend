@@ -6,8 +6,8 @@ using GrillBot.Services.Common.EntityFramework.Extensions;
 using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.EntityFrameworkCore;
 using RemindService.Core.Entity;
-using RemindService.Models.Request;
-using RemindService.Models.Response;
+using GrillBot.Contracts.Remind.Requests;
+using GrillBot.Contracts.Remind.Responses;
 using System.Linq.Expressions;
 
 namespace RemindService.Actions;

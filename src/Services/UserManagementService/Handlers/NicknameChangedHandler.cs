@@ -1,13 +1,13 @@
 ﻿using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Core.RabbitMQ.V2.Consumer;
-using AuditLog.Enums;
-using AuditLog.Models.Events.Create;
+using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.AuditLog.Events.Create;
 using GrillBot.Services.Common.Discord;
 using GrillBot.Services.Common.Infrastructure.RabbitMQ;
 using System.Text;
 using UserManagementService.Core.Entity;
-using UserManagementService.Models.Events;
+using GrillBot.Contracts.UserManagement.Events;
 
 namespace UserManagementService.Handlers;
 

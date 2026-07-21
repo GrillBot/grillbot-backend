@@ -6,7 +6,7 @@ using GrillBot.Database.Services.Repository;
 using Quartz;
 using System.IO.Compression;
 using UnverifyService;
-using UnverifyService.Models.Response;
+using GrillBot.Contracts.Unverify.Responses;
 
 namespace GrillBot.App.Jobs;
 

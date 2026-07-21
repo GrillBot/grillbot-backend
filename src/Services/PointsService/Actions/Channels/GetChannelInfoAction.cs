@@ -3,7 +3,7 @@ using GrillBot.Core.Managers.Performance;
 using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.EntityFrameworkCore;
 using PointsService.Core.Entity;
-using PointsService.Models.Channels;
+using GrillBot.Contracts.Points.Channels;
 
 namespace PointsService.Actions.Channels;
 

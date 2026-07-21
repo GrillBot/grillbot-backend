@@ -1,6 +1,6 @@
 ﻿using GrillBot.Core.Redis.Extensions;
 using ImageProcessingService.Caching.Models;
-using ImageProcessingService.Models;
+using GrillBot.Contracts.ImageProcessing;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace ImageProcessingService.Caching;

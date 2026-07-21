@@ -1,6 +1,6 @@
 ﻿using AuditLogService.Core.Entity;
-using AuditLogService.Core.Enums;
-using AuditLogService.Models.Response.Search;
+using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.AuditLog.Responses.Search;
 using Discord;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Models.Pagination;
@@ -24,7 +24,7 @@ public partial class SearchItemsAction
             ChannelId = item.ChannelId,
             CreatedAt = item.CreatedAt,
             UserId = item.UserId,
-            Files = [.. item.Files.Select(o => new Models.Response.Search.File
+            Files = [.. item.Files.Select(o => new GrillBot.Contracts.AuditLog.Responses.Search.File
             {
                 Filename = o.Filename,
                 Size = o.Size

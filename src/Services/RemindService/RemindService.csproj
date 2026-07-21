@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <NoWarn>$(NoWarn);CS0436;S1192</NoWarn>
+        <NoWarn>$(NoWarn);S1192</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

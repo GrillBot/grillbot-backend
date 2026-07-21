@@ -8,8 +8,8 @@ using GrillBot.Core.Extensions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.Common.Executor;
 using Emote;
-using Emote.Models.Request;
-using Emote.Models.Response;
+using GrillBot.Contracts.Emote.Requests;
+using GrillBot.Contracts.Emote.Responses;
 using GrillBot.Data.Enums;
 
 namespace GrillBot.App.Actions.Commands.Emotes;

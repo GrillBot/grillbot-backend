@@ -2,8 +2,8 @@
 using GrillBot.Services.Common.Infrastructure.Api.OpenApi.Attributes;
 using Microsoft.AspNetCore.Mvc;
 using UnverifyService.Actions.Users;
-using UnverifyService.Models.Request.Users;
-using UnverifyService.Models.Response.Users;
+using GrillBot.Contracts.Unverify.Requests.Users;
+using GrillBot.Contracts.Unverify.Responses.Users;
 
 namespace UnverifyService.Controllers;
 

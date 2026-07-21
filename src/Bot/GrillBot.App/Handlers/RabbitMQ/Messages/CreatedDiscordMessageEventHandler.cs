@@ -2,9 +2,9 @@
 using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
-using Emote.Models.Events.Suggestions;
-using GrillBot.Models.Events.Messages;
-using RemindService.Models.Events;
+using GrillBot.Contracts.Emote.Events.Suggestions;
+using GrillBot.Contracts.Bot.Events.Messages;
+using GrillBot.Contracts.Remind.Events;
 using Microsoft.Extensions.Logging;
 
 namespace GrillBot.App.Handlers.RabbitMQ.Messages;
@@ -36,7 +36,7 @@ public class CreatedDiscordMessageEventHandler(
 
     private Task ProcessRemindServiceMessageAsync(CreatedDiscordMessagePayload payload, CancellationToken cancellationToken = default)
     {
-        if (payload.ServiceData.TryGetValue("RemindId", out var _remindId) && long.TryParse(_remindId, CultureInfo.InvariantCulture, out var remindId))
+        if (payload.ServiceData.TryGetValue("RemindId", out var _remindId) && int.TryParse(_remindId, CultureInfo.InvariantCulture, out var remindId))
             return _rabbitPublisher.PublishAsync(new RemindMessageNotifyPayload(remindId, payload.MessageId), cancellationToken: cancellationToken);
         return Task.CompletedTask;
     }

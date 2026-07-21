@@ -2,7 +2,7 @@
 using GrillBot.Core.RabbitMQ.V2.Consumer;
 using PointsService.Core.Entity;
 using PointsService.Handlers.Abstractions;
-using PointsService.Models.Events;
+using GrillBot.Contracts.Points.Events;
 
 namespace PointsService.Handlers.UserRecalculation;
 

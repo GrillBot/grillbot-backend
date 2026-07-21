@@ -5,10 +5,10 @@ using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.Common.Exceptions;
 using GrillBot.Core.Services.Common.Executor;
-using GrillBot.Models;
+using GrillBot.Contracts.Bot;
 using UnverifyService;
-using UnverifyService.Models.Events;
-using UnverifyService.Models.Request;
+using GrillBot.Contracts.Unverify.Events;
+using GrillBot.Contracts.Unverify.Requests;
 
 namespace GrillBot.App.Actions.Commands.Unverify;
 

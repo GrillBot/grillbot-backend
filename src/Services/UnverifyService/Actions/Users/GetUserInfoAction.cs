@@ -2,9 +2,9 @@
 using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.EntityFrameworkCore;
 using UnverifyService.Core.Entity;
-using UnverifyService.Core.Enums;
-using UnverifyService.Models.Response;
-using UnverifyService.Models.Response.Users;
+using GrillBot.Contracts.Unverify.Enums;
+using GrillBot.Contracts.Unverify.Responses;
+using GrillBot.Contracts.Unverify.Responses.Users;
 
 namespace UnverifyService.Actions.Users;
 

@@ -3,7 +3,7 @@ using GrillBot.Core.Managers.Performance;
 using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.EntityFrameworkCore;
 using PointsService.Core.Entity;
-using PointsService.Models.Users;
+using GrillBot.Contracts.Points.Users;
 
 namespace PointsService.Actions.Users;
 
@@ -50,7 +50,7 @@ public class GetUserInfoAction(
         if (leaderboardItem is null)
             return;
 
-        info.Status = new Models.PointsStatus
+        info.Status = new GrillBot.Contracts.Points.PointsStatus
         {
             MonthBack = leaderboardItem.MonthBack,
             Today = leaderboardItem.Today,

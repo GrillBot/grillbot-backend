@@ -1,5 +1,5 @@
 ﻿using AuditLogService.Core.Entity;
-using AuditLogService.Models.Response.Statistics;
+using GrillBot.Contracts.AuditLog.Responses.Statistics;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Services.Common.Infrastructure.Api;

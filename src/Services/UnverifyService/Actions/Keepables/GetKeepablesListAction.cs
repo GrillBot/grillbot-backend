@@ -4,8 +4,8 @@ using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using UnverifyService.Core.Entity;
-using UnverifyService.Models.Request.Keepables;
-using UnverifyService.Models.Response.Keepables;
+using GrillBot.Contracts.Unverify.Requests.Keepables;
+using GrillBot.Contracts.Unverify.Responses.Keepables;
 
 namespace UnverifyService.Actions.Keepables;
 

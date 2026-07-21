@@ -2,7 +2,7 @@
 using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Services.Common.Infrastructure.RabbitMQ;
 using MessageService.Core.Entity;
-using MessageService.Models.Events;
+using GrillBot.Contracts.Message.Events;
 using Microsoft.EntityFrameworkCore;
 
 namespace MessageService.Handlers.MessageReceived;

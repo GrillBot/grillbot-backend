@@ -55,6 +55,7 @@ public static class ServiceBuilder
         var mvcBuilder = builder.Services.AddControllers(opt =>
         {
             opt.RegisterCoreFilter();
+            opt.Filters.Add<ModelValidationFilter>();
             opt.Filters.Add<ExceptionFilter>();
 
             if (configureControllers is not null)
@@ -83,6 +84,7 @@ public static class ServiceBuilder
 
         // Registrators
         builder.Services.RegisterActionsFromAssembly(runningAssembly);
+        builder.Services.RegisterValidatorsFromAssembly(runningAssembly);
         builder.Services.RegisterRabbitMQFromAssembly(builder.Configuration, runningAssembly);
         builder.Services.RegisterCacheFromAssembly(runningAssembly);
 

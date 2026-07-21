@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PointsService.Actions.Channels;
-using PointsService.Models.Channels;
+using GrillBot.Contracts.Points.Channels;
 using ControllerBase = GrillBot.Core.Infrastructure.Actions.ControllerBase;
 
 namespace PointsService.Controllers;

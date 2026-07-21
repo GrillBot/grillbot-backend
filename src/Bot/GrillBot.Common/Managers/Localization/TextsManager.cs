@@ -2,7 +2,7 @@
 using System.Text.RegularExpressions;
 using GrillBot.Common.Extensions;
 using GrillBot.Core.Extensions;
-using GrillBot.Models;
+using GrillBot.Contracts.Bot;
 using Newtonsoft.Json.Linq;
 
 namespace GrillBot.Common.Managers.Localization;

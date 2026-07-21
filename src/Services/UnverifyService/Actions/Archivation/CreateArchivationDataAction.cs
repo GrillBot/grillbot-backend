@@ -1,9 +1,10 @@
 ﻿using GrillBot.Core.Infrastructure.Actions;
+using UnverifyService.Models.Events;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.Extensions.Options;
 using UnverifyService.Core.Entity;
-using UnverifyService.Models.Events;
+using GrillBot.Contracts.Unverify.Events;
 using UnverifyService.Options;
 
 namespace UnverifyService.Actions.Archivation;

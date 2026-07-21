@@ -1,6 +1,6 @@
 ﻿using AuditLogService.Core.Entity;
 using AuditLogService.Core.Options;
-using AuditLogService.Models.Response.Info;
+using GrillBot.Contracts.AuditLog.Responses.Info;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Services.Common.Infrastructure.Api;

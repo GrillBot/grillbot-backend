@@ -9,7 +9,7 @@ using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Data.Models.API;
 using GrillBot.Data.Models.API.Unverify;
 using UnverifyService;
-using UnverifyService.Models.Request;
+using GrillBot.Contracts.Unverify.Requests;
 
 namespace GrillBot.App.Actions.Api.V1.Unverify;
 

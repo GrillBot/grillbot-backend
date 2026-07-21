@@ -1,8 +1,8 @@
 ﻿using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Core.Models.Pagination;
 using SearchingService;
-using SearchingService.Models.Request;
-using SearchingService.Models.Response;
+using GrillBot.Contracts.Searching.Requests;
+using GrillBot.Contracts.Searching.Responses;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

@@ -1,4 +1,4 @@
-﻿using GrillBot.Models;
+﻿using GrillBot.Contracts.Bot;
 using System.Globalization;
 
 namespace GrillBot.Common.Managers.Localization;

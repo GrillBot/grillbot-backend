@@ -3,9 +3,9 @@ using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Core.RabbitMQ.V2.Messages;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
-using AuditLog.Enums;
-using AuditLog.Models.Events.Create;
-using GrillBot.Models.Events.Messages;
+using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.AuditLog.Events.Create;
+using GrillBot.Contracts.Bot.Events.Messages;
 using Microsoft.Extensions.Logging;
 
 namespace GrillBot.App.Handlers.RabbitMQ.Messages;

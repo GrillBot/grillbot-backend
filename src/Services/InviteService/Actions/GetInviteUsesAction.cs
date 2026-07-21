@@ -3,7 +3,7 @@ using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Services.Common.Infrastructure.Api;
 using InviteService.Core.Entity;
-using InviteService.Models.Request;
+using GrillBot.Contracts.Invite.Requests;
 using Microsoft.EntityFrameworkCore;
 
 namespace InviteService.Actions;
@@ -30,8 +30,8 @@ public class GetInviteUsesAction(
             query.OrderByDescending(o => o.UsedAt) :
             query.OrderBy(o => o.UsedAt);
 
-        var dataQuery = query.Select(o => new Models.Response.InviteUse(o.UserId, o.UsedAt));
-        var result = await PaginatedResponse<Models.Response.InviteUse>.CreateWithEntityAsync(dataQuery, request.Pagination);
+        var dataQuery = query.Select(o => new GrillBot.Contracts.Invite.Responses.InviteUse(o.UserId, o.UsedAt));
+        var result = await PaginatedResponse<GrillBot.Contracts.Invite.Responses.InviteUse>.CreateWithEntityAsync(dataQuery, request.Pagination);
 
         return ApiResult.Ok(result);
     }

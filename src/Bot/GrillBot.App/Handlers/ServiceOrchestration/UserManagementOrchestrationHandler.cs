@@ -1,6 +1,6 @@
 ﻿using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
-using UserManagementService.Models.Events;
+using GrillBot.Contracts.UserManagement.Events;
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
 

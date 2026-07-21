@@ -1,14 +1,14 @@
 ﻿using AuditLogService.Core.Entity;
-using AuditLogService.Core.Enums;
+using GrillBot.Contracts.AuditLog.Enums;
 using AuditLogService.Core.Extensions;
 using AuditLogService.Core.Helpers;
-using AuditLogService.Models.Response.Detail;
+using GrillBot.Contracts.AuditLog.Responses.Detail;
 using Discord;
 using GrillBot.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using EmbedField = AuditLogService.Models.Response.Detail.EmbedField;
-using InteractionCommandParameter = AuditLogService.Models.Response.Detail.InteractionCommandParameter;
+using EmbedField = GrillBot.Contracts.AuditLog.Responses.Detail.EmbedField;
+using InteractionCommandParameter = GrillBot.Contracts.AuditLog.Responses.Detail.InteractionCommandParameter;
 
 namespace AuditLogService.Actions.Detail;
 

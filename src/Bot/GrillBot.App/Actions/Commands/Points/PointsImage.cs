@@ -2,7 +2,7 @@
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using ImageProcessing;
-using ImageProcessing.Models;
+using GrillBot.Contracts.ImageProcessing;
 using PointsService;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.IO;

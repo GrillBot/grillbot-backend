@@ -1,7 +1,7 @@
-﻿using AuditLog.Enums;
-using AuditLog.Models.Events.Create;
+﻿using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.AuditLog.Events.Create;
 using PointsService.Core.Entity;
-using PointsService.Models.Events;
+using GrillBot.Contracts.Points.Events;
 
 namespace PointsService.Handlers.Abstractions;
 

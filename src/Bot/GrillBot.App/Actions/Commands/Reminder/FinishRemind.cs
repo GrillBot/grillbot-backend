@@ -3,7 +3,7 @@ using GrillBot.Core.Exceptions;
 using GrillBot.Core.Services.Common.Exceptions;
 using GrillBot.Core.Services.Common.Executor;
 using RemindService;
-using RemindService.Models.Request;
+using GrillBot.Contracts.Remind.Requests;
 
 namespace GrillBot.App.Actions.Commands.Reminder;
 
@@ -18,6 +18,12 @@ public class FinishRemind(
 
     public async Task ProcessAsync(long id, bool notify, bool isService)
     {
+        // Discord hands slash command integers over as long, but a reminder id is an int.
+        // Anything outside that range cannot exist, so report it as missing rather than
+        // truncating it into an id that happens to be valid.
+        if (id is < int.MinValue or > int.MaxValue)
+            throw new NotFoundException(_texts["RemindModule/CancelRemind/NotFound", Locale]);
+
         try
         {
             var request = new CancelReminderRequest
@@ -25,7 +31,7 @@ public class FinishRemind(
                 ExecutingUserId = Context.User.Id.ToString(),
                 IsAdminExecution = isService,
                 NotifyUser = notify,
-                RemindId = id
+                RemindId = (int)id
             };
 
             await _remindService.ExecuteRequestAsync((c, ctx) => c.CancelReminderAsync(request, ctx.CancellationToken));

@@ -50,7 +50,7 @@ public class EmoteInfo : CommandAction
         return IsOk;
     }
 
-    private async Task<List<string>> GetFormattedTopUsersAsync(Dictionary<string, long> topUsers)
+    private async Task<List<string>> GetFormattedTopUsersAsync(Dictionary<string, int> topUsers)
     {
         var result = new List<string>(topUsers.Count);
         var unknownUserTemplate = Texts["Emote/Info/UnknownUser", Locale];
@@ -69,7 +69,7 @@ public class EmoteInfo : CommandAction
         return result;
     }
 
-    private async Task<Embed> CreateEmbedAsync(Emote.Models.Response.EmoteInfo emoteInfo)
+    private async Task<Embed> CreateEmbedAsync(GrillBot.Contracts.Emote.Responses.EmoteInfo emoteInfo)
     {
         var embed = new EmbedBuilder()
             .WithFooter(Context.User)

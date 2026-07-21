@@ -2,7 +2,7 @@
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.Common.Executor;
 using UnverifyService;
-using UnverifyService.Models.Request.Keepables;
+using GrillBot.Contracts.Unverify.Requests.Keepables;
 
 namespace GrillBot.App.Actions.Api.V1.Unverify;
 

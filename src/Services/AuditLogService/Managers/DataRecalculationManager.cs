@@ -1,6 +1,7 @@
 ﻿using AuditLogService.Core.Entity;
-using AuditLogService.Core.Enums;
 using AuditLogService.Models.Events.Recalculation;
+using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.AuditLog.Events.Recalculation;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
 

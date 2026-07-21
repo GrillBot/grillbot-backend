@@ -2,10 +2,13 @@
 
 namespace GrillBot.Core.Validation;
 
-public abstract class ModelValidator<TModel> where TModel : class
+public abstract class ModelValidator<TModel> : IModelValidator where TModel : class
 {
     public IEnumerable<ValidationResult> Validate(TModel model, ValidationContext context)
         => GetValidations().SelectMany(method => method(model, context));
+
+    IEnumerable<ValidationResult> IModelValidator.Validate(object model, ValidationContext context)
+        => Validate((TModel)model, context);
 
     protected abstract IEnumerable<Func<TModel, ValidationContext, IEnumerable<ValidationResult>>> GetValidations();
 

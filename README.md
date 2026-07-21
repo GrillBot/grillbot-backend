@@ -14,6 +14,7 @@ GrillBot is a Discord bot for fun and management of the VUT FIT Discord server.
 | Path | Contents |
 |---|---|
 | `src/Core/` | Shared libraries (`GrillBot.Core`, `.HealthCheck`, `.Metrics`, `.RabbitMQ.V2`, `.Redis`, `.Services`) |
+| `src/Contracts/` | `GrillBot.Contracts` — the integration events, requests and responses exchanged between services, one folder per bounded context |
 | `src/Bot/` | Discord bot host (`GrillBot.App` + `Cache`, `Common`, `Data`, `Database`) |
 | `src/Services/` | `GrillBot.Services.Common`, 12 .NET microservices and the Node/TypeScript `Graphics` service |
 | `tests/` | MSTest projects for the core libraries |
@@ -23,6 +24,15 @@ GrillBot is a Discord bot for fun and management of the VUT FIT Discord server.
 The libraries in `src/Core/` are consumed through **project references**. They are
 no longer published as NuGet packages, so no private feed, personal access token
 or `read:packages` scope is needed to build this repository.
+
+Every contract has **exactly one** definition, in `src/Contracts/`. A service must
+not keep a private copy of a type it exchanges with another service — that is what
+the old per-repo split forced and what the `CS0436` suppressions used to hide.
+`GrillBot.Core.Services` holds only the Refit client interfaces; the payloads they
+carry come from `GrillBot.Contracts`. Contracts carry data, validation attributes
+and self-contained invariants; anything that needs service state (options, the
+database) belongs in a `ModelValidator<T>` in the owning service, which
+`ModelValidationFilter` resolves and runs.
 
 ## Requirements
 
@@ -100,9 +110,9 @@ at once — for example `audit_log_service` becomes
 
 `.github/workflows/ci.yml` derives both its change-detection filters and its
 build matrix from that manifest. The `shares` field on each entry records the
-dependency edges that project references create — a change under `src/Core/`
-rebuilds every .NET image, a change in `GrillBot.Services.Common` rebuilds every
-.NET service — so only the affected images are built, pushed, deployed via
+dependency edges that project references create — a change under `src/Core/` or
+`src/Contracts/` rebuilds every .NET image, a change in `GrillBot.Services.Common`
+rebuilds every .NET service — so only the affected images are built, pushed, deployed via
 `deploy-grillbot.sh <name>` over SSH, and health-checked.
 
 To add a new service: create the project under `src/Services/`, add it to

@@ -1,6 +1,6 @@
 ﻿using AuditLogService.Core.Entity;
-using AuditLogService.Core.Enums;
-using AuditLogService.Models.Events.Create;
+using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.AuditLog.Events.Create;
 using AuditLogService.Processors.Request.Abstractions;
 using Discord;
 

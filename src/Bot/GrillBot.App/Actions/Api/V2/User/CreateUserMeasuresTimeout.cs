@@ -1,7 +1,7 @@
 ﻿using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
-using UserMeasures.Models.Events;
+using GrillBot.Contracts.UserMeasures.Events;
 using GrillBot.Data.Models.API.UserMeasures;
 using Microsoft.AspNetCore.Http;
 

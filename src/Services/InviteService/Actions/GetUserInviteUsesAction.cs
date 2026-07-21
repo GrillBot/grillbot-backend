@@ -3,8 +3,8 @@ using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Services.Common.Infrastructure.Api;
 using InviteService.Core.Entity;
-using InviteService.Models.Request;
-using InviteService.Models.Response;
+using GrillBot.Contracts.Invite.Requests;
+using GrillBot.Contracts.Invite.Responses;
 using Microsoft.EntityFrameworkCore;
 
 namespace InviteService.Actions;

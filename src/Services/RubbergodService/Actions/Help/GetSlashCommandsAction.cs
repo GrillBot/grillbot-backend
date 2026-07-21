@@ -1,8 +1,10 @@
 ﻿using GrillBot.Core.Infrastructure.Actions;
+using GrillBot.Contracts.Rubbergod.Help;
+using RubbergodService.Models;
 using GrillBot.Core.Redis.Extensions;
 using Microsoft.Extensions.Caching.Distributed;
 using RubbergodService.DirectApi;
-using RubbergodService.Models;
+using GrillBot.Contracts.Rubbergod;
 using System.Text;
 using System.Text.Json;
 

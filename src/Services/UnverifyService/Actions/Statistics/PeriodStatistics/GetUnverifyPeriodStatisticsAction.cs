@@ -1,7 +1,7 @@
 ﻿using GrillBot.Services.Common.Actions.Statistics;
 using Microsoft.EntityFrameworkCore;
 using UnverifyService.Core.Entity;
-using UnverifyService.Core.Enums;
+using GrillBot.Contracts.Unverify.Enums;
 
 namespace UnverifyService.Actions.Statistics.PeriodStatistics;
 

@@ -1,5 +1,5 @@
 ﻿using AuditLogService.Actions.Archivation;
-using AuditLogService.Models.Response;
+using GrillBot.Contracts.AuditLog.Responses;
 using Microsoft.AspNetCore.Mvc;
 using ControllerBase = GrillBot.Core.Infrastructure.Actions.ControllerBase;
 

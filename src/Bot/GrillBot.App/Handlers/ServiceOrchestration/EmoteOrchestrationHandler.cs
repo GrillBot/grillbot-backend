@@ -5,8 +5,8 @@ using GrillBot.Core.Extensions;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.Common.Executor;
 using Emote;
-using Emote.Models.Events;
-using Emote.Models.Events.Guild;
+using GrillBot.Contracts.Emote.Events;
+using GrillBot.Contracts.Emote.Events.Guild;
 using Microsoft.Extensions.Logging;
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;

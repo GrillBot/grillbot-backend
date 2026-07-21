@@ -1,6 +1,6 @@
 ﻿using GrillBot.Cache.Services.Managers;
 using ImageProcessing;
-using ImageProcessing.Models;
+using GrillBot.Contracts.ImageProcessing;
 using GrillBot.Core.IO;
 using GrillBot.Core.Services.Common.Executor;
 

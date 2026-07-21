@@ -1,9 +1,9 @@
 ﻿using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.Common;
 using GrillBot.Core.Services.Common.Attributes;
-using UserMeasures.Models.Dashboard;
-using UserMeasures.Models.Measures;
-using UserMeasures.Models.User;
+using GrillBot.Contracts.UserMeasures.Dashboard;
+using GrillBot.Contracts.UserMeasures.Measures;
+using GrillBot.Contracts.UserMeasures.User;
 using Refit;
 
 namespace UserMeasures;

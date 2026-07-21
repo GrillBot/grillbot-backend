@@ -3,7 +3,7 @@ using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Services.Common.Infrastructure.RabbitMQ;
 using Microsoft.Extensions.Options;
 using SearchingService.Core.Entity;
-using SearchingService.Models.Events;
+using GrillBot.Contracts.Searching.Events;
 using SearchingService.Options;
 
 namespace SearchingService.Handlers;

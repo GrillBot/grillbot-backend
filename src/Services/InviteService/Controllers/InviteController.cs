@@ -1,8 +1,8 @@
 ﻿using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Validation;
 using InviteService.Actions;
-using InviteService.Models.Request;
-using InviteService.Models.Response;
+using GrillBot.Contracts.Invite.Requests;
+using GrillBot.Contracts.Invite.Responses;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InviteService.Controllers;

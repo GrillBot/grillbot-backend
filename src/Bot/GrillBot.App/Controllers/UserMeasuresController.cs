@@ -4,7 +4,7 @@ using GrillBot.App.Actions.Api.V2.User;
 using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Core.Services.Common.Executor;
 using UserMeasures;
-using UserMeasures.Models.Measures;
+using GrillBot.Contracts.UserMeasures.Measures;
 using GrillBot.Data.Models.API.UserMeasures;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

@@ -1,5 +1,5 @@
 ﻿using ImageMagick;
-using ImageProcessingService.Models;
+using GrillBot.Contracts.ImageProcessing;
 
 namespace ImageProcessingService.Extensions;
 

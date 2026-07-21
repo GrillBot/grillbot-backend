@@ -1,11 +1,12 @@
 ﻿using GrillBot.Core.Infrastructure.Actions;
+using PointsService.Models;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
 using Microsoft.EntityFrameworkCore;
 using PointsService.Core;
 using PointsService.Core.Entity;
 using PointsService.Enums;
-using PointsService.Models;
+using GrillBot.Contracts.Points;
 
 namespace PointsService.Actions;
 

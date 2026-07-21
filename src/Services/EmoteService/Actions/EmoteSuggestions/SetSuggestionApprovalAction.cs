@@ -1,5 +1,5 @@
 ﻿using EmoteService.Core.Entity;
-using EmoteService.Models.Events.Suggestions;
+using GrillBot.Contracts.Emote.Events.Suggestions;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Infrastructure.Auth;

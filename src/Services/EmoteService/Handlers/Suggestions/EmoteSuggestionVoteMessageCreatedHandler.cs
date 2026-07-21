@@ -1,4 +1,4 @@
-﻿using EmoteService.Models.Events.Suggestions;
+﻿using GrillBot.Contracts.Emote.Events.Suggestions;
 using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Core.RabbitMQ.V2.Consumer;
 using Microsoft.EntityFrameworkCore;

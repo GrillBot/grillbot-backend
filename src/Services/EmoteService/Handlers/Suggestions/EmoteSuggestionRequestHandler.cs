@@ -1,12 +1,12 @@
-﻿using AuditLog.Enums;
-using AuditLog.Models.Events.Create;
+﻿using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.AuditLog.Events.Create;
 using Discord;
 using EmoteService.Core.Entity.Suggestions;
 using EmoteService.Core.Options;
-using EmoteService.Models.Events.Suggestions;
+using GrillBot.Contracts.Emote.Events.Suggestions;
 using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Core.RabbitMQ.V2.Consumer;
-using GrillBot.Models.Events.Messages;
+using GrillBot.Contracts.Bot.Events.Messages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Text.RegularExpressions;

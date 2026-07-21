@@ -1,12 +1,12 @@
 ﻿using GrillBot.Core.Extensions.Discord;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Models;
+using GrillBot.Contracts.Bot;
 using GrillBot.Services.Common.Discord;
 using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using UnverifyService.Core.Entity;
-using UnverifyService.Models.Request;
+using GrillBot.Contracts.Unverify.Requests;
 using UnverifyService.Options;
 
 namespace UnverifyService.Actions;

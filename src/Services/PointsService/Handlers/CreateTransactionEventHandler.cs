@@ -1,4 +1,5 @@
 ﻿using Discord;
+using PointsService.Models.Extensions;
 using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Core.Managers.Random;
 using GrillBot.Core.RabbitMQ.V2.Consumer;
@@ -7,7 +8,7 @@ using Microsoft.Extensions.Options;
 using PointsService.Core.Entity;
 using PointsService.Core.Options;
 using PointsService.Handlers.Abstractions;
-using PointsService.Models.Events;
+using GrillBot.Contracts.Points.Events;
 
 namespace PointsService.Handlers;
 

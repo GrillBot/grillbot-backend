@@ -3,7 +3,7 @@ using GrillBot.App.Jobs.Abstractions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Cooldown;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
-using InviteService.Models.Events;
+using GrillBot.Contracts.Invite.Events;
 using Quartz;
 using StackExchange.Redis;
 

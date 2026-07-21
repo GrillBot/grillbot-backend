@@ -19,7 +19,7 @@ public class GetSupportedEmotesListAction(
             definitionsQuery = definitionsQuery.Where(o => o.GuildId == guildId);
 
         var definitions = await ContextHelper.ReadEntitiesAsync(definitionsQuery);
-        var emotes = definitions.ConvertAll(d => new Models.Response.EmoteDefinition
+        var emotes = definitions.ConvertAll(d => new GrillBot.Contracts.Emote.Responses.EmoteDefinition
         {
             FullId = d.ToString(),
             GuildId = d.GuildId

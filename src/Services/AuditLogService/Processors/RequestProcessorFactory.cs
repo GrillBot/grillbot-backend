@@ -1,4 +1,4 @@
-﻿using AuditLogService.Core.Enums;
+﻿using GrillBot.Contracts.AuditLog.Enums;
 using AuditLogService.Processors.Request;
 using AuditLogService.Processors.Request.Abstractions;
 

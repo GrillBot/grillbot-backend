@@ -1,6 +1,6 @@
 ﻿using EmoteService.Actions.EmoteSuggestions;
-using EmoteService.Models.Request.EmoteSuggestions;
-using EmoteService.Models.Response.EmoteSuggestions;
+using GrillBot.Contracts.Emote.Requests.EmoteSuggestions;
+using GrillBot.Contracts.Emote.Responses.EmoteSuggestions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Services.Common.Infrastructure.Api.OpenApi.Attributes;
 using Microsoft.AspNetCore.Mvc;

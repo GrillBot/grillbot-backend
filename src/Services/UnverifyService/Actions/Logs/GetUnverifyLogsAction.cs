@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using UnverifyService.Core.Entity;
 using UnverifyService.Core.Entity.Logs;
-using UnverifyService.Models.Request.Logs;
+using GrillBot.Contracts.Unverify.Requests.Logs;
 
 namespace UnverifyService.Actions.Logs;
 
@@ -18,7 +18,7 @@ public partial class GetUnverifyLogsAction(IServiceProvider serviceProvider) : A
         var request = GetParameter<UnverifyLogListRequest>(0);
         var query = CreateQuery(request);
         var pagedData = await ContextHelper.ReadEntitiesWithPaginationAsync(query, request.Pagination, CancellationToken);
-        var result = await PaginatedResponse<Models.Response.Logs.UnverifyLogItem>.CopyAndMapAsync(pagedData, MapItemAsync);
+        var result = await PaginatedResponse<GrillBot.Contracts.Unverify.Responses.Logs.UnverifyLogItem>.CopyAndMapAsync(pagedData, MapItemAsync);
 
         return ApiResult.Ok(result);
     }

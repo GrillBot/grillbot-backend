@@ -7,7 +7,7 @@ using GrillBot.Database.Enums;
 using GrillBot.Database.Services.Repository;
 using GrillBot.Core.Services.Common.Executor;
 using InviteService;
-using InviteService.Models.Request;
+using GrillBot.Contracts.Invite.Requests;
 using GrillBot.App.Managers.DataResolve;
 using UnverifyService;
 using GrillBot.Core.Services.Common.Exceptions;

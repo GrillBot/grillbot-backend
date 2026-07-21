@@ -1,8 +1,8 @@
 ﻿using AuditLogService.Actions.Delete;
 using AuditLogService.Actions.Detail;
 using AuditLogService.Actions.Search;
-using AuditLogService.Models.Request.Search;
-using AuditLogService.Models.Response.Search;
+using GrillBot.Contracts.AuditLog.Requests.Search;
+using GrillBot.Contracts.AuditLog.Responses.Search;
 using GrillBot.Core.Models.Pagination;
 using Microsoft.AspNetCore.Mvc;
 using ControllerBase = GrillBot.Core.Infrastructure.Actions.ControllerBase;

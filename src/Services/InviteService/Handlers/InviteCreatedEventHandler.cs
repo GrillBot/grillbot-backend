@@ -4,7 +4,7 @@ using GrillBot.Core.Redis.Extensions;
 using GrillBot.Services.Common.Infrastructure.RabbitMQ;
 using InviteService.Core.Entity;
 using InviteService.Models.Cache;
-using InviteService.Models.Events;
+using GrillBot.Contracts.Invite.Events;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace InviteService.Handlers;

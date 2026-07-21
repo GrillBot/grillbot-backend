@@ -1,5 +1,5 @@
 ﻿using AuditLogService.Core.Entity;
-using AuditLogService.Models.Events.Create;
+using GrillBot.Contracts.AuditLog.Events.Create;
 using AuditLogService.Processors.Request.Abstractions;
 using System.Net;
 

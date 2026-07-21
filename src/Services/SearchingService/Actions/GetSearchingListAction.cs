@@ -6,8 +6,8 @@ using GrillBot.Services.Common.EntityFramework.Extensions;
 using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.EntityFrameworkCore;
 using SearchingService.Core.Entity;
-using SearchingService.Models.Request;
-using SearchingService.Models.Response;
+using GrillBot.Contracts.Searching.Requests;
+using GrillBot.Contracts.Searching.Responses;
 using System.Linq.Expressions;
 
 namespace SearchingService.Actions;
@@ -32,6 +32,7 @@ public class GetSearchingListAction(
                 entity.Content,
                 entity.CreatedAt,
                 entity.ValidTo,
+                entity.ValidTo <= DateTime.UtcNow,
                 entity.IsDeleted
             ))
         );

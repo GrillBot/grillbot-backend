@@ -2,8 +2,8 @@
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Services.Common.Infrastructure.Api;
 using MessageService.Core.Entity;
-using MessageService.Models.Request.AutoReply;
-using Response = MessageService.Models.Response.AutoReply;
+using GrillBot.Contracts.Message.Requests.AutoReply;
+using Response = GrillBot.Contracts.Message.Responses.AutoReply;
 
 namespace MessageService.Actions.AutoReply;
 

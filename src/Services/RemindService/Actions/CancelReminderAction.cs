@@ -1,5 +1,5 @@
-﻿using AuditLog.Enums;
-using AuditLog.Models.Events.Create;
+﻿using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.AuditLog.Events.Create;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
@@ -7,8 +7,8 @@ using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using RemindService.Core.Entity;
-using RemindService.Models.Events;
-using RemindService.Models.Request;
+using GrillBot.Contracts.Remind.Events;
+using GrillBot.Contracts.Remind.Requests;
 using RemindService.Options;
 
 namespace RemindService.Actions;

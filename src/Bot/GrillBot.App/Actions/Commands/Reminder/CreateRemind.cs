@@ -5,7 +5,7 @@ using GrillBot.Core.Extensions;
 using GrillBot.Core.Services.Common.Exceptions;
 using GrillBot.Core.Services.Common.Executor;
 using RemindService;
-using RemindService.Models.Request;
+using GrillBot.Contracts.Remind.Requests;
 
 namespace GrillBot.App.Actions.Commands.Reminder;
 
@@ -31,7 +31,7 @@ public class CreateRemind : CommandAction
     private string MinimalTime => FormatHelper.FormatNumber("RemindModule/Create/Validation/MinimalTime", Locale, MinimalTimeMinutes);
     private string MinimalTimeTemplate => _texts["RemindModule/Create/Validation/MinimalTimeTemplate", Locale];
 
-    public async Task<long> ProcessAsync(IUser from, IUser to, DateTime at, string message, ulong originalMessageId)
+    public async Task<int> ProcessAsync(IUser from, IUser to, DateTime at, string message, ulong originalMessageId)
     {
         var request = new CreateReminderRequest
         {

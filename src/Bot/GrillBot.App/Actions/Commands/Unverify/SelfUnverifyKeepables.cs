@@ -3,7 +3,7 @@ using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Services.Common.Executor;
 using UnverifyService;
-using UnverifyService.Models.Request.Keepables;
+using GrillBot.Contracts.Unverify.Requests.Keepables;
 
 namespace GrillBot.App.Actions.Commands.Unverify;
 

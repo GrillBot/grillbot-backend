@@ -3,7 +3,7 @@ using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
-using RubbergodService.Models.Events.Pins;
+using GrillBot.Contracts.Rubbergod.Events.Pins;
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
 

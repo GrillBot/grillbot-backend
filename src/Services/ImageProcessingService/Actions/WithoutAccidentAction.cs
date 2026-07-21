@@ -1,7 +1,7 @@
 ﻿using GrillBot.Core.Infrastructure.Actions;
 using ImageMagick;
 using ImageProcessingService.Caching;
-using ImageProcessingService.Models;
+using GrillBot.Contracts.ImageProcessing;
 using ImageProcessingService.Renderers;
 using Microsoft.AspNetCore.Mvc;
 

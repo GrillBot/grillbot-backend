@@ -4,7 +4,7 @@ using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.Services.Common.Executor;
 using RubbergodService;
-using RubbergodService.Models.Help;
+using GrillBot.Contracts.Rubbergod.Help;
 
 namespace GrillBot.App.Handlers.MessageReceived;
 

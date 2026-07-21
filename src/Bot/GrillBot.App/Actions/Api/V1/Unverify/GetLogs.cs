@@ -9,8 +9,8 @@ using GrillBot.Data.Models.API.Unverify;
 using GrillBot.Database.Enums;
 using System.Text.Json;
 using UnverifyService;
-using UnverifyService.Core.Enums;
-using UnverifyService.Models.Request.Logs;
+using GrillBot.Contracts.Unverify.Enums;
+using GrillBot.Contracts.Unverify.Requests.Logs;
 
 namespace GrillBot.App.Actions.Api.V1.Unverify;
 
@@ -80,7 +80,7 @@ public class GetLogs(
             parameters.GuildId = null;
     }
 
-    private async Task<UnverifyLogItem> MapItemAsync(UnverifyService.Models.Response.Logs.UnverifyLogItem item)
+    private async Task<UnverifyLogItem> MapItemAsync(GrillBot.Contracts.Unverify.Responses.Logs.UnverifyLogItem item)
     {
         var result = new UnverifyLogItem
         {
@@ -118,7 +118,7 @@ public class GetLogs(
         {
             case UnverifyOperationType.AutoRemove:
                 {
-                    var jsonData = element.Deserialize<UnverifyService.Models.Response.Logs.Detail.AutoRemoveOperationDetailData>(serializerOptions)!;
+                    var jsonData = element.Deserialize<GrillBot.Contracts.Unverify.Responses.Logs.Detail.AutoRemoveOperationDetailData>(serializerOptions)!;
 
                     result.RemoveData = new UnverifyLogRemove
                     {
@@ -136,7 +136,7 @@ public class GetLogs(
                 break;
             case UnverifyOperationType.ManualRemove:
                 {
-                    var jsonData = element.Deserialize<UnverifyService.Models.Response.Logs.Detail.ManualRemoveOperationDetailData>(serializerOptions)!;
+                    var jsonData = element.Deserialize<GrillBot.Contracts.Unverify.Responses.Logs.Detail.ManualRemoveOperationDetailData>(serializerOptions)!;
 
                     result.RemoveData = new UnverifyLogRemove
                     {
@@ -156,7 +156,7 @@ public class GetLogs(
                 break;
             case UnverifyOperationType.Recovery:
                 {
-                    var jsonData = element.Deserialize<UnverifyService.Models.Response.Logs.Detail.RecoveryOperationDetailData>(serializerOptions)!;
+                    var jsonData = element.Deserialize<GrillBot.Contracts.Unverify.Responses.Logs.Detail.RecoveryOperationDetailData>(serializerOptions)!;
 
                     result.RemoveData = new UnverifyLogRemove
                     {
@@ -173,7 +173,7 @@ public class GetLogs(
                 break;
             case UnverifyOperationType.SelfUnverify:
                 {
-                    var jsonData = element.Deserialize<UnverifyService.Models.Response.Logs.Detail.SelfUnverifyOperationDetailData>(serializerOptions)!;
+                    var jsonData = element.Deserialize<GrillBot.Contracts.Unverify.Responses.Logs.Detail.SelfUnverifyOperationDetailData>(serializerOptions)!;
 
                     result.SetData = new UnverifyLogSet
                     {
@@ -203,7 +203,7 @@ public class GetLogs(
                 break;
             case UnverifyOperationType.Unverify:
                 {
-                    var jsonData = element.Deserialize<UnverifyService.Models.Response.Logs.Detail.UnverityOperationDetailData>(serializerOptions)!;
+                    var jsonData = element.Deserialize<GrillBot.Contracts.Unverify.Responses.Logs.Detail.UnverityOperationDetailData>(serializerOptions)!;
 
                     result.SetData = new UnverifyLogSet
                     {
@@ -232,7 +232,7 @@ public class GetLogs(
                 break;
             case UnverifyOperationType.Update:
                 {
-                    var jsonData = element.Deserialize<UnverifyService.Models.Response.Logs.Detail.UpdateOperationDetailData>(serializerOptions)!;
+                    var jsonData = element.Deserialize<GrillBot.Contracts.Unverify.Responses.Logs.Detail.UpdateOperationDetailData>(serializerOptions)!;
 
                     result.UpdateData = new UnverifyLogUpdate
                     {

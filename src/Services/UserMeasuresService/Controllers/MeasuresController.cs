@@ -1,6 +1,6 @@
 ﻿using GrillBot.Core.Models.Pagination;
 using Microsoft.AspNetCore.Mvc;
-using UserMeasuresService.Models.Measures;
+using GrillBot.Contracts.UserMeasures.Measures;
 
 namespace UserMeasuresService.Controllers;
 

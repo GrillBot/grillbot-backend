@@ -2,8 +2,8 @@
 using GrillBot.App.Managers;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
-using SearchingService.Models.Events;
-using SearchingService.Models.Events.Users;
+using GrillBot.Contracts.Searching.Events;
+using GrillBot.Contracts.Searching.Events.Users;
 using GrillBot.Database.Enums;
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;

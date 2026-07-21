@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 using PointsService.Core;
 using PointsService.Core.Entity;
 using PointsService.Core.Options;
-using PointsService.Models;
+using GrillBot.Contracts.Points;
 
 namespace PointsService.Actions;
 

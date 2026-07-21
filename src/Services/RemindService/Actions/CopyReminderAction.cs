@@ -4,8 +4,8 @@ using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using RemindService.Core.Entity;
-using RemindService.Models.Request;
-using RemindService.Models.Response;
+using GrillBot.Contracts.Remind.Requests;
+using GrillBot.Contracts.Remind.Responses;
 using RemindService.Options;
 
 namespace RemindService.Actions;

@@ -1,22 +1,22 @@
 ﻿using GrillBot.App.Actions.Api.V3.Unverify;
 using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Core.Models.Pagination;
-using GrillBot.Models;
+using GrillBot.Contracts.Bot;
 using GrillBot.Core.Validation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UnverifyService;
-using UnverifyService.Core.Enums;
-using UnverifyService.Models.Request;
-using UnverifyService.Models.Request.Keepables;
-using UnverifyService.Models.Request.Logs;
-using UnverifyService.Models.Request.Users;
-using UnverifyService.Models.Response;
-using UnverifyService.Models.Response.Guilds;
-using UnverifyService.Models.Response.Keepables;
-using UnverifyService.Models.Response.Logs;
-using UnverifyService.Models.Response.Logs.Detail;
-using UnverifyService.Models.Response.Users;
+using GrillBot.Contracts.Unverify.Enums;
+using GrillBot.Contracts.Unverify.Requests;
+using GrillBot.Contracts.Unverify.Requests.Keepables;
+using GrillBot.Contracts.Unverify.Requests.Logs;
+using GrillBot.Contracts.Unverify.Requests.Users;
+using GrillBot.Contracts.Unverify.Responses;
+using GrillBot.Contracts.Unverify.Responses.Guilds;
+using GrillBot.Contracts.Unverify.Responses.Keepables;
+using GrillBot.Contracts.Unverify.Responses.Logs;
+using GrillBot.Contracts.Unverify.Responses.Logs.Detail;
+using GrillBot.Contracts.Unverify.Responses.Users;
 
 namespace GrillBot.App.Controllers.ServiceControllers;
 
@@ -24,14 +24,14 @@ namespace GrillBot.App.Controllers.ServiceControllers;
 public class UnverifyController(IServiceProvider serviceProvider) : ServiceControllerBase<IUnverifyServiceClient>(serviceProvider)
 {
     [HttpGet("guild/{guildId}")]
-    [ProducesResponseType<UnverifyService.Models.Response.Guilds.GuildInfo>(StatusCodes.Status200OK)]
+    [ProducesResponseType<GrillBot.Contracts.Unverify.Responses.Guilds.GuildInfo>(StatusCodes.Status200OK)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public Task<IActionResult> GetGuildInfoAsync([FromRoute, DiscordId] ulong guildId)
         => ExecuteAsync(async (client, ctx) => (await client.GetGuildInfoAsync(guildId, ctx.CancellationToken))!);
 
     [HttpPut("guild/{guildId}")]
-    [ProducesResponseType<UnverifyService.Models.Response.Guilds.GuildInfo>(StatusCodes.Status200OK)]
+    [ProducesResponseType<GrillBot.Contracts.Unverify.Responses.Guilds.GuildInfo>(StatusCodes.Status200OK)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public Task<IActionResult> ModifyGuildAsync([FromRoute, DiscordId] ulong guildId, [FromBody] ModifyGuildRequest request)

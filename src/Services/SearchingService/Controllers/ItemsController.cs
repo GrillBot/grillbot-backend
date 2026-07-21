@@ -2,8 +2,8 @@
 using GrillBot.Core.Validation;
 using Microsoft.AspNetCore.Mvc;
 using SearchingService.Actions;
-using SearchingService.Models.Request;
-using SearchingService.Models.Response;
+using GrillBot.Contracts.Searching.Requests;
+using GrillBot.Contracts.Searching.Responses;
 using System.ComponentModel.DataAnnotations;
 
 namespace SearchingService.Controllers;

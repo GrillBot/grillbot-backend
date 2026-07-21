@@ -1,6 +1,6 @@
 ﻿using AuditLogService.Actions.Statistics;
 using AuditLogService.Actions.Statistics.PeriodStatistics;
-using AuditLogService.Models.Response.Statistics;
+using GrillBot.Contracts.AuditLog.Responses.Statistics;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using ControllerBase = GrillBot.Core.Infrastructure.Actions.ControllerBase;

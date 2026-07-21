@@ -6,12 +6,12 @@ using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
-using AuditLog.Enums;
-using AuditLog.Models.Events.Create;
-using MessageService.Models.Events;
-using MessageService.Models.Events.Channels;
-using PointsService.Models.Channels;
-using PointsService.Models.Users;
+using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.AuditLog.Events.Create;
+using GrillBot.Contracts.Message.Events;
+using GrillBot.Contracts.Message.Events.Channels;
+using GrillBot.Contracts.Points.Channels;
+using GrillBot.Contracts.Points.Users;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Database.Enums;
 

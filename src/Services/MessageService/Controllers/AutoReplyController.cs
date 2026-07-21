@@ -1,7 +1,7 @@
 ﻿using GrillBot.Core.Models.Pagination;
 using MessageService.Actions.AutoReply;
-using MessageService.Models.Request.AutoReply;
-using MessageService.Models.Response.AutoReply;
+using GrillBot.Contracts.Message.Requests.AutoReply;
+using GrillBot.Contracts.Message.Responses.AutoReply;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MessageService.Controllers;

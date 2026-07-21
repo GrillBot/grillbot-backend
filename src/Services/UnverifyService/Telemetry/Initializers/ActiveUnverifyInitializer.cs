@@ -1,6 +1,6 @@
 ﻿using GrillBot.Services.Common.Telemetry;
 using UnverifyService.Core.Entity;
-using UnverifyService.Core.Enums;
+using GrillBot.Contracts.Unverify.Enums;
 
 namespace UnverifyService.Telemetry.Initializers;
 

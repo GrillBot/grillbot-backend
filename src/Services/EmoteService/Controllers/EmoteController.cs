@@ -1,6 +1,6 @@
 ﻿using EmoteService.Actions;
 using EmoteService.Actions.SupportedEmotes;
-using EmoteService.Models.Response;
+using GrillBot.Contracts.Emote.Responses;
 using GrillBot.Core.Validation;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;

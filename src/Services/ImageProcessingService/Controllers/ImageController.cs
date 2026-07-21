@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using ImageProcessingService.Actions;
-using ImageProcessingService.Models;
+using GrillBot.Contracts.ImageProcessing;
 using Microsoft.AspNetCore.Mvc;
 using ControllerBase = GrillBot.Core.Infrastructure.Actions.ControllerBase;
 

@@ -1,7 +1,8 @@
 ﻿using System.Text.Json;
+using RubbergodService.Models;
 using GrillBot.Core.Managers.Performance;
 using RubbergodService.DirectApi.Models;
-using RubbergodService.Models;
+using GrillBot.Contracts.Rubbergod;
 
 namespace RubbergodService.DirectApi;
 

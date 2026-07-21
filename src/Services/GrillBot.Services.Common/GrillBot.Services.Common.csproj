@@ -9,6 +9,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\Contracts\GrillBot.Contracts\GrillBot.Contracts.csproj" />
 		<ProjectReference Include="..\..\Core\GrillBot.Core\GrillBot.Core.csproj" />
 		<ProjectReference Include="..\..\Core\GrillBot.Core.HealthCheck\GrillBot.Core.HealthCheck.csproj" />
 		<ProjectReference Include="..\..\Core\GrillBot.Core.Metrics\GrillBot.Core.Metrics.csproj" />

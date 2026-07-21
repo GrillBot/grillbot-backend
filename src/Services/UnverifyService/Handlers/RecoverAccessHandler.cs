@@ -1,5 +1,6 @@
-﻿using AuditLog.Enums;
-using AuditLog.Models.Events.Create;
+﻿using GrillBot.Contracts.AuditLog.Enums;
+using UnverifyService.Models.Events;
+using GrillBot.Contracts.AuditLog.Events.Create;
 using Discord;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Auth;
@@ -7,8 +8,8 @@ using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Services.Common.Discord;
 using Microsoft.EntityFrameworkCore;
 using UnverifyService.Core.Entity.Logs;
-using UnverifyService.Core.Enums;
-using UnverifyService.Models.Events;
+using GrillBot.Contracts.Unverify.Enums;
+using GrillBot.Contracts.Unverify.Events;
 
 namespace UnverifyService.Handlers;
 

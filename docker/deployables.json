@@ -8,8 +8,8 @@
     "",
     "'shares' lists the groups from 'shared' whose paths also trigger a rebuild of",
     "this deployable. Because the projects are wired with project references, any",
-    "change under src/Core rebuilds every .NET image, and any change in",
-    "GrillBot.Services.Common rebuilds every .NET service.",
+    "change under src/Core or src/Contracts rebuilds every .NET image, and any",
+    "change in GrillBot.Services.Common rebuilds every .NET service.",
     "",
     ".github/workflows/ci.yml derives its change-detection filters and its build",
     "matrix from this file, so adding a service here is all that is needed."
@@ -25,6 +25,9 @@
     "core": [
       "src/Core/**"
     ],
+    "contracts": [
+      "src/Contracts/**"
+    ],
     "services": [
       "src/Services/GrillBot.Services.Common/**"
     ]
@@ -38,7 +41,7 @@
       "assembly": "GrillBot.App.dll",
       "port": 5000,
       "paths": ["src/Bot/**"],
-      "shares": ["all", "core"]
+      "shares": ["all", "core", "contracts"]
     },
     "audit_log_service": {
       "image": "ghcr.io/grillbot/grillbot.services",
@@ -49,7 +52,7 @@
       "port": 5071,
       "diagnostics": true,
       "paths": ["src/Services/AuditLogService/**"],
-      "shares": ["all", "core", "services"]
+      "shares": ["all", "core", "contracts", "services"]
     },
     "emote_service": {
       "image": "ghcr.io/grillbot/grillbot.services",
@@ -59,7 +62,7 @@
       "assembly": "EmoteService.dll",
       "port": 5062,
       "paths": ["src/Services/EmoteService/**"],
-      "shares": ["all", "core", "services"]
+      "shares": ["all", "core", "contracts", "services"]
     },
     "graphics": {
       "image": "ghcr.io/grillbot/grillbot.services",
@@ -79,7 +82,7 @@
       "assembly": "ImageProcessingService.dll",
       "port": 5213,
       "paths": ["src/Services/ImageProcessingService/**"],
-      "shares": ["all", "core", "services"]
+      "shares": ["all", "core", "contracts", "services"]
     },
     "invite_service": {
       "image": "ghcr.io/grillbot/grillbot.services",
@@ -89,7 +92,7 @@
       "assembly": "InviteService.dll",
       "port": 5196,
       "paths": ["src/Services/InviteService/**"],
-      "shares": ["all", "core", "services"]
+      "shares": ["all", "core", "contracts", "services"]
     },
     "message_service": {
       "image": "ghcr.io/grillbot/grillbot.services",
@@ -99,7 +102,7 @@
       "assembly": "MessageService.dll",
       "port": 5045,
       "paths": ["src/Services/MessageService/**"],
-      "shares": ["all", "core", "services"]
+      "shares": ["all", "core", "contracts", "services"]
     },
     "points_service": {
       "image": "ghcr.io/grillbot/grillbot.services",
@@ -109,7 +112,7 @@
       "assembly": "PointsService.dll",
       "port": 5258,
       "paths": ["src/Services/PointsService/**"],
-      "shares": ["all", "core", "services"]
+      "shares": ["all", "core", "contracts", "services"]
     },
     "remind_service": {
       "image": "ghcr.io/grillbot/grillbot.services",
@@ -119,7 +122,7 @@
       "assembly": "RemindService.dll",
       "port": 5212,
       "paths": ["src/Services/RemindService/**"],
-      "shares": ["all", "core", "services"]
+      "shares": ["all", "core", "contracts", "services"]
     },
     "rubbergod_service": {
       "image": "ghcr.io/grillbot/grillbot.services",
@@ -129,7 +132,7 @@
       "assembly": "RubbergodService.dll",
       "port": 5031,
       "paths": ["src/Services/RubbergodService/**"],
-      "shares": ["all", "core", "services"]
+      "shares": ["all", "core", "contracts", "services"]
     },
     "searching_service": {
       "image": "ghcr.io/grillbot/grillbot.services",
@@ -139,7 +142,7 @@
       "assembly": "SearchingService.dll",
       "port": 5164,
       "paths": ["src/Services/SearchingService/**"],
-      "shares": ["all", "core", "services"]
+      "shares": ["all", "core", "contracts", "services"]
     },
     "unverify_service": {
       "image": "ghcr.io/grillbot/grillbot.services",
@@ -149,7 +152,7 @@
       "assembly": "UnverifyService.dll",
       "port": 5037,
       "paths": ["src/Services/UnverifyService/**"],
-      "shares": ["all", "core", "services"]
+      "shares": ["all", "core", "contracts", "services"]
     },
     "user_management_service": {
       "image": "ghcr.io/grillbot/grillbot.services",
@@ -159,7 +162,7 @@
       "assembly": "UserManagementService.dll",
       "port": 5052,
       "paths": ["src/Services/UserManagementService/**"],
-      "shares": ["all", "core", "services"]
+      "shares": ["all", "core", "contracts", "services"]
     },
     "user_measures_service": {
       "image": "ghcr.io/grillbot/grillbot.services",
@@ -169,7 +172,7 @@
       "assembly": "UserMeasuresService.dll",
       "port": 5134,
       "paths": ["src/Services/UserMeasuresService/**"],
-      "shares": ["all", "core", "services"]
+      "shares": ["all", "core", "contracts", "services"]
     }
   }
 }

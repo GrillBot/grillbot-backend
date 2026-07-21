@@ -7,6 +7,9 @@
     <Project Path="src/Core/GrillBot.Core.Redis/GrillBot.Core.Redis.csproj" />
     <Project Path="src/Core/GrillBot.Core.Services/GrillBot.Core.Services.csproj" />
   </Folder>
+  <Folder Name="/Contracts/">
+    <Project Path="src/Contracts/GrillBot.Contracts/GrillBot.Contracts.csproj" />
+  </Folder>
   <Folder Name="/Bot/">
     <Project Path="src/Bot/GrillBot.App/GrillBot.App.csproj" />
     <Project Path="src/Bot/GrillBot.Cache/GrillBot.Cache.csproj" />
@@ -36,5 +39,7 @@
     <Project Path="tests/GrillBot.Core.RabbitMQ.V2.Tests/GrillBot.Core.RabbitMQ.V2.Tests.csproj" />
     <Project Path="tests/GrillBot.Core.Redis.Tests/GrillBot.Core.Redis.Tests.csproj" />
     <Project Path="tests/GrillBot.Core.Services.Tests/GrillBot.Core.Services.Tests.csproj" />
+    <Project Path="tests/GrillBot.Contracts.Tests/GrillBot.Contracts.Tests.csproj" />
+    <Project Path="tests/GrillBot.Services.Common.Tests/GrillBot.Services.Common.Tests.csproj" />
   </Folder>
 </Solution>

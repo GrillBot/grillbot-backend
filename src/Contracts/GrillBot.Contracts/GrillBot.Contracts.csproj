@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--
+      The contracts exchanged across service boundaries: integration events, API
+      requests and API responses, one folder per bounded context.
+
+      Exactly one definition per contract lives here. Neither the owning service
+      nor its callers may keep a private copy - that duplication is what the
+      CS0436 suppressions in the service projects used to hide.
+
+      Keep the dependency surface minimal: GrillBot.Core for the shared
+      primitives (IDictionaryObject, validation attributes, paging/sorting) and
+      GrillBot.Core.RabbitMQ.V2 for IRabbitMessage. No Refit, no HTTP, no
+      Discord.Net - a contract must be usable by anything that speaks to a
+      service, not just by our Refit clients.
+    -->
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Core\GrillBot.Core\GrillBot.Core.csproj" />
+        <ProjectReference Include="..\..\Core\GrillBot.Core.RabbitMQ.V2\GrillBot.Core.RabbitMQ.V2.csproj" />
+    </ItemGroup>
+
+</Project>

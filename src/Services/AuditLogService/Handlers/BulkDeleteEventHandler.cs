@@ -1,8 +1,8 @@
 ﻿using AuditLogService.Core.Entity;
-using AuditLogService.Core.Enums;
+using GrillBot.Contracts.AuditLog.Enums;
 using AuditLogService.Core.Extensions;
 using AuditLogService.Managers;
-using AuditLogService.Models.Events;
+using GrillBot.Contracts.AuditLog.Events;
 using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Services.Common.Infrastructure.RabbitMQ;

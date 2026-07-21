@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using UserManagementService.Actions;
-using UserManagementService.Models.Response;
+using GrillBot.Contracts.UserManagement.Responses;
 using ControllerBase = GrillBot.Core.Infrastructure.Actions.ControllerBase;
 
 namespace UserManagementService.Controllers;

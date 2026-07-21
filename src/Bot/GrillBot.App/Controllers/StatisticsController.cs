@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using AuditLog.Models.Response.Statistics;
+using GrillBot.Contracts.AuditLog.Responses.Statistics;
 
 namespace GrillBot.App.Controllers;
 

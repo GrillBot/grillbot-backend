@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using GrillBot.Core.Validation;
 using System.ComponentModel.DataAnnotations;
 using EmoteService.Actions.Statistics;
-using EmoteService.Models.Request;
+using GrillBot.Contracts.Emote.Requests;
 using GrillBot.Core.Models.Pagination;
-using EmoteService.Models.Response;
+using GrillBot.Contracts.Emote.Responses;
 
 namespace EmoteService.Controllers;
 

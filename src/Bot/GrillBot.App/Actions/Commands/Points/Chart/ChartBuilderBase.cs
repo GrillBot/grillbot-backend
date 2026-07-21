@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using GrillBot.Common.Managers.Localization;
-using Graphics.Models.Chart;
-using ImageProcessing.Models;
+using GrillBot.Contracts.Graphics.Chart;
+using GrillBot.Contracts.ImageProcessing;
 
 namespace GrillBot.App.Actions.Commands.Points.Chart;
 

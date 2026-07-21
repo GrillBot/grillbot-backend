@@ -1,5 +1,5 @@
-﻿using AuditLog.Enums;
-using AuditLog.Models.Events.Create;
+﻿using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.AuditLog.Events.Create;
 using Discord;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Extensions.Discord;
@@ -11,7 +11,7 @@ using GrillBot.Services.Common.Infrastructure.RabbitMQ;
 using InviteService.Core.Entity;
 using InviteService.Extensions;
 using InviteService.Models.Cache;
-using InviteService.Models.Events;
+using GrillBot.Contracts.Invite.Events;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using StackExchange.Redis;

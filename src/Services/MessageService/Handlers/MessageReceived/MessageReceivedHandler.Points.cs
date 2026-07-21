@@ -1,6 +1,6 @@
-﻿using MessageService.Models.Events;
-using PointsService.Models;
-using PointsService.Models.Events;
+﻿using GrillBot.Contracts.Message.Events;
+using GrillBot.Contracts.Points;
+using GrillBot.Contracts.Points.Events;
 
 namespace MessageService.Handlers.MessageReceived;
 

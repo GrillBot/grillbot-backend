@@ -1,7 +1,7 @@
 ﻿using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
-using InviteService.Models.Events;
+using GrillBot.Contracts.Invite.Events;
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
 

@@ -2,7 +2,7 @@
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Searching;
-using SearchingService.Models.Events;
+using GrillBot.Contracts.Searching.Events;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -42,7 +42,7 @@ public class SearchingModule : InteractionsModuleBase
         [Summary("validTo", "ValidTo")] DateTime? validTo = null
     )
     {
-        await SendViaRabbitAsync(new SearchItemPayload(User, Guild, Channel, message, validTo?.ToUniversalTime()));
+        await SendViaRabbitAsync(new SearchItemPayload(User.Id.ToString(), Guild.Id.ToString(), Channel.Id.ToString(), message, validTo?.ToUniversalTime()));
         await SetResponseAsync(GetText(nameof(CreateSearchAsync), "Success"));
     }
 

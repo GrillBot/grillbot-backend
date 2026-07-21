@@ -1,6 +1,6 @@
 ﻿using GrillBot.Core.Services.Common;
 using GrillBot.Core.Services.Common.Attributes;
-using UserManagementService.Models.Response;
+using GrillBot.Contracts.UserManagement.Responses;
 using Refit;
 
 namespace UserManagementService;

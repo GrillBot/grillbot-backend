@@ -1,7 +1,7 @@
 ﻿using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
 using PointsService;
-using PointsService.Models;
+using GrillBot.Contracts.Points;
 using GrillBot.Core.Extensions;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Enums.Internal;

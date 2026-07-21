@@ -3,8 +3,8 @@ using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.Extensions;
-using GrillBot.Models;
-using GrillBot.Models.Events.Messages.Embeds;
+using GrillBot.Contracts.Bot;
+using GrillBot.Contracts.Bot.Events.Messages.Embeds;
 
 namespace GrillBot.App.Managers;
 

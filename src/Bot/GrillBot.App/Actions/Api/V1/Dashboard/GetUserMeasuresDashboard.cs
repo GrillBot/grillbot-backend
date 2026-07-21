@@ -3,10 +3,10 @@ using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
-using AuditLog.Models.Response.Info.Dashboard;
+using GrillBot.Contracts.AuditLog.Responses.Info.Dashboard;
 using GrillBot.Core.Services.Common.Executor;
 using UserMeasures;
-using UserMeasures.Models.Dashboard;
+using GrillBot.Contracts.UserMeasures.Dashboard;
 
 namespace GrillBot.App.Actions.Api.V1.Dashboard;
 

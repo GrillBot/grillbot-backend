@@ -4,7 +4,7 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Localization;
 using PointsService;
-using PointsService.Models;
+using GrillBot.Contracts.Points;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
 using PointsService.Enums;

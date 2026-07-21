@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Nodes;
 using UnverifyService.Core.Entity.Logs;
-using UnverifyService.Models.Response;
+using GrillBot.Contracts.Unverify.Responses;
 
 namespace UnverifyService.Actions.Archivation;
 

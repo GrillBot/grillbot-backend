@@ -1,5 +1,5 @@
 ﻿using GrillBot.Core.Database.ValueObjects;
-using GrillBot.Models.Events.Messages;
+using GrillBot.Contracts.Bot.Events.Messages;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 

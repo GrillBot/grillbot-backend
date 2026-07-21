@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Nodes;
 using AuditLogService.Core.Entity;
-using AuditLogService.Core.Enums;
-using AuditLogService.Models.Response;
+using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.AuditLog.Responses;
 using Discord;
 
 namespace AuditLogService.Actions.Archivation;

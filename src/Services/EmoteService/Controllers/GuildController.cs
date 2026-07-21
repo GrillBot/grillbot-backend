@@ -1,6 +1,6 @@
 ﻿using EmoteService.Actions.Guild;
-using EmoteService.Models.Request.Guild;
-using EmoteService.Models.Response.Guild;
+using GrillBot.Contracts.Emote.Requests.Guild;
+using GrillBot.Contracts.Emote.Responses.Guild;
 using GrillBot.Core.Validation;
 using Microsoft.AspNetCore.Mvc;
 

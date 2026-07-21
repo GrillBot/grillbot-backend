@@ -17,7 +17,7 @@ public class GetAutoReplyDefinitionAction(
 
         var query = DbContext.AutoReplyDefinitions.AsNoTracking()
             .Where(o => !o.IsDeleted && o.Id == id)
-            .Select(o => new Models.Response.AutoReply.AutoReplyDefinition(
+            .Select(o => new GrillBot.Contracts.Message.Responses.AutoReply.AutoReplyDefinition(
                 o.Id,
                 o.Template,
                 o.Reply,

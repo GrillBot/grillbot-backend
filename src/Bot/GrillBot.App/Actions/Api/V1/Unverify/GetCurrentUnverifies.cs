@@ -6,9 +6,9 @@ using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Data.Models.API.Unverify;
 using System.Text.Json;
 using UnverifyService;
-using UnverifyService.Core.Enums;
-using UnverifyService.Models.Request;
-using UnverifyService.Models.Response.Logs.Detail;
+using GrillBot.Contracts.Unverify.Enums;
+using GrillBot.Contracts.Unverify.Requests;
+using GrillBot.Contracts.Unverify.Responses.Logs.Detail;
 
 namespace GrillBot.App.Actions.Api.V1.Unverify;
 

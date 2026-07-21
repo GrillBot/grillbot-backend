@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using UnverifyService.Actions.Statistics.PeriodStatistics;
-using UnverifyService.Core.Enums;
+using GrillBot.Contracts.Unverify.Enums;
 
 namespace UnverifyService.Controllers;
 

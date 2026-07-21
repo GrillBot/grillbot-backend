@@ -1,8 +1,8 @@
-﻿using AuditLog.Enums;
-using AuditLog.Models.Events.Create;
+﻿using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.AuditLog.Events.Create;
 using EmoteService.Core.Entity;
 using EmoteService.Extensions.QueryExtensions;
-using EmoteService.Models.Response;
+using GrillBot.Contracts.Emote.Responses;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.RabbitMQ.V2.Publisher;

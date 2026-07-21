@@ -1,11 +1,11 @@
 ﻿using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Validation;
-using GrillBot.Models;
+using GrillBot.Contracts.Bot;
 using GrillBot.Services.Common.Infrastructure.Api.OpenApi.Attributes;
 using Microsoft.AspNetCore.Mvc;
 using UnverifyService.Actions;
-using UnverifyService.Models.Request;
-using UnverifyService.Models.Response;
+using GrillBot.Contracts.Unverify.Requests;
+using GrillBot.Contracts.Unverify.Responses;
 
 namespace UnverifyService.Controllers;
 

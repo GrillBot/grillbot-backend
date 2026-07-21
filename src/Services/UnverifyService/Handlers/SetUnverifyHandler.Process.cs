@@ -1,7 +1,8 @@
 ﻿using Discord.Net;
+using UnverifyService.Models;
 using UnverifyService.Core.Entity;
 using UnverifyService.Core.Entity.Logs;
-using UnverifyService.Models;
+using GrillBot.Contracts.Unverify;
 
 namespace UnverifyService.Handlers;
 

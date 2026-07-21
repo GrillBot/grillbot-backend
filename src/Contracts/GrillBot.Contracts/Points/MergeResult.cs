@@ -1,0 +1,12 @@
+﻿namespace GrillBot.Contracts.Points;
+
+public class MergeResult
+{
+    public int ExpiredCount { get; set; }
+    public int MergedCount { get; set; }
+    public string Duration { get; set; } = null!;
+    public int GuildCount { get; set; }
+    public int UserCount { get; set; }
+    public int TotalPoints { get; set; }
+    public int DeletedDailyStatsCount { get; set; }
+}

@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using UnverifyService.Core.Entity.Logs;
-using UnverifyService.Models.Response;
-using UnverifyService.Models.Response.Logs.Detail;
+using GrillBot.Contracts.Unverify.Responses;
+using GrillBot.Contracts.Unverify.Responses.Logs.Detail;
 
 namespace UnverifyService.Actions.Logs;
 

@@ -1,7 +1,7 @@
 ﻿using System.Linq.Expressions;
 using UnverifyService.Core.Entity.Logs;
-using UnverifyService.Core.Enums;
-using Response = UnverifyService.Models.Response.Logs;
+using GrillBot.Contracts.Unverify.Enums;
+using Response = GrillBot.Contracts.Unverify.Responses.Logs;
 
 namespace UnverifyService.Actions.Logs;
 

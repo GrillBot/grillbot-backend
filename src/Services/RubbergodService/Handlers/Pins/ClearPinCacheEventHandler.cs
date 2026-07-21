@@ -2,7 +2,7 @@
 using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Services.Common.Infrastructure.RabbitMQ;
 using Microsoft.Extensions.Caching.Distributed;
-using RubbergodService.Models.Events.Pins;
+using GrillBot.Contracts.Rubbergod.Events.Pins;
 
 namespace RubbergodService.Handlers.Pins;
 

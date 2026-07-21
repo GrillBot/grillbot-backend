@@ -1,7 +1,7 @@
 ﻿using GrillBot.Core.Validation;
 using Microsoft.AspNetCore.Mvc;
 using UnverifyService.Actions.Guilds;
-using UnverifyService.Models.Response.Guilds;
+using GrillBot.Contracts.Unverify.Responses.Guilds;
 
 namespace UnverifyService.Controllers;
 

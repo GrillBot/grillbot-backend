@@ -1,7 +1,7 @@
 ﻿using GrillBot.Core.Models.Pagination;
 using Microsoft.AspNetCore.Mvc;
 using PointsService.Actions.Users;
-using PointsService.Models.Users;
+using GrillBot.Contracts.Points.Users;
 
 namespace PointsService.Controllers;
 

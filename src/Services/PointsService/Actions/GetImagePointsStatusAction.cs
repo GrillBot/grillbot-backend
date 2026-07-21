@@ -3,7 +3,7 @@ using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
 using PointsService.Core;
 using PointsService.Core.Entity;
-using PointsService.Models;
+using GrillBot.Contracts.Points;
 
 namespace PointsService.Actions;
 

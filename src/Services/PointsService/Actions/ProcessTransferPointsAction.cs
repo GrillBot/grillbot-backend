@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using PointsService.Core;
 using PointsService.Core.Entity;
-using PointsService.Models;
-using PointsService.Models.Events;
+using GrillBot.Contracts.Points;
+using GrillBot.Contracts.Points.Events;
 
 namespace PointsService.Actions;
 

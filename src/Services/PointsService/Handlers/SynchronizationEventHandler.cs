@@ -2,9 +2,9 @@
 using GrillBot.Core.RabbitMQ.V2.Consumer;
 using PointsService.Core.Entity;
 using PointsService.Handlers.Abstractions;
-using PointsService.Models.Channels;
-using PointsService.Models.Events;
-using PointsService.Models.Users;
+using GrillBot.Contracts.Points.Channels;
+using GrillBot.Contracts.Points.Events;
+using GrillBot.Contracts.Points.Users;
 
 namespace PointsService.Handlers;
 

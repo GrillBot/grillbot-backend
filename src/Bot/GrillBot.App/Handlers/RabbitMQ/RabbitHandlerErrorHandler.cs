@@ -3,9 +3,9 @@ using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Core.RabbitMQ.V2.Messages;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
-using AuditLog.Enums;
-using AuditLog.Models.Events.Create;
-using GrillBot.Models.Events.Errors;
+using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.AuditLog.Events.Create;
+using GrillBot.Contracts.Bot.Events.Errors;
 using Microsoft.Extensions.Logging;
 
 namespace GrillBot.App.Handlers.RabbitMQ;

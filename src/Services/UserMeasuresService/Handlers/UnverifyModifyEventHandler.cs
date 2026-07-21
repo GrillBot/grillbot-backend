@@ -1,7 +1,7 @@
 ﻿using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Core.RabbitMQ.V2.Consumer;
 using UserMeasuresService.Handlers.Abstractions;
-using UserMeasuresService.Models.Events;
+using GrillBot.Contracts.UserMeasures.Events;
 
 namespace UserMeasuresService.Handlers;
 

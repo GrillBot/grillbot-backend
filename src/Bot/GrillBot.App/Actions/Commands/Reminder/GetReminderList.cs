@@ -8,8 +8,8 @@ using GrillBot.Core.Extensions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.Common.Executor;
 using RemindService;
-using RemindService.Models.Request;
-using RemindService.Models.Response;
+using GrillBot.Contracts.Remind.Requests;
+using GrillBot.Contracts.Remind.Responses;
 
 namespace GrillBot.App.Actions.Commands.Reminder;
 

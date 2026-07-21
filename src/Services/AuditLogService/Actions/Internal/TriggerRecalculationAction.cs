@@ -1,5 +1,5 @@
 ﻿using AuditLogService.Core.Entity;
-using AuditLogService.Core.Enums;
+using GrillBot.Contracts.AuditLog.Enums;
 using AuditLogService.Core.Extensions;
 using AuditLogService.Managers;
 using GrillBot.Core.Infrastructure.Actions;

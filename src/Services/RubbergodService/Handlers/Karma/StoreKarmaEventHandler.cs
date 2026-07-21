@@ -2,7 +2,7 @@
 using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Services.Common.Infrastructure.RabbitMQ;
 using RubbergodService.Core.Entity;
-using RubbergodService.Models.Events.Karma;
+using GrillBot.Contracts.Rubbergod.Events.Karma;
 
 namespace RubbergodService.Handlers.Karma;
 

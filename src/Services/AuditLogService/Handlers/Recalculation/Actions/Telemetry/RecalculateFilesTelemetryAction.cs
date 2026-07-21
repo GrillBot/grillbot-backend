@@ -1,4 +1,5 @@
-﻿using AuditLogService.Models.Events.Recalculation;
+﻿using GrillBot.Contracts.AuditLog.Events.Recalculation;
+using AuditLogService.Models.Events.Recalculation;
 using AuditLogService.Telemetry;
 using Microsoft.EntityFrameworkCore;
 

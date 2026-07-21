@@ -3,8 +3,8 @@ using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Services.Common.Infrastructure.RabbitMQ;
 using SearchingService.Core.Entity;
-using SearchingService.Models.Events;
-using SearchingService.Models.Events.Users;
+using GrillBot.Contracts.Searching.Events;
+using GrillBot.Contracts.Searching.Events.Users;
 
 namespace SearchingService.Handlers;
 

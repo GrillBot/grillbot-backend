@@ -2,7 +2,7 @@
 using GrillBot.Core.RabbitMQ.V2.Publisher;
 using Microsoft.EntityFrameworkCore;
 using PointsService.Core.Entity;
-using PointsService.Models.Events;
+using GrillBot.Contracts.Points.Events;
 
 namespace PointsService.Core;
 

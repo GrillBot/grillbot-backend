@@ -2,9 +2,9 @@
 using GrillBot.Core.IO;
 using GrillBot.Core.Services.Common.Executor;
 using ImageProcessing;
-using ImageProcessing.Models;
+using GrillBot.Contracts.ImageProcessing;
 using PointsService;
-using PointsService.Models;
+using GrillBot.Contracts.Points;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Actions.Commands.Points.Chart;

@@ -1,5 +1,5 @@
 ﻿using EmoteService.Core.Entity;
-using EmoteService.Models.Events.Guild;
+using GrillBot.Contracts.Emote.Events.Guild;
 using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Services.Common.Infrastructure.RabbitMQ;

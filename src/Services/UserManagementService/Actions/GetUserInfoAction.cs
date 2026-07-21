@@ -8,9 +8,9 @@ using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.EntityFrameworkCore;
 using UnverifyService;
 using UserManagementService.Core.Entity;
-using UserManagementService.Models.Response;
+using GrillBot.Contracts.UserManagement.Responses;
 
-using UnverifyServiceModels = UnverifyService.Models.Response.Users;
+using UnverifyServiceModels = GrillBot.Contracts.Unverify.Responses.Users;
 
 namespace UserManagementService.Actions;
 
@@ -64,7 +64,7 @@ public class GetUserInfoAction(
         }
     }
 
-    private async Task<UserMeasures.Models.User.UserInfo?> GetMeasuresUserInfoAsync(ulong userId)
+    private async Task<GrillBot.Contracts.UserMeasures.User.UserInfo?> GetMeasuresUserInfoAsync(ulong userId)
     {
         try
         {
@@ -79,13 +79,13 @@ public class GetUserInfoAction(
         }
     }
 
-    private static List<Models.Response.GuildUser> CreateGuildUserData(
+    private static List<GrillBot.Contracts.UserManagement.Responses.GuildUser> CreateGuildUserData(
         List<Core.Entity.GuildUser> users,
         UnverifyServiceModels.UserInfo? unverifyInfo,
-        UserMeasures.Models.User.UserInfo? measuresInfo = null
+        GrillBot.Contracts.UserMeasures.User.UserInfo? measuresInfo = null
     )
     {
-        var result = new List<Models.Response.GuildUser>();
+        var result = new List<GrillBot.Contracts.UserManagement.Responses.GuildUser>();
 
         var guildIds = users.Select(o => o.GuildId.ToString())
             .Concat(unverifyInfo?.CurrentUnverifies.Keys?.ToArray() ?? [])
@@ -105,7 +105,7 @@ public class GetUserInfoAction(
             var timeoutCount = measuresInfo?.TimeoutCount.TryGetValue(guildId, out var tCount) == true ? tCount : 0;
             var warningCount = measuresInfo?.WarningCount.TryGetValue(guildId, out var wCount) == true ? wCount : 0;
 
-            result.Add(new Models.Response.GuildUser(
+            result.Add(new GrillBot.Contracts.UserManagement.Responses.GuildUser(
                 guildId,
                 guildUser?.CurrentNickname,
                 guildUser is not null ? [.. guildUser.Nicknames.OrderBy(o => o.Value).Select(o => o.Value)] : [],

@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using UnverifyService.Actions.Archivation;
 using UnverifyService.Actions.Logs;
-using UnverifyService.Models.Request.Logs;
-using UnverifyService.Models.Response;
-using UnverifyService.Models.Response.Logs;
-using UnverifyService.Models.Response.Logs.Detail;
+using GrillBot.Contracts.Unverify.Requests.Logs;
+using GrillBot.Contracts.Unverify.Responses;
+using GrillBot.Contracts.Unverify.Responses.Logs;
+using GrillBot.Contracts.Unverify.Responses.Logs.Detail;
 
 namespace UnverifyService.Controllers;
 

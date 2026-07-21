@@ -3,7 +3,7 @@ using GrillBot.Core.Managers.Performance;
 using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.EntityFrameworkCore;
 using UserMeasuresService.Core.Entity;
-using UserMeasuresService.Models.User;
+using GrillBot.Contracts.UserMeasures.User;
 
 namespace UserMeasuresService.Actions.User;
 

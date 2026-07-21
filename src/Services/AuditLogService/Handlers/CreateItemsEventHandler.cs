@@ -1,7 +1,7 @@
 ﻿using AuditLogService.Core.Entity;
-using AuditLogService.Core.Enums;
+using GrillBot.Contracts.AuditLog.Enums;
 using AuditLogService.Managers;
-using AuditLogService.Models.Events.Create;
+using GrillBot.Contracts.AuditLog.Events.Create;
 using AuditLogService.Processors;
 using AuditLogService.Processors.Request.Abstractions;
 using GrillBot.Core.Infrastructure.Auth;

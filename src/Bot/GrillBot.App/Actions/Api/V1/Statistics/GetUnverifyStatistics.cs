@@ -2,7 +2,7 @@
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.Common.Executor;
 using UnverifyService;
-using UnverifyService.Core.Enums;
+using GrillBot.Contracts.Unverify.Enums;
 
 namespace GrillBot.App.Actions.Api.V1.Statistics;
 

@@ -1,9 +1,10 @@
 ﻿using GrillBot.Core.Extensions;
+using UnverifyService.Models;
 using GrillBot.Core.Infrastructure.Auth;
 using UnverifyService.Core.Entity.Logs;
-using UnverifyService.Core.Enums;
-using UnverifyService.Models;
-using UserMeasures.Models.Events;
+using GrillBot.Contracts.Unverify.Enums;
+using GrillBot.Contracts.Unverify;
+using GrillBot.Contracts.UserMeasures.Events;
 
 namespace UnverifyService.Handlers;
 

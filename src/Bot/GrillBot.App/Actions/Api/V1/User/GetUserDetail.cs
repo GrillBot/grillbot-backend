@@ -13,14 +13,14 @@ using UserMeasures;
 using GrillBot.Data.Enums;
 using GrillBot.App.Managers.DataResolve;
 using Emote;
-using Emote.Models.Request;
+using GrillBot.Contracts.Emote.Requests;
 using GrillBot.Data.Extensions.Services;
-using UserMeasures.Models.Measures;
+using GrillBot.Contracts.UserMeasures.Measures;
 using GrillBot.Core.Services.Common.Executor;
 using InviteService;
-using InviteService.Models.Request;
+using GrillBot.Contracts.Invite.Requests;
 using UserManagementService;
-using UserManagementService.Models.Response;
+using GrillBot.Contracts.UserManagement.Responses;
 using GrillBot.Core.Services.Common.Exceptions;
 
 namespace GrillBot.App.Actions.Api.V1.User;

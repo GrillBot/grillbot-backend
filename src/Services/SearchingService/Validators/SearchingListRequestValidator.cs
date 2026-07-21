@@ -1,5 +1,5 @@
 ﻿using GrillBot.Core.Validation;
-using SearchingService.Models.Request;
+using GrillBot.Contracts.Searching.Requests;
 using System.ComponentModel.DataAnnotations;
 
 namespace SearchingService.Validators;

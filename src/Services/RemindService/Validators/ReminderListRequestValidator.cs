@@ -1,5 +1,5 @@
 ﻿using GrillBot.Core.Validation;
-using RemindService.Models.Request;
+using GrillBot.Contracts.Remind.Requests;
 using System.ComponentModel.DataAnnotations;
 
 namespace RemindService.Validators;

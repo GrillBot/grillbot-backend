@@ -4,8 +4,8 @@ using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Redis.Extensions;
 using GrillBot.Services.Common.Infrastructure.Api;
 using InviteService.Models.Cache;
-using InviteService.Models.Request;
-using InviteService.Models.Response;
+using GrillBot.Contracts.Invite.Requests;
+using GrillBot.Contracts.Invite.Responses;
 using Microsoft.Extensions.Caching.Distributed;
 using StackExchange.Redis;
 

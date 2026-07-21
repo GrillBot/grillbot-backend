@@ -1,6 +1,6 @@
 ﻿using GrillBot.Common.Extensions.Discord;
-using AuditLog.Enums;
-using AuditLog.Models.Events.Create;
+using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.AuditLog.Events.Create;
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
 

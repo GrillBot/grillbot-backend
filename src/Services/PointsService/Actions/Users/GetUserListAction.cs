@@ -4,7 +4,7 @@ using GrillBot.Core.RabbitMQ.V2.Publisher;
 using Microsoft.EntityFrameworkCore;
 using PointsService.Core;
 using PointsService.Core.Entity;
-using PointsService.Models.Users;
+using GrillBot.Contracts.Points.Users;
 
 namespace PointsService.Actions.Users;
 

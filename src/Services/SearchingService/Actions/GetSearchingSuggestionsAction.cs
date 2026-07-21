@@ -4,7 +4,7 @@ using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SearchingService.Core.Entity;
-using SearchingService.Models.Response;
+using GrillBot.Contracts.Searching.Responses;
 using SearchingService.Options;
 
 namespace SearchingService.Actions;

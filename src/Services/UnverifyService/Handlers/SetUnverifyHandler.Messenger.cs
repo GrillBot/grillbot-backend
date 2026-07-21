@@ -1,12 +1,13 @@
 ﻿using Discord;
+using UnverifyService.Models;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Extensions.Discord;
 using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Models;
-using GrillBot.Models.Events.Messages;
+using GrillBot.Contracts.Bot;
+using GrillBot.Contracts.Bot.Events.Messages;
 using Microsoft.EntityFrameworkCore;
-using UnverifyService.Models;
-using UnverifyService.Models.Events;
+using GrillBot.Contracts.Unverify;
+using GrillBot.Contracts.Unverify.Events;
 
 namespace UnverifyService.Handlers;
 

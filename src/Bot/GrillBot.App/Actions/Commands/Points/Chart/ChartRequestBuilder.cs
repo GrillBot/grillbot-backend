@@ -1,5 +1,5 @@
-﻿using Graphics.Models.Chart;
-using PointsService.Models;
+﻿using GrillBot.Contracts.Graphics.Chart;
+using GrillBot.Contracts.Points;
 
 namespace GrillBot.App.Actions.Commands.Points.Chart;
 

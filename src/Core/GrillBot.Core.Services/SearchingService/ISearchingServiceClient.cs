@@ -1,8 +1,8 @@
 ﻿using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.Common;
 using GrillBot.Core.Services.Common.Attributes;
-using SearchingService.Models.Request;
-using SearchingService.Models.Response;
+using GrillBot.Contracts.Searching.Requests;
+using GrillBot.Contracts.Searching.Responses;
 using Refit;
 
 namespace SearchingService;

@@ -1,12 +1,12 @@
 ﻿using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.Common;
 using GrillBot.Core.Services.Common.Attributes;
-using Emote.Models.Request;
-using Emote.Models.Request.EmoteSuggestions;
-using Emote.Models.Request.Guild;
-using Emote.Models.Response;
-using Emote.Models.Response.EmoteSuggestions;
-using Emote.Models.Response.Guild;
+using GrillBot.Contracts.Emote.Requests;
+using GrillBot.Contracts.Emote.Requests.EmoteSuggestions;
+using GrillBot.Contracts.Emote.Requests.Guild;
+using GrillBot.Contracts.Emote.Responses;
+using GrillBot.Contracts.Emote.Responses.EmoteSuggestions;
+using GrillBot.Contracts.Emote.Responses.Guild;
 using Refit;
 
 namespace Emote;

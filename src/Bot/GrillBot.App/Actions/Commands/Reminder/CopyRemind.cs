@@ -3,7 +3,7 @@ using GrillBot.Core.Exceptions;
 using GrillBot.Core.Services.Common.Exceptions;
 using GrillBot.Core.Services.Common.Executor;
 using RemindService;
-using RemindService.Models.Request;
+using GrillBot.Contracts.Remind.Requests;
 
 namespace GrillBot.App.Actions.Commands.Reminder;
 
@@ -12,7 +12,7 @@ public class CopyRemind(
     IServiceClientExecutor<IRemindServiceClient> _remindService
 ) : CommandAction
 {
-    public async Task ProcessAsync(long originalRemindId)
+    public async Task ProcessAsync(int originalRemindId)
     {
         var request = new CopyReminderRequest
         {

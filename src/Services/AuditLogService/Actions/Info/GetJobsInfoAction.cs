@@ -14,7 +14,7 @@ public class GetJobsInfoAction(
     public override async Task<ApiResult> ProcessAsync()
     {
         var query = DbContext.JobInfos.AsNoTracking()
-            .Select(o => new Models.Response.Info.JobInfo
+            .Select(o => new GrillBot.Contracts.AuditLog.Responses.Info.JobInfo
             {
                 AvgTime = o.AvgTime,
                 FailedCount = o.FailedCount,

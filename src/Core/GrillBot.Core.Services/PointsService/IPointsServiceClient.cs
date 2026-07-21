@@ -2,9 +2,9 @@
 using GrillBot.Core.Services.Common;
 using GrillBot.Core.Services.Common.Attributes;
 using PointsService.Enums;
-using PointsService.Models;
-using PointsService.Models.Channels;
-using PointsService.Models.Users;
+using GrillBot.Contracts.Points;
+using GrillBot.Contracts.Points.Channels;
+using GrillBot.Contracts.Points.Users;
 using Refit;
 
 namespace PointsService;

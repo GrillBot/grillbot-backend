@@ -1,4 +1,4 @@
-﻿using Emote.Models.Response;
+﻿using GrillBot.Contracts.Emote.Responses;
 using GrillBot.Data.Models.API.Emotes;
 
 namespace GrillBot.Data.Extensions.Services;

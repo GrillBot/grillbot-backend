@@ -1,10 +1,11 @@
 ﻿using GrillBot.Core.Infrastructure.Auth;
+using UnverifyService.Models.Events;
 using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Services.Common.Infrastructure.RabbitMQ;
 using Microsoft.EntityFrameworkCore;
 using UnverifyService.Core.Entity;
 using UnverifyService.Core.Entity.Logs;
-using UnverifyService.Models.Events;
+using GrillBot.Contracts.Unverify.Events;
 
 namespace UnverifyService.Handlers;
 

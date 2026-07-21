@@ -1,9 +1,10 @@
 ﻿using GrillBot.Core.Infrastructure.Actions;
+using UserMeasuresService.Models.Dashboard;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.EntityFrameworkCore;
 using UserMeasuresService.Core.Entity;
-using UserMeasuresService.Models.Dashboard;
+using GrillBot.Contracts.UserMeasures.Dashboard;
 
 namespace UserMeasuresService.Actions.Dashboard;
 

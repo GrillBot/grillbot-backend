@@ -1,7 +1,7 @@
 ﻿using GrillBot.Core.RabbitMQ.V2.Messages;
 using GrillBot.Services.Common.Infrastructure.RabbitMQ;
 using PointsService.Core.Entity;
-using PointsService.Models.Events;
+using GrillBot.Contracts.Points.Events;
 
 namespace PointsService.Handlers.Abstractions;
 

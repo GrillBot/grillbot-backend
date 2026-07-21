@@ -1,5 +1,6 @@
 ﻿using AuditLogService.Core.Options;
 using AuditLogService.Models.Events.Recalculation;
+using GrillBot.Contracts.AuditLog.Events.Recalculation;
 using AuditLogService.Telemetry;
 using GrillBot.Services.Common.EntityFramework.Extensions;
 using Microsoft.Extensions.Options;

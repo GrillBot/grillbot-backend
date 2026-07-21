@@ -1,0 +1,8 @@
+﻿namespace GrillBot.Contracts.Unverify.Responses.Users;
+
+public record UserInfo(
+    TimeSpan? SelfUnverifyMinimalTime,
+    Dictionary<string, UnverifyInfo> CurrentUnverifies,
+    Dictionary<string, int> SelfUnverifyCount,
+    Dictionary<string, int> UnverifyCount
+);

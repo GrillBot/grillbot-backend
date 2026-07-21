@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using UnverifyService.Actions.Keepables;
-using UnverifyService.Models.Request.Keepables;
-using UnverifyService.Models.Response.Keepables;
+using GrillBot.Contracts.Unverify.Requests.Keepables;
+using GrillBot.Contracts.Unverify.Responses.Keepables;
 
 namespace UnverifyService.Controllers;
 

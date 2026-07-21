@@ -2,7 +2,7 @@
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using AuditLog;
-using AuditLog.Models.Response.Info;
+using GrillBot.Contracts.AuditLog.Responses.Info;
 using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Data.Models.API.Jobs;
 using Quartz;
