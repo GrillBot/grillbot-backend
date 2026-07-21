@@ -336,8 +336,10 @@ x86/
 bld/
 [Bb]in/
 [Oo]bj/
-[Ll]og/
-[Ll]ogs/
+# The Visual Studio template's [Ll]og/ and [Ll]ogs/ rules are deliberately not
+# used here: UnverifyService and GrillBot.Core.Services keep source under
+# Models/Response/Logs/ and Core/Entity/Logs/. Actual log files are covered by
+# the *.log rules above.
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/

@@ -1,0 +1,31 @@
+﻿using GrillBot.Core.Database.ValueObjects;
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using UnverifyService.Core.Enums;
+
+namespace UnverifyService.Core.Entity.Logs;
+
+[Index(nameof(LogNumber), IsUnique = true)]
+public class UnverifyLogItem
+{
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public long LogNumber { get; set; }
+
+    public UnverifyOperationType OperationType { get; set; }
+    public DiscordIdValueObject GuildId { get; set; }
+    public DiscordIdValueObject FromUserId { get; set; }
+    public DiscordIdValueObject ToUserId { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public Guid? ParentLogItemId { get; set; }
+    public UnverifyLogItem? ParentLogItem { get; set; }
+    public IList<UnverifyLogItem> ChildLogItems { get; set; } = [];
+    public ActiveUnverify? ActiveUnverify { get; set; }
+
+    public UnverifyLogSetOperation? SetOperation { get; set; }
+    public UnverifyLogRemoveOperation? RemoveOperation { get; set; }
+    public UnverifyLogUpdateOperation? UpdateOperation { get; set; }
+}
