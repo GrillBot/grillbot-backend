@@ -1,9 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
+        <!-- These projects predate implicit usings; enabling them repo-wide makes
+             Microsoft.AspNetCore.Http.IResult collide with Discord.Interactions.IResult. -->
+        <ImplicitUsings>disable</ImplicitUsings>
         <PlatformTarget>AnyCPU</PlatformTarget>
-        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -17,16 +18,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
-        <PackageReference Include="Humanizer.Core.cs" Version="3.0.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="10.0.0" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
+        <PackageReference Include="AspNetCore.HealthChecks.NpgSql" />
+        <PackageReference Include="Humanizer.Core.cs" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="NSwag.AspNetCore" Version="14.6.3" />
-        <PackageReference Include="Quartz.Extensions.Hosting" Version="3.15.1" />
-        <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+        <PackageReference Include="NSwag.AspNetCore" />
+        <PackageReference Include="Quartz.Extensions.Hosting" />
+        <PackageReference Include="Serilog.AspNetCore" />
     </ItemGroup>
 
     <ItemGroup>

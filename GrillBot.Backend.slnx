@@ -1,0 +1,40 @@
+<Solution>
+  <Folder Name="/Core/">
+    <Project Path="src/Core/GrillBot.Core/GrillBot.Core.csproj" />
+    <Project Path="src/Core/GrillBot.Core.HealthCheck/GrillBot.Core.HealthCheck.csproj" />
+    <Project Path="src/Core/GrillBot.Core.Metrics/GrillBot.Core.Metrics.csproj" />
+    <Project Path="src/Core/GrillBot.Core.RabbitMQ.V2/GrillBot.Core.RabbitMQ.V2.csproj" />
+    <Project Path="src/Core/GrillBot.Core.Redis/GrillBot.Core.Redis.csproj" />
+    <Project Path="src/Core/GrillBot.Core.Services/GrillBot.Core.Services.csproj" />
+  </Folder>
+  <Folder Name="/Bot/">
+    <Project Path="src/Bot/GrillBot.App/GrillBot.App.csproj" />
+    <Project Path="src/Bot/GrillBot.Cache/GrillBot.Cache.csproj" />
+    <Project Path="src/Bot/GrillBot.Common/GrillBot.Common.csproj" />
+    <Project Path="src/Bot/GrillBot.Data/GrillBot.Data.csproj" />
+    <Project Path="src/Bot/GrillBot.Database/GrillBot.Database.csproj" />
+  </Folder>
+  <Folder Name="/Services/">
+    <Project Path="src/Services/GrillBot.Services.Common/GrillBot.Services.Common.csproj" />
+    <Project Path="src/Services/AuditLogService/AuditLogService.csproj" />
+    <Project Path="src/Services/EmoteService/EmoteService.csproj" />
+    <Project Path="src/Services/ImageProcessingService/ImageProcessingService.csproj" />
+    <Project Path="src/Services/InviteService/InviteService.csproj" />
+    <Project Path="src/Services/MessageService/MessageService.csproj" />
+    <Project Path="src/Services/PointsService/PointsService.csproj" />
+    <Project Path="src/Services/RemindService/RemindService.csproj" />
+    <Project Path="src/Services/RubbergodService/RubbergodService.csproj" />
+    <Project Path="src/Services/SearchingService/SearchingService.csproj" />
+    <Project Path="src/Services/UnverifyService/UnverifyService.csproj" />
+    <Project Path="src/Services/UserManagementService/UserManagementService.csproj" />
+    <Project Path="src/Services/UserMeasuresService/UserMeasuresService.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="tests/GrillBot.Core.Tests.Shared/GrillBot.Core.Tests.Shared.csproj" />
+    <Project Path="tests/GrillBot.Core.Tests/GrillBot.Core.Tests.csproj" />
+    <Project Path="tests/GrillBot.Core.HealthCheck.Tests/GrillBot.Core.HealthCheck.Tests.csproj" />
+    <Project Path="tests/GrillBot.Core.RabbitMQ.V2.Tests/GrillBot.Core.RabbitMQ.V2.Tests.csproj" />
+    <Project Path="tests/GrillBot.Core.Redis.Tests/GrillBot.Core.Redis.Tests.csproj" />
+    <Project Path="tests/GrillBot.Core.Services.Tests/GrillBot.Core.Services.Tests.csproj" />
+  </Folder>
+</Solution>

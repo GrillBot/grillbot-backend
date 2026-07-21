@@ -1,0 +1,15 @@
+<Project>
+
+    <!--
+      Applies to every project in the repository. Do not repeat these properties
+      in individual .csproj files; override them only where a project genuinely
+      needs something different.
+    -->
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+</Project>

@@ -1,0 +1,96 @@
+<Project>
+
+    <!--
+      Central Package Management: every third-party NuGet version used anywhere in
+      this repository is declared here exactly once.
+      https://learn.microsoft.com/nuget/consume-packages/central-package-management
+
+      A <PackageReference> in a .csproj must NOT carry a Version attribute.
+      To upgrade a package, change the single <PackageVersion> below.
+    -->
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+
+    <!-- Discord -->
+    <ItemGroup>
+        <PackageVersion Include="Discord.Net" Version="3.18.0" />
+        <PackageVersion Include="Discord.Net.Core" Version="3.18.0" />
+    </ItemGroup>
+
+    <!-- ASP.NET Core / Microsoft.Extensions -->
+    <ItemGroup>
+        <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
+        <PackageVersion Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
+        <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="10.0.0" />
+        <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
+        <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.0" />
+        <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.0" />
+        <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.0" />
+        <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.0" />
+        <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="10.0.0" />
+    </ItemGroup>
+
+    <!-- Persistence -->
+    <ItemGroup>
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.0" />
+        <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.0" />
+        <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+    </ItemGroup>
+
+    <!-- Messaging, resilience and HTTP clients -->
+    <ItemGroup>
+        <PackageVersion Include="Polly" Version="8.6.5" />
+        <PackageVersion Include="RabbitMQ.Client" Version="7.2.0" />
+        <PackageVersion Include="Refit.HttpClientFactory" Version="9.0.2" />
+    </ItemGroup>
+
+    <!-- Health checks, telemetry and logging -->
+    <ItemGroup>
+        <PackageVersion Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
+        <PackageVersion Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
+        <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.14.0" />
+        <PackageVersion Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.12.0-beta.1" />
+        <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.14.0" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.14.0" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.12.0-beta.1" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.14.0" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.Process" Version="1.12.0-beta.1" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.Quartz" Version="1.12.0-beta.1" />
+        <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.14.0" />
+        <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
+    </ItemGroup>
+
+    <!-- API documentation -->
+    <ItemGroup>
+        <PackageVersion Include="NSwag.Annotations" Version="14.6.3" />
+        <PackageVersion Include="NSwag.AspNetCore" Version="14.6.3" />
+        <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.0.1" />
+    </ItemGroup>
+
+    <!-- Azure -->
+    <ItemGroup>
+        <PackageVersion Include="Azure.Identity" Version="1.17.1" />
+        <PackageVersion Include="Azure.Storage.Blobs" Version="12.26.0" />
+    </ItemGroup>
+
+    <!-- Misc -->
+    <ItemGroup>
+        <PackageVersion Include="AutoMapper" Version="15.0.1" />
+        <PackageVersion Include="Humanizer.Core.cs" Version="3.0.1" />
+        <PackageVersion Include="Magick.NET-Q8-AnyCPU" Version="14.10.2" />
+        <PackageVersion Include="Quartz.Extensions.Hosting" Version="3.15.1" />
+        <PackageVersion Include="Unicode.net" Version="2.0.0" />
+    </ItemGroup>
+
+    <!-- Testing -->
+    <ItemGroup>
+        <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+        <PackageVersion Include="MSTest.TestAdapter" Version="4.0.2" />
+        <PackageVersion Include="MSTest.TestFramework" Version="4.0.2" />
+        <PackageVersion Include="NSubstitute" Version="5.3.0" />
+    </ItemGroup>
+
+</Project>
