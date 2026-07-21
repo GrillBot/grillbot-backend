@@ -1,0 +1,88 @@
+﻿using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers.Localization;
+using GrillBot.Common.Models;
+using GrillBot.Core.Extensions;
+using GrillBot.Core.Infrastructure.Actions;
+using GrillBot.Data.Models.API;
+
+namespace GrillBot.App.Actions.Api.V2;
+
+public class GetTodayBirthdayInfo : ApiAction
+{
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private IDiscordClient DiscordClient { get; }
+    private IConfiguration Configuration { get; }
+    private ITextsManager Texts { get; }
+
+    public GetTodayBirthdayInfo(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder,
+        IDiscordClient discordClient, IConfiguration configuration, ITextsManager texts) : base(apiContext)
+    {
+        DatabaseBuilder = databaseBuilder;
+        DiscordClient = discordClient;
+        Configuration = configuration;
+        Texts = texts;
+    }
+
+    public override async Task<ApiResult> ProcessAsync()
+    {
+        using var repository = DatabaseBuilder.CreateRepository();
+
+        var todayBirthdayUsers = await repository.User.GetUsersWithTodayBirthday();
+        var users = await TransformUsersAsync(todayBirthdayUsers);
+        var message = Format(users);
+        var response = new MessageResponse(message);
+
+        return ApiResult.Ok(response);
+    }
+
+    private async Task<List<(IUser user, int? age)>> TransformUsersAsync(List<Database.Entity.User> users)
+    {
+        var result = new List<(IUser user, int? age)>();
+
+        foreach (var user in users)
+        {
+            var discordUser = await DiscordClient.FindUserAsync(user.Id.ToUlong());
+            if (discordUser == null) continue;
+
+            var age = user.BirthdayAcceptYear ? ComputeAge(user.Birthday!.Value) : (int?)null;
+            result.Add((discordUser, age));
+        }
+
+        return result;
+    }
+
+    private string Format(IReadOnlyCollection<(IUser user, int? age)> users)
+    {
+        if (users.Count == 0)
+            return string.Format(Texts["BirthdayModule/Info/NoOneHave", ApiContext.Language], Configuration["Discord:Emotes:Sadge"]);
+
+        var formatted = users
+            .Select(o =>
+                o.age == null
+                    ? string.Format(Texts["BirthdayModule/Info/Parts/WithoutYears", ApiContext.Language], o.user.Mention, o.user.GetDisplayName())
+                    : string.Format(Texts["BirthdayModule/Info/Parts/WithYears", ApiContext.Language], o.user.Mention, o.user.GetDisplayName(), o.age.Value)
+            ).ToList();
+
+        var result = Texts[$"BirthdayModule/Info/Template/{(users.Count > 1 ? "MultipleForm" : "SingleForm")}", ApiContext.Language];
+        var hypers = Configuration["Discord:Emotes:Hypers"];
+
+        if (users.Count > 1)
+        {
+            var withoutLast = string.Join(", ", formatted.Take(formatted.Count - 1));
+            return string.Format(result, withoutLast, formatted[^1], hypers);
+        }
+        else
+        {
+            return string.Format(result, formatted[0], hypers);
+        }
+    }
+
+    private static int ComputeAge(DateTime dateTime)
+    {
+        var today = DateTime.Today;
+        var age = today.Year - dateTime.Year;
+        if (dateTime.Date > today.AddYears(-age)) age--;
+
+        return age;
+    }
+}
