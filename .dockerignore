@@ -1,42 +1,61 @@
-**/.classpath
-**/.dockerignore
-**/.env
-**/.project
-**/.settings
-**/.toolstarget
-**/.vs
-**/.vscode
-**/*.*proj.user
-**/*.dbmdl
-**/*.jfm
-**/azds.yaml
-**/charts
-**/docker-compose*
+# The build context for every image in docker/ is the repository root, because
+# projects reference each other and share Directory.Build.props /
+# Directory.Packages.props. Keep the context small.
+
+.git
+.github
+.idea
+.vs
+.vscode
+build
+
+# The restore step builds the whole solution graph, so the test project files
+# have to be in the context - but the test sources never are.
+tests/**
+!tests/**/*.csproj
+
+# Dockerfiles themselves are passed with -f and never need to be in the context
 **/Dockerfile*
-**/node_modules
-**/npm-debug.log
-**/obj
-**/secrets.dev.yaml
-**/values.dev.yaml
-LICENSE
-README.md
-**/.github
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-*.userprefs
-# Build results
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
+**/docker-compose*
+**/.dockerignore
+
+# Build output
+**/[Bb]in/
+**/[Oo]bj/
+**/[Dd]ebug/
+**/[Dd]ebugPublic/
+**/[Rr]elease/
+**/[Rr]eleases/
 **/x64/
 **/x86/
 **/bld/
-**/[Bb]in/
-**/[Oo]bj/
 **/[Ll]og/
 **/[Tt]est[Rr]esult*/
 **/[Bb]uild[Ll]og.*
-appsettings.*.json
+**/node_modules
+**/npm-debug.log
+
+# IDE / user files
+**/*.*proj.user
+**/*.dbmdl
+**/*.jfm
+*.suo
+*.user
+*.userosscache
+*.userprefs
+*.sln.docstates
+**/.classpath
+**/.project
+**/.settings
+**/.toolstarget
+
+# Local configuration and secrets are supplied by the Swarm stack at run time
+**/.env
+**/appsettings.*.json
+**/secrets.dev.yaml
+**/values.dev.yaml
+
+LICENSE
+README.md
+CONTRIBUTING.md
+SECURITY.md

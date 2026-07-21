@@ -1,0 +1,175 @@
+{
+  "$comment": [
+    "Single source of truth for everything this repository deploys.",
+    "Each key is used three times over: as the container image tag, as the Docker",
+    "Swarm service name (grillbot_<key>) and as the health-check path",
+    "(https://health.grillbot.eu/<key>). Do not rename a key without renaming the",
+    "Swarm service in compose/grillbot.docker-compose.yml on the servers.",
+    "",
+    "'shares' lists the groups from 'shared' whose paths also trigger a rebuild of",
+    "this deployable. Because the projects are wired with project references, any",
+    "change under src/Core rebuilds every .NET image, and any change in",
+    "GrillBot.Services.Common rebuilds every .NET service.",
+    "",
+    ".github/workflows/ci.yml derives its change-detection filters and its build",
+    "matrix from this file, so adding a service here is all that is needed."
+  ],
+  "shared": {
+    "all": [
+      "Directory.Build.props",
+      "Directory.Packages.props",
+      "GrillBot.Backend.slnx",
+      "docker/**",
+      ".github/workflows/ci.yml"
+    ],
+    "core": [
+      "src/Core/**"
+    ],
+    "services": [
+      "src/Services/GrillBot.Services.Common/**"
+    ]
+  },
+  "deployables": {
+    "bot": {
+      "image": "ghcr.io/grillbot/grillbot",
+      "tag": "latest",
+      "dockerfile": "docker/dotnet-service.Dockerfile",
+      "project": "src/Bot/GrillBot.App",
+      "assembly": "GrillBot.App.dll",
+      "port": 5000,
+      "paths": ["src/Bot/**"],
+      "shares": ["all", "core"]
+    },
+    "audit_log_service": {
+      "image": "ghcr.io/grillbot/grillbot.services",
+      "tag": "audit_log_service",
+      "dockerfile": "docker/dotnet-service.Dockerfile",
+      "project": "src/Services/AuditLogService",
+      "assembly": "AuditLogService.dll",
+      "port": 5071,
+      "diagnostics": true,
+      "paths": ["src/Services/AuditLogService/**"],
+      "shares": ["all", "core", "services"]
+    },
+    "emote_service": {
+      "image": "ghcr.io/grillbot/grillbot.services",
+      "tag": "emote_service",
+      "dockerfile": "docker/dotnet-service.Dockerfile",
+      "project": "src/Services/EmoteService",
+      "assembly": "EmoteService.dll",
+      "port": 5062,
+      "paths": ["src/Services/EmoteService/**"],
+      "shares": ["all", "core", "services"]
+    },
+    "graphics": {
+      "image": "ghcr.io/grillbot/grillbot.services",
+      "tag": "graphics",
+      "dockerfile": "docker/Graphics.Dockerfile",
+      "project": "src/Services/Graphics",
+      "runtime": "node",
+      "port": 3000,
+      "paths": ["src/Services/Graphics/**"],
+      "shares": ["all"]
+    },
+    "image_processing_service": {
+      "image": "ghcr.io/grillbot/grillbot.services",
+      "tag": "image_processing_service",
+      "dockerfile": "docker/ImageProcessingService.Dockerfile",
+      "project": "src/Services/ImageProcessingService",
+      "assembly": "ImageProcessingService.dll",
+      "port": 5213,
+      "paths": ["src/Services/ImageProcessingService/**"],
+      "shares": ["all", "core", "services"]
+    },
+    "invite_service": {
+      "image": "ghcr.io/grillbot/grillbot.services",
+      "tag": "invite_service",
+      "dockerfile": "docker/dotnet-service.Dockerfile",
+      "project": "src/Services/InviteService",
+      "assembly": "InviteService.dll",
+      "port": 5196,
+      "paths": ["src/Services/InviteService/**"],
+      "shares": ["all", "core", "services"]
+    },
+    "message_service": {
+      "image": "ghcr.io/grillbot/grillbot.services",
+      "tag": "message_service",
+      "dockerfile": "docker/dotnet-service.Dockerfile",
+      "project": "src/Services/MessageService",
+      "assembly": "MessageService.dll",
+      "port": 5045,
+      "paths": ["src/Services/MessageService/**"],
+      "shares": ["all", "core", "services"]
+    },
+    "points_service": {
+      "image": "ghcr.io/grillbot/grillbot.services",
+      "tag": "points_service",
+      "dockerfile": "docker/dotnet-service.Dockerfile",
+      "project": "src/Services/PointsService",
+      "assembly": "PointsService.dll",
+      "port": 5258,
+      "paths": ["src/Services/PointsService/**"],
+      "shares": ["all", "core", "services"]
+    },
+    "remind_service": {
+      "image": "ghcr.io/grillbot/grillbot.services",
+      "tag": "remind_service",
+      "dockerfile": "docker/dotnet-service.Dockerfile",
+      "project": "src/Services/RemindService",
+      "assembly": "RemindService.dll",
+      "port": 5212,
+      "paths": ["src/Services/RemindService/**"],
+      "shares": ["all", "core", "services"]
+    },
+    "rubbergod_service": {
+      "image": "ghcr.io/grillbot/grillbot.services",
+      "tag": "rubbergod_service",
+      "dockerfile": "docker/dotnet-service.Dockerfile",
+      "project": "src/Services/RubbergodService",
+      "assembly": "RubbergodService.dll",
+      "port": 5031,
+      "paths": ["src/Services/RubbergodService/**"],
+      "shares": ["all", "core", "services"]
+    },
+    "searching_service": {
+      "image": "ghcr.io/grillbot/grillbot.services",
+      "tag": "searching_service",
+      "dockerfile": "docker/dotnet-service.Dockerfile",
+      "project": "src/Services/SearchingService",
+      "assembly": "SearchingService.dll",
+      "port": 5164,
+      "paths": ["src/Services/SearchingService/**"],
+      "shares": ["all", "core", "services"]
+    },
+    "unverify_service": {
+      "image": "ghcr.io/grillbot/grillbot.services",
+      "tag": "unverify_service",
+      "dockerfile": "docker/dotnet-service.Dockerfile",
+      "project": "src/Services/UnverifyService",
+      "assembly": "UnverifyService.dll",
+      "port": 5037,
+      "paths": ["src/Services/UnverifyService/**"],
+      "shares": ["all", "core", "services"]
+    },
+    "user_management_service": {
+      "image": "ghcr.io/grillbot/grillbot.services",
+      "tag": "user_management_service",
+      "dockerfile": "docker/dotnet-service.Dockerfile",
+      "project": "src/Services/UserManagementService",
+      "assembly": "UserManagementService.dll",
+      "port": 5052,
+      "paths": ["src/Services/UserManagementService/**"],
+      "shares": ["all", "core", "services"]
+    },
+    "user_measures_service": {
+      "image": "ghcr.io/grillbot/grillbot.services",
+      "tag": "user_measures_service",
+      "dockerfile": "docker/dotnet-service.Dockerfile",
+      "project": "src/Services/UserMeasuresService",
+      "assembly": "UserMeasuresService.dll",
+      "port": 5134,
+      "paths": ["src/Services/UserMeasuresService/**"],
+      "shares": ["all", "core", "services"]
+    }
+  }
+}
