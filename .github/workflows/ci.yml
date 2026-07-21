@@ -131,10 +131,13 @@ jobs:
           path: ~/.nuget/packages
           key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
           restore-keys: nuget-${{ runner.os }}-
+      # No -r linux-x64 here: MSBuild rejects a RuntimeIdentifier on a solution
+      # (NETSDK1134). This job is a compile check; the RID-specific output is
+      # produced per project by dotnet publish inside the Docker build.
       - name: Restore
-        run: dotnet restore GrillBot.Backend.slnx -r linux-x64
+        run: dotnet restore GrillBot.Backend.slnx
       - name: Build (Release)
-        run: dotnet build -c Release -r linux-x64 --no-self-contained --no-restore GrillBot.Backend.slnx
+        run: dotnet build -c Release --no-restore GrillBot.Backend.slnx
 
   Test:
     runs-on: ubuntu-latest
@@ -175,6 +178,15 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
           cache-dependency-path: src/Services/Graphics/package-lock.json
+      # node-canvas ships no prebuilt binary for this Node ABI, so npm ci
+      # compiles it from source and needs the same native toolchain that
+      # docker/Graphics.Dockerfile installs with apk (build-base, cairo-dev,
+      # jpeg-dev, pango-dev, giflib-dev). libcairo2-dev pulls in pixman.
+      - name: Install node-canvas build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev
       - name: Build Graphics
         run: |
           npm ci
