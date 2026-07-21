@@ -1,0 +1,303 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  DOTNET_VERSION: 10.0.x
+  NODE_VERSION: 22.x
+  HEALTH_CHECK_BASE_URL: https://health.grillbot.eu
+
+jobs:
+  # --------------------------------------------------------------------------
+  # Works out which deployables this push affects. Because everything is wired
+  # with project references now, the dependency edges matter: a change under
+  # src/Core rebuilds every .NET image, and a change in GrillBot.Services.Common
+  # rebuilds every .NET service. Those edges live in docker/deployables.json and
+  # are turned into dorny/paths-filter filters here, so the manifest stays the
+  # only place a new service has to be registered.
+  # --------------------------------------------------------------------------
+  Changes:
+    runs-on: ubuntu-latest
+    outputs:
+      Deployables: ${{ steps.select.outputs.deployables }}
+      HasDeployables: ${{ steps.select.outputs.has_deployables }}
+      Dotnet: ${{ steps.filter.outputs.dotnet }}
+      Node: ${{ steps.filter.outputs.node }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Build path filters from docker/deployables.json
+        id: generate
+        run: |
+          {
+            echo 'filters<<FILTERS_EOF'
+            jq -r '
+              .shared as $shared
+              | .deployables
+              | to_entries
+              | map(
+                  .key + ":\n"
+                  + ((([.value.shares[] | $shared[.]] | add) + .value.paths)
+                     | map("  - " + .)
+                     | join("\n"))
+                )
+              | join("\n")
+            ' docker/deployables.json
+            # Extra gates that are not deployables: whether anything compilable
+            # changed at all, and whether the Node service changed.
+            printf '%s\n' \
+              "dotnet:" \
+              "  - src/**" \
+              "  - tests/**" \
+              "  - Directory.Build.props" \
+              "  - Directory.Packages.props" \
+              "  - GrillBot.Backend.slnx" \
+              "node:" \
+              "  - src/Services/Graphics/**"
+            echo 'FILTERS_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Detect changed paths
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: ${{ steps.generate.outputs.filters }}
+
+      - name: Select changed deployables
+        id: select
+        env:
+          CHANGES: ${{ steps.filter.outputs.changes }}
+        run: |
+          DEPLOYABLES=$(jq -cn \
+            --argjson changed "$CHANGES" \
+            --slurpfile manifest docker/deployables.json \
+            '$manifest[0].deployables | keys | map(select(. as $k | $changed | index($k)))')
+          echo "deployables=$DEPLOYABLES" >> "$GITHUB_OUTPUT"
+          echo "has_deployables=$([ "$DEPLOYABLES" = '[]' ] && echo false || echo true)" >> "$GITHUB_OUTPUT"
+          echo "Changed deployables: $DEPLOYABLES"
+
+  StaticChecks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Markdown lint
+        uses: nosborn/github-action-markdown-cli@v3.5.0
+        with:
+          files: .
+      - name: JSON lint
+        env:
+          EXCLUDE_FILES: src/Services/Graphics/tsconfig.json
+        run: bash <(curl -s https://raw.githubusercontent.com/CICDToolbox/json-lint/master/pipeline.sh)
+      - name: Setup python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Cross-check localization texts
+        run: python3 build/check-texts.py
+
+  # --------------------------------------------------------------------------
+  # One build for the whole solution. With project references there is nothing
+  # to gain from building service by service, and no NuGet feed to authenticate
+  # against any more.
+  # --------------------------------------------------------------------------
+  Build:
+    runs-on: ubuntu-latest
+    needs: [Changes]
+    if: needs.Changes.outputs.Dotnet == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+      - name: Restore
+        run: dotnet restore GrillBot.Backend.slnx -r linux-x64
+      - name: Build (Release)
+        run: dotnet build -c Release -r linux-x64 --no-self-contained --no-restore GrillBot.Backend.slnx
+
+  Test:
+    runs-on: ubuntu-latest
+    needs: [Changes, Build]
+    if: needs.Changes.outputs.Dotnet == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+      - name: Test
+        run: |
+          for project in tests/*.Tests; do
+            dotnet test -c Debug "$project"
+          done
+
+  BuildNode:
+    runs-on: ubuntu-latest
+    needs: [Changes]
+    if: needs.Changes.outputs.Node == 'true'
+    defaults:
+      run:
+        working-directory: src/Services/Graphics
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: src/Services/Graphics/package-lock.json
+      - name: Build Graphics
+        run: |
+          npm ci
+          npm run build
+
+  # --------------------------------------------------------------------------
+  # One image per changed deployable. Every build argument comes out of
+  # docker/deployables.json, so adding a service means editing that file only.
+  # --------------------------------------------------------------------------
+  Images:
+    runs-on: ubuntu-latest
+    needs: [Changes, StaticChecks, Build, Test, BuildNode]
+    if: |
+      always()
+      && !contains(needs.*.result, 'failure')
+      && !contains(needs.*.result, 'cancelled')
+      && needs.Changes.outputs.HasDeployables == 'true'
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        deployable: ${{ fromJson(needs.Changes.outputs.Deployables) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Read manifest entry for ${{ matrix.deployable }}
+        id: manifest
+        run: |
+          jq -r --arg name "${{ matrix.deployable }}" '
+            .deployables[$name]
+            | "image=\(.image)",
+              "tag=\(.tag)",
+              "dockerfile=\(.dockerfile)",
+              "project=\(.project)",
+              "assembly=\(.assembly // "")",
+              "port=\(.port)",
+              "diagnostics=\(.diagnostics // false)"
+          ' docker/deployables.json >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to the container registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push ${{ matrix.deployable }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ steps.manifest.outputs.dockerfile }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.manifest.outputs.image }}:${{ steps.manifest.outputs.tag }}
+          # The restore layer is identical for every .NET image, so a single
+          # shared cache scope keeps 14 builds from repeating the same restore.
+          cache-from: type=gha,scope=grillbot-backend
+          cache-to: type=gha,mode=max,scope=grillbot-backend
+          build-args: |
+            PROJECT=${{ steps.manifest.outputs.project }}
+            ASSEMBLY=${{ steps.manifest.outputs.assembly }}
+            PORT=${{ steps.manifest.outputs.port }}
+            WITH_DIAGNOSTICS=${{ steps.manifest.outputs.diagnostics }}
+
+  # --------------------------------------------------------------------------
+  # deploy-grillbot.sh <name> runs `docker service update --force
+  # grillbot_<name>` on the Swarm manager, falling back to a full
+  # `docker stack deploy`. The manifest keys are exactly those service names,
+  # so nothing on the servers changes with the move to the monorepo.
+  # --------------------------------------------------------------------------
+  Deploy:
+    runs-on: ubuntu-latest
+    environment: Production
+    needs: [Changes, Images]
+    if: |
+      always()
+      && !contains(needs.*.result, 'failure')
+      && !contains(needs.*.result, 'cancelled')
+      && needs.Changes.outputs.HasDeployables == 'true'
+      && github.ref == 'refs/heads/master'
+      && github.event_name != 'pull_request'
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        deployable: ${{ fromJson(needs.Changes.outputs.Deployables) }}
+    steps:
+      - name: Deploy ${{ matrix.deployable }} via SSH
+        uses: appleboy/ssh-action@v1.2.4
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSHPRASE }}
+          script: /home/grillbot/deploy-grillbot.sh ${{ matrix.deployable }}
+
+  Verify:
+    runs-on: ubuntu-latest
+    environment: ProductionInternal
+    needs: [Changes, Deploy]
+    if: |
+      always()
+      && !contains(needs.*.result, 'failure')
+      && !contains(needs.*.result, 'cancelled')
+      && needs.Changes.outputs.HasDeployables == 'true'
+      && github.ref == 'refs/heads/master'
+      && github.event_name != 'pull_request'
+    strategy:
+      fail-fast: false
+      matrix:
+        deployable: ${{ fromJson(needs.Changes.outputs.Deployables) }}
+    steps:
+      - name: Check health of ${{ matrix.deployable }}
+        uses: jtalk/url-health-check-action@v4
+        with:
+          url: ${{ env.HEALTH_CHECK_BASE_URL }}/${{ matrix.deployable }}
+          follow-redirect: true
+          max-attempts: 10
+          retry-delay: 5s

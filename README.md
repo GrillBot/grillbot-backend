@@ -98,14 +98,16 @@ at once — for example `audit_log_service` becomes
 `https://health.grillbot.eu/audit_log_service`. The bot is the exception and keeps
 `ghcr.io/grillbot/grillbot:latest`.
 
-`.github/workflows/ci.yml` detects which deployables a push affects (a change in
-`src/Core/` affects all of them, since everything project-references it), builds
-and pushes only those images, then triggers `deploy-grillbot.sh <name>` over SSH
-and verifies the health endpoint.
+`.github/workflows/ci.yml` derives both its change-detection filters and its
+build matrix from that manifest. The `shares` field on each entry records the
+dependency edges that project references create — a change under `src/Core/`
+rebuilds every .NET image, a change in `GrillBot.Services.Common` rebuilds every
+.NET service — so only the affected images are built, pushed, deployed via
+`deploy-grillbot.sh <name>` over SSH, and health-checked.
 
 To add a new service: create the project under `src/Services/`, add it to
-`GrillBot.Backend.slnx`, add an entry to `docker/deployables.json`, and add a
-matching filter in the `Changes` job of the workflow.
+`GrillBot.Backend.slnx`, and add an entry to `docker/deployables.json`. The
+workflow needs no changes.
 
 ## Licence
 
