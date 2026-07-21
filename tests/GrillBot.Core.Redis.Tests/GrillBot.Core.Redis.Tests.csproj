@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -26,7 +26,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\GrillBot.Core.Redis\GrillBot.Core.Redis.csproj" />
+        <ProjectReference Include="..\..\src\Core\GrillBot.Core.Redis\GrillBot.Core.Redis.csproj" />
         <ProjectReference Include="..\GrillBot.Core.Tests.Shared\GrillBot.Core.Tests.Shared.csproj" />
     </ItemGroup>
 

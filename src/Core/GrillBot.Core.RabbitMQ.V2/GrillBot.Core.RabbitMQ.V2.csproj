@@ -4,15 +4,6 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Authors>GrillBot</Authors>
-        <Description>Core package for RabbitMQ integration in the services and GrillBot.</Description>
-        <Copyright>All rights reserved</Copyright>
-        <PackageProjectUrl>https://grillbot.eu/</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/GrillBot/GrillBot.Core.RabbitMQ</RepositoryUrl>
-        <RepositoryType>GitHub</RepositoryType>
-        <Version>2.4.1</Version>
-        <CopyDebugSymbolFilesFromPackages>true</CopyDebugSymbolFilesFromPackages>
-        <CopyDocumentationFilesFromPackages>true</CopyDocumentationFilesFromPackages>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

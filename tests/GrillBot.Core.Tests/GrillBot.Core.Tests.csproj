@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -26,7 +26,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\GrillBot.Core.Tests.Shared\GrillBot.Core.Tests.Shared.csproj" />
-        <ProjectReference Include="..\GrillBot.Core\GrillBot.Core.csproj" />
+        <ProjectReference Include="..\..\src\Core\GrillBot.Core\GrillBot.Core.csproj" />
     </ItemGroup>
 
 </Project>

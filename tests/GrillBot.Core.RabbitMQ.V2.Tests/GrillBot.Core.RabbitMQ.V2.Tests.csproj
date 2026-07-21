@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -25,7 +25,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\GrillBot.Core.RabbitMQ.V2\GrillBot.Core.RabbitMQ.V2.csproj" />
+        <ProjectReference Include="..\..\src\Core\GrillBot.Core.RabbitMQ.V2\GrillBot.Core.RabbitMQ.V2.csproj" />
         <ProjectReference Include="..\GrillBot.Core.Tests.Shared\GrillBot.Core.Tests.Shared.csproj" />
     </ItemGroup>
 

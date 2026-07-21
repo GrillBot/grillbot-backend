@@ -4,15 +4,6 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <Authors>GrillBot</Authors>
-        <Description>Core library for communication between GrillBot services.</Description>
-        <Copyright>All rights reserved</Copyright>
-        <PackageProjectUrl>https://grillbot.eu/</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/GrillBot/GrillBot.Core.Services</RepositoryUrl>
-        <RepositoryType>GitHub</RepositoryType>
-        <Version>2.14.0</Version>
-        <CopyDebugSymbolFilesFromPackages>true</CopyDebugSymbolFilesFromPackages>
-        <CopyDocumentationFilesFromPackages>true</CopyDocumentationFilesFromPackages>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

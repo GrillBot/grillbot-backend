@@ -26,7 +26,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\GrillBot.Core.HealthCheck\GrillBot.Core.HealthCheck.csproj" />
+        <ProjectReference Include="..\..\src\Core\GrillBot.Core.HealthCheck\GrillBot.Core.HealthCheck.csproj" />
         <ProjectReference Include="..\GrillBot.Core.Tests.Shared\GrillBot.Core.Tests.Shared.csproj" />
     </ItemGroup>
 
