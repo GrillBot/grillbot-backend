@@ -6,6 +6,7 @@ using GrillBot.App.Services.Discord;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using NSwag;
 using NSwag.Generation.Processors.Security;
@@ -303,8 +304,10 @@ public class Startup
         services.AddTelemetryCollector<GrillBotTelemetryCollector>();
     }
 
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment environment)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment environment, ILoggerFactory loggerFactory)
     {
+        Configuration.LogConfigurationSources(loggerFactory.CreateLogger("Configuration"));
+
         app.InitDatabase<GrillBotContext>();
 
         if (environment.IsProduction())

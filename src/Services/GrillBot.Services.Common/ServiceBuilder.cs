@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System.Reflection;
 
 namespace GrillBot.Services.Common;
@@ -34,6 +35,9 @@ public static class ServiceBuilder
     ) where TAppOptions : class
     {
         var builder = WebApplication.CreateBuilder(args);
+
+        // Sensitive configuration: optionally load Docker/Swarm secrets from /run/secrets.
+        builder.Configuration.AddDockerSecrets();
 
         // Kestrel
         builder.WebHost.ConfigureKestrel(opt =>
@@ -94,6 +98,8 @@ public static class ServiceBuilder
         builder.Services.AddDiscord(builder.Configuration);
 
         var app = builder.Build();
+
+        app.Configuration.LogConfigurationSources(app.Logger);
 
         if (preRunInitialization is not null)
         {

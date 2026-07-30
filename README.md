@@ -75,9 +75,34 @@ cd src/Services/Graphics && npm ci && npm run build
 
 ## Configuration
 
-Development runs need `ASPNETCORE_ENVIRONMENT=Development` and a filled
-`appsettings.Development.json` (git-ignored). Production is configured entirely
-through environment variables supplied by the Docker Swarm stack.
+Configuration is split by sensitivity:
+
+- **Non-sensitive** settings (URLs, logging levels, feature toggles) live in the
+  committed `appsettings.json` and/or environment variables.
+- **Sensitive** settings (connection strings, API keys, Discord/RabbitMQ
+  credentials, JWT signing material, …) are supplied out-of-band and never
+  committed.
+
+**Development** runs need `ASPNETCORE_ENVIRONMENT=Development` and a filled
+`appsettings.Development.json` (git-ignored — `appsettings.*.json` is excluded).
+Put local sensitive values there; it is loaded automatically after
+`appsettings.json` and overrides it.
+
+**Production** reads sensitive values from Docker (Swarm) **secrets** mounted at
+`/run/secrets`. Every host (the bot and all services) loads them via the shared
+`IConfigurationBuilder.AddDockerSecrets()` extension in `GrillBot.Core`. Loading
+is optional — if `/run/secrets` is absent (e.g. local runs) it is a no-op. Two
+secret file layouts are supported, and you may name the keys whatever you like:
+
+- **Key-per-file** — the file name is the configuration key and the raw file
+  content is its value (e.g. a secret named `ConnectionStrings__Default`).
+- **JSON files** (`*.json`) — appsettings-shaped documents merged over the base
+  configuration.
+
+Precedence, lowest to highest:
+`appsettings.json` < `appsettings.{Environment}.json` < `/run/secrets` <
+environment variables. A startup log line lists the configuration sources that
+were actually loaded, so you can confirm secrets were picked up.
 
 Mandatory for the bot:
 
