@@ -18,6 +18,7 @@ global using System.Globalization;
 global using System.Text;
 global using Humanizer;
 global using GrillBot.App.Extensions;
+using GrillBot.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -37,6 +38,7 @@ public static class Program
 
     public static IHostBuilder CreateHostBuilder(string[] args) =>
         Host.CreateDefaultBuilder(args)
+            .ConfigureAppConfiguration((_, config) => config.AddDockerSecrets())
             .UseSerilog((context, services, configuration) => configuration
                 .ReadFrom.Configuration(context.Configuration)
                 .ReadFrom.Services(services)
