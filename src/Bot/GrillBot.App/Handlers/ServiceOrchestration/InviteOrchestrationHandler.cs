@@ -1,12 +1,13 @@
-﻿using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Contracts.Invite.Events;
+using Wolverine;
+
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
 
 public class InviteOrchestrationHandler(
-    IRabbitPublisher _rabbitPublisher,
+    IMessageBus _rabbitPublisher,
     IDiscordClient _discordClient
 ) : IInviteCreatedEvent, IReadyEvent, IUserJoinedEvent
 {
@@ -14,7 +15,7 @@ public class InviteOrchestrationHandler(
     public Task ProcessAsync(IInviteMetadata invite)
     {
         var payload = new InviteCreatedPayload(invite);
-        return _rabbitPublisher.PublishAsync(payload);
+        return _rabbitPublisher.PublishAsync(payload).AsTask();
     }
 
     // Ready

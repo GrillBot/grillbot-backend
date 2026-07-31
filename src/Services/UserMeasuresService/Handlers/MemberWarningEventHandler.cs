@@ -1,7 +1,6 @@
-﻿using Discord;
+using Discord;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Contracts.Bot.Events.Messages;
 using GrillBot.Contracts.Bot.Events.Messages.Embeds;
 using GrillBot.Services.Common.Discord;
@@ -14,14 +13,9 @@ namespace UserMeasuresService.Handlers;
 public class MemberWarningEventHandler(
     IServiceProvider serviceProvider,
     DiscordManager _discordManager
-) : BaseMeasuresHandler<MemberWarningPayload>(serviceProvider)
+) : BaseMeasuresHandler(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        MemberWarningPayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(MemberWarningPayload message, CancellationToken cancellationToken)
     {
         var entity = new MemberWarningItem
         {
@@ -36,7 +30,7 @@ public class MemberWarningEventHandler(
 
         if (message.SendDmNotification)
             await SendNotificationToUserAsync(entity);
-        return RabbitConsumptionResult.Success;
+        return;
     }
 
     private async Task SendNotificationToUserAsync(MemberWarningItem item)

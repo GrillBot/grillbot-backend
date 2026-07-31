@@ -1,22 +1,15 @@
-﻿using GrillBot.Core.Infrastructure.Auth;
-using UnverifyService.Models.Events;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
-using GrillBot.Services.Common.Infrastructure.RabbitMQ;
-using UnverifyService.Core.Entity;
+using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Contracts.Unverify.Events;
+using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
+using UnverifyService.Core.Entity;
 
 namespace UnverifyService.Handlers;
 
 public class GuildUserLeftHandler(
     IServiceProvider serviceProvider
-) : BaseEventHandlerWithDb<GuildUserLeftMessage, UnverifyContext>(serviceProvider)
+) : EventHandlerBaseWithDb<UnverifyContext>(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        GuildUserLeftMessage message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(GuildUserLeftMessage message, CancellationToken cancellationToken)
     {
         try
         {
@@ -24,16 +17,16 @@ public class GuildUserLeftHandler(
             var activeUnverify = await ContextHelper.ReadFirstOrDefaultEntityAsync(activeUnverifyQuery, cancellationToken);
 
             if (activeUnverify is null)
-                return RabbitConsumptionResult.Success;
+                return;
 
             DbContext.Remove(activeUnverify);
             await ContextHelper.SaveChangesAsync(cancellationToken);
-            return RabbitConsumptionResult.Success;
+            return;
         }
         finally
         {
             if (!cancellationToken.IsCancellationRequested)
-                await Publisher.PublishAsync(new RecalculateMetricsMessage(), cancellationToken: cancellationToken);
+                await Publisher.PublishAsync(new RecalculateMetricsMessage());
         }
     }
 }

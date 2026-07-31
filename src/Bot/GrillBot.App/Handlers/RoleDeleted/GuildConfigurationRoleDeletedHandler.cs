@@ -1,7 +1,7 @@
-﻿using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
+using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Contracts.AuditLog.Enums;
 using GrillBot.Contracts.AuditLog.Events.Create;
+using Wolverine;
 
 namespace GrillBot.App.Handlers.RoleDeleted;
 
@@ -9,9 +9,9 @@ public class GuildConfigurationRoleDeletedHandler : IRoleDeletedEvent
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
 
-    private readonly IRabbitPublisher _rabbitPublisher;
+    private readonly IMessageBus _rabbitPublisher;
 
-    public GuildConfigurationRoleDeletedHandler(GrillBotDatabaseBuilder databaseBuilder, IRabbitPublisher rabbitPublisher)
+    public GuildConfigurationRoleDeletedHandler(GrillBotDatabaseBuilder databaseBuilder, IMessageBus rabbitPublisher)
     {
         DatabaseBuilder = databaseBuilder;
         _rabbitPublisher = rabbitPublisher;

@@ -1,4 +1,4 @@
-﻿using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Contracts.Emote.Events;
 using GrillBot.Contracts.Emote.Events.Suggestions;
 
@@ -42,6 +42,6 @@ public partial class EmoteOrchestrationHandler
     {
         return message.Embeds.Count == 0 ?
             Task.CompletedTask :
-            _rabbitPublisher.PublishAsync(new EmoteSuggestionMessageDeletedPayload(guild.Id, message.Id));
+            _rabbitPublisher.PublishAsync(new EmoteSuggestionMessageDeletedPayload(guild.Id, message.Id)).AsTask();
     }
 }

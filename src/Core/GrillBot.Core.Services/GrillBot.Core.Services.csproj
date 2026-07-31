@@ -16,7 +16,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\GrillBot.Core\GrillBot.Core.csproj" />
-        <ProjectReference Include="..\GrillBot.Core.RabbitMQ.V2\GrillBot.Core.RabbitMQ.V2.csproj" />
         <ProjectReference Include="..\..\Contracts\GrillBot.Contracts\GrillBot.Contracts.csproj" />
     </ItemGroup>
 

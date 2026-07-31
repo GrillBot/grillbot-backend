@@ -1,18 +1,18 @@
-﻿using GrillBot.Core.Infrastructure.Actions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.Models.Pagination;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using Microsoft.EntityFrameworkCore;
 using PointsService.Core;
 using PointsService.Core.Entity;
 using GrillBot.Contracts.Points;
+using Wolverine;
 
 namespace PointsService.Actions;
 
 public class GetAdminListAction(
     ICounterManager counterManager,
     PointsServiceContext dbContext,
-    IRabbitPublisher publisher
+    IMessageBus publisher
 ) : ApiAction(counterManager, dbContext, publisher)
 {
     public override async Task<ApiResult> ProcessAsync()

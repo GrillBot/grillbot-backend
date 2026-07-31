@@ -1,17 +1,17 @@
-﻿using GrillBot.Common.Extensions.Discord;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Contracts.Points.Channels;
 using GrillBot.Contracts.Points.Events;
 using GrillBot.Contracts.Points.Users;
+using Wolverine;
 
 namespace GrillBot.App.Managers.Points;
 
 public class PointsSynchronizationManager
 {
-    private readonly IRabbitPublisher _rabbitPublisher;
+    private readonly IMessageBus _rabbitPublisher;
     private readonly IDiscordClient _discordClient;
 
-    public PointsSynchronizationManager(IRabbitPublisher rabbitPublisher, IDiscordClient discordClient)
+    public PointsSynchronizationManager(IMessageBus rabbitPublisher, IDiscordClient discordClient)
     {
         _rabbitPublisher = rabbitPublisher;
         _discordClient = discordClient;

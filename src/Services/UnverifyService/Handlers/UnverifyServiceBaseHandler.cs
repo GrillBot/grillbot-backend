@@ -1,30 +1,32 @@
-﻿using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
-using GrillBot.Core.RabbitMQ.V2.Messages;
-using GrillBot.Services.Common.Infrastructure.RabbitMQ;
+using GrillBot.Core.AsyncMessaging.Extensions;
+using GrillBot.Core.Infrastructure.Auth;
+using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
 using UnverifyService.Core.Entity;
+using Wolverine;
 
 namespace UnverifyService.Handlers;
 
-public abstract class UnverifyServiceBaseHandler<TPayload>(
+/// <summary>
+/// Unverify acts on someone's behalf, so its handlers only run for a message that carried the
+/// caller's Authorization header. The old base class could gate that centrally because it owned
+/// the consume method; Wolverine dispatches straight to the concrete handler, so each one now
+/// opens with <see cref="TryGetCurrentUserAsync"/> instead.
+/// </summary>
+public abstract class UnverifyServiceBaseHandler(
     IServiceProvider serviceProvider
-) : BaseEventHandlerWithDb<TPayload, UnverifyContext>(serviceProvider) where TPayload : class, IRabbitMessage, new()
+) : EventHandlerBaseWithDb<UnverifyContext>(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        TPayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    /// <summary>
+    /// Resolves the caller from the envelope. Returns null and records the unauthorized attempt
+    /// when the message arrived without a token, in which case the handler must stop.
+    /// </summary>
+    protected async Task<ICurrentUserProvider?> TryGetCurrentUserAsync(Envelope envelope)
     {
-        if (!currentUser.IsLogged)
-        {
-            await NotifyUnauthorizedExecution(message, cancellationToken);
-            return RabbitConsumptionResult.Reject;
-        }
+        var currentUser = envelope.CurrentUser();
+        if (currentUser.IsLogged)
+            return currentUser;
 
-        return await ProcessHandlerAsync(message, currentUser, headers, cancellationToken);
+        await NotifyUnauthorizedExecution(envelope.MessageType ?? GetType().Name);
+        return null;
     }
-
-    protected abstract Task<RabbitConsumptionResult> ProcessHandlerAsync(TPayload message, ICurrentUserProvider currentUser, Dictionary<string, string> headers, CancellationToken cancellationToken = default);
 }

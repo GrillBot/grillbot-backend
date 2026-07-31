@@ -1,8 +1,7 @@
-﻿using Discord;
+using Discord;
 using PointsService.Models.Extensions;
 using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Core.Managers.Random;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using PointsService.Core.Entity;
@@ -18,19 +17,14 @@ public class CreateTransactionEventHandler(
     IRandomManager _randomManager
 ) : CreateTransactionBaseEventHandler<CreateTransactionPayload>(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        CreateTransactionPayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(CreateTransactionPayload message, CancellationToken cancellationToken)
     {
         var author = await FindOrCreateUserAsync(message.GuildId, message.Message.AuthorId);
         var reactionUser = message.Reaction is null ? null : await FindOrCreateUserAsync(message.GuildId, message.Reaction.UserId);
         var channel = await FindOrCreateChannelAsync(message);
 
         if (!await CanCreateTransactionAsync(message, author, reactionUser, channel))
-            return RabbitConsumptionResult.Success;
+            return;
 
         var userId = (reactionUser ?? author)!.Id;
         var transaction = new Transaction
@@ -47,7 +41,7 @@ public class CreateTransactionEventHandler(
 
         await CommitTransactionAsync(transaction);
         await EnqueueUserForRecalculationAsync(message.GuildId, userId);
-        return RabbitConsumptionResult.Success;
+        return;
     }
 
     private async Task<Channel> FindOrCreateChannelAsync(CreateTransactionPayload message)

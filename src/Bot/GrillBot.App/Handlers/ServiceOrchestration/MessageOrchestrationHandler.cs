@@ -1,19 +1,20 @@
-﻿using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
+using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Contracts.Message.Events;
 using GrillBot.Contracts.Message.Events.Channels;
+using Wolverine;
+
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
 
 public class MessageOrchestrationHandler(
-    IRabbitPublisher _publisher
+    IMessageBus _publisher
 ) : IMessageReceivedEvent, IThreadDeletedEvent, IChannelDestroyedEvent
 {
     // MessageReceived
     public Task ProcessAsync(IMessage message)
     {
         var payload = MessageReceivedPayload.Create(message);
-        return payload is not null ? _publisher.PublishAsync(payload) : Task.CompletedTask;
+        return payload is not null ? _publisher.PublishAsync(payload).AsTask() : Task.CompletedTask;
     }
 
     // ThreadDeleted
@@ -22,10 +23,9 @@ public class MessageOrchestrationHandler(
         if (cachedThread is null)
             return Task.CompletedTask;
 
-        var syncItem = ChannelSynchronizationItem.FromChannel(cachedThread);
-        syncItem.IsDeleted = true;
+        var syncItem = ChannelSynchronizationItem.FromChannel(cachedThread) with { IsDeleted = true };
 
-        return _publisher.PublishAsync(new SynchronizationPayload([syncItem]));
+        return _publisher.PublishAsync(new SynchronizationPayload([syncItem])).AsTask();
     }
 
     // ChannelDestroyed
@@ -34,9 +34,8 @@ public class MessageOrchestrationHandler(
         if (channel is not IGuildChannel guildChannel)
             return Task.CompletedTask;
 
-        var syncItem = ChannelSynchronizationItem.FromChannel(guildChannel);
-        syncItem.IsDeleted = true;
+        var syncItem = ChannelSynchronizationItem.FromChannel(guildChannel) with { IsDeleted = true };
 
-        return _publisher.PublishAsync(new SynchronizationPayload([syncItem]));
+        return _publisher.PublishAsync(new SynchronizationPayload([syncItem])).AsTask();
     }
 }

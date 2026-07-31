@@ -1,26 +1,9 @@
-﻿using Discord;
-using GrillBot.Core.RabbitMQ.V2.Messages;
+using Discord;
 
 namespace GrillBot.Contracts.Emote.Events.Suggestions;
 
-public class EmoteSuggestionVoteMessageCreatedPayload : IRabbitMessage
+public sealed record EmoteSuggestionVoteMessageCreatedPayload(Guid SuggestionId, ulong MessageId)
 {
-    public string Topic => "Emote";
-    public string Queue => "EmoteSuggestionVoteMessageCreated";
-
-    public Guid SuggestionId { get; set; }
-    public ulong MessageId { get; set; }
-
-    public EmoteSuggestionVoteMessageCreatedPayload(Guid suggestionId, ulong messageId)
-    {
-        SuggestionId = suggestionId;
-        MessageId = messageId;
-    }
-
-    public EmoteSuggestionVoteMessageCreatedPayload()
-    {
-    }
-
     public static EmoteSuggestionVoteMessageCreatedPayload Create(Guid suggestionId, IMessage message)
         => new(suggestionId, message.Id);
 }

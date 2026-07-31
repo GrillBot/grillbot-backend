@@ -1,13 +1,13 @@
-﻿using Azure;
+using Azure;
 using Azure.Storage.Blobs.Models;
 using GrillBot.App.Helpers;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.FileStorage;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.Extensions;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Contracts.AuditLog.Enums;
 using GrillBot.Contracts.AuditLog.Events.Create;
+using Wolverine;
 
 namespace GrillBot.App.Handlers.MessageDeleted;
 
@@ -15,7 +15,7 @@ public class AuditMessageDeletedHandler(
     IMessageCacheManager _messageCache,
     DownloadHelper _downloadHelper,
     BlobManagerFactoryHelper _blobManagerFactoryHelper,
-    IRabbitPublisher _rabbitPublisher
+    IMessageBus _rabbitPublisher
 ) : IMessageDeletedEvent
 {
     public async Task ProcessAsync(Cacheable<IMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel)

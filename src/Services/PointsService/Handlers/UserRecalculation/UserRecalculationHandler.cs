@@ -1,5 +1,4 @@
-﻿using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
+using GrillBot.Core.Infrastructure.Auth;
 using PointsService.Core.Entity;
 using PointsService.Handlers.Abstractions;
 using GrillBot.Contracts.Points.Events;
@@ -8,14 +7,9 @@ namespace PointsService.Handlers.UserRecalculation;
 
 public partial class UserRecalculationHandler(
     IServiceProvider serviceProvider
-) : BasePointsEvent<UserRecalculationPayload>(serviceProvider)
+) : BasePointsEvent(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        UserRecalculationPayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(UserRecalculationPayload message, CancellationToken cancellationToken)
     {
         var user = await FindOrCreateUserAsync(message.GuildId, message.UserId);
 
@@ -25,7 +19,7 @@ public partial class UserRecalculationHandler(
         await ProcessActionAsync(ComputePositionAsync, user, nameof(ComputePositionAsync));
         await ProcessActionAsync(ComputeTelemetryAsync, user, nameof(ComputeTelemetryAsync));
 
-        return RabbitConsumptionResult.Success;
+        return;
     }
 
     private async Task ProcessActionAsync(Func<User, Task> action, User user, string actionName)

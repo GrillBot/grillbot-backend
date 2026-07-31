@@ -1,7 +1,6 @@
-﻿using Discord;
+using Discord;
 using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
-using GrillBot.Services.Common.Infrastructure.RabbitMQ;
+using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
 using SearchingService.Core.Entity;
 using GrillBot.Contracts.Searching.Events;
 using GrillBot.Contracts.Searching.Events.Users;
@@ -10,20 +9,15 @@ namespace SearchingService.Handlers;
 
 public class SynchronizationEventHandler(
     IServiceProvider serviceProvider
-) : BaseEventHandlerWithDb<SynchronizationPayload, SearchingServiceContext>(serviceProvider)
+) : EventHandlerBaseWithDb<SearchingServiceContext>(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        SynchronizationPayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(SynchronizationPayload message, CancellationToken cancellationToken)
     {
         foreach (var user in message.Users)
             await SynchonizeUserAsync(user);
 
         await ContextHelper.SaveChangesAsync(cancellationToken);
-        return RabbitConsumptionResult.Success;
+        return;
     }
 
     private async Task SynchonizeUserAsync(UserSynchronizationItem user)

@@ -1,27 +1,19 @@
-﻿using Discord;
-using GrillBot.Core.RabbitMQ.V2.Messages;
+using Discord;
 using GrillBot.Contracts.Bot.Events.Messages.Components;
 using GrillBot.Contracts.Bot.Events.Messages.Embeds;
 
 namespace GrillBot.Contracts.Bot.Events.Messages;
 
-public class DiscordSendMessagePayload : DiscordMessagePayloadData, IRabbitMessage
+public sealed record DiscordSendMessagePayload : DiscordMessagePayloadData
 {
-    public string Topic => "GrillBot";
-    public string Queue => "SendMessage";
-
-    public ulong? GuildId { get; set; }
-    public ulong ChannelId { get; set; }
-
-    public DiscordSendMessagePayload()
-    {
-    }
+    public ulong? GuildId { get; init; }
+    public ulong ChannelId { get; init; }
 
     public DiscordSendMessagePayload(
         ulong? guildId,
         ulong channelId,
         LocalizedMessageContent? content,
-        IEnumerable<DiscordMessageFile> attachments,
+        List<DiscordMessageFile> attachments,
         string serviceId,
         DiscordMessageAllowedMentions? allowedMentions = null,
         MessageFlags? flags = null,

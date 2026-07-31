@@ -1,4 +1,4 @@
-﻿using GrillBot.Common.Exceptions;
+using GrillBot.Common.Exceptions;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
@@ -9,7 +9,8 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using GrillBot.Contracts.AuditLog.Enums;
 using GrillBot.Contracts.AuditLog.Events.Create;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
+using Wolverine;
+
 
 namespace GrillBot.App.Infrastructure.RequestProcessing;
 
@@ -18,9 +19,9 @@ public class ExceptionFilter : IAsyncExceptionFilter
     private ApiRequestContext ApiRequestContext { get; }
     private LoggingManager LoggingManager { get; }
 
-    private readonly IRabbitPublisher _rabbitPublisher;
+    private readonly IMessageBus _rabbitPublisher;
 
-    public ExceptionFilter(ApiRequestContext apiRequestContext, LoggingManager loggingManager, IRabbitPublisher rabbitPublisher)
+    public ExceptionFilter(ApiRequestContext apiRequestContext, LoggingManager loggingManager, IMessageBus rabbitPublisher)
     {
         ApiRequestContext = apiRequestContext;
         LoggingManager = loggingManager;
@@ -121,6 +122,6 @@ public class ExceptionFilter : IAsyncExceptionFilter
         };
 
         var payload = new CreateItemsMessage(logRequest);
-        return _rabbitPublisher.PublishAsync(payload);
+        return _rabbitPublisher.PublishAsync(payload).AsTask();
     }
 }

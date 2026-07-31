@@ -1,31 +1,31 @@
-﻿using Discord;
+using Discord;
 using GrillBot.Contracts.Bot.Events.Messages.Components;
 using GrillBot.Contracts.Bot.Events.Messages.Embeds;
 
 namespace GrillBot.Contracts.Bot.Events.Messages;
 
-public class DiscordMessagePayloadData
+/// <summary>
+/// Everything a Discord message carries, shared by the send and edit events.
+/// A single constructor per record keeps the shape unambiguous for the serializer.
+/// </summary>
+public abstract record DiscordMessagePayloadData
 {
-    public LocalizedMessageContent? Content { get; set; }
-    public List<DiscordMessageFile> Attachments { get; set; } = [];
-    public DiscordMessageEmbed? Embed { get; set; }
-    public MessageFlags? Flags { get; set; }
-    public DiscordMessageAllowedMentions? AllowedMentions { get; set; }
-    public string ServiceId { get; set; } = null!;
-    public Dictionary<string, string> ServiceData { get; set; } = [];
-    public DiscordMessageComponent? Components { get; set; }
-    public DiscordMessageReference? Reference { get; set; }
+    public LocalizedMessageContent? Content { get; init; }
+    public List<DiscordMessageFile> Attachments { get; init; } = [];
+    public DiscordMessageEmbed? Embed { get; init; }
+    public MessageFlags? Flags { get; init; }
+    public DiscordMessageAllowedMentions? AllowedMentions { get; init; }
+    public string ServiceId { get; init; } = null!;
+    public Dictionary<string, string> ServiceData { get; init; } = [];
+    public DiscordMessageComponent? Components { get; init; }
+    public DiscordMessageReference? Reference { get; init; }
 
     public bool CanUseLocalization => ServiceData.TryGetValue("UseLocalization", out var _useLocalization) && _useLocalization == "true";
     public string? Locale => ServiceData.TryGetValue("Language", out var _locale) ? _locale : null;
 
-    public DiscordMessagePayloadData()
-    {
-    }
-
-    public DiscordMessagePayloadData(
+    protected DiscordMessagePayloadData(
         LocalizedMessageContent? content,
-        IEnumerable<DiscordMessageFile> attachments,
+        List<DiscordMessageFile> attachments,
         string serviceId,
         DiscordMessageAllowedMentions? allowedMentions = null,
         MessageFlags? flags = null,
@@ -49,7 +49,7 @@ public class DiscordMessagePayloadData
     public DiscordMessagePayloadData WithLocalization(bool useLocalization = true, string? locale = null)
     {
         if (useLocalization)
-            ServiceData.Add("UseLocalization", "true");
+            ServiceData.TryAdd("UseLocalization", "true");
         if (!string.IsNullOrEmpty(locale))
             ServiceData.TryAdd("Language", locale);
 

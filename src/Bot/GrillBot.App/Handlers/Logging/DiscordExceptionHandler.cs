@@ -1,16 +1,17 @@
-﻿using Discord.Interactions;
+using Discord.Interactions;
 using GrillBot.App.Infrastructure.Jobs;
 using GrillBot.Common.Exceptions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Core.Extensions;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Contracts.Bot.Events.Errors;
+using Wolverine;
+
 
 namespace GrillBot.App.Handlers.Logging;
 
-public class DiscordExceptionHandler(IRabbitPublisher _rabbitPublisher) : ILoggingHandler
+public class DiscordExceptionHandler(IMessageBus _rabbitPublisher) : ILoggingHandler
 {
     public Task<bool> CanHandleAsync(LogSeverity severity, string source, Exception? exception = null)
     {
@@ -29,111 +30,97 @@ public class DiscordExceptionHandler(IRabbitPublisher _rabbitPublisher) : ILoggi
     public Task ErrorAsync(string source, string message, Exception exception)
     {
         var notification = CreateErrorNotification(source, message, exception);
-        return _rabbitPublisher.PublishAsync(notification);
+        return _rabbitPublisher.PublishAsync(notification).AsTask();
     }
 
+    /// <summary>
+    /// The notification is a record, so each Set*Info method collects into a field list and
+    /// hands back the parts that are not fields; the payload is built once at the end.
+    /// </summary>
     private static ErrorNotificationPayload CreateErrorNotification(string source, string message, Exception exception)
     {
-        var payload = new ErrorNotificationPayload();
+        var fields = new List<ErrorNotificationField>();
 
-        switch (exception)
+        var (title, userId) = exception switch
         {
-            case ApiException apiException:
-                SetApiExceptionInfo(payload, apiException, message);
-                break;
-            case InteractionException interactionException:
-                SetInteractionExceptionInfo(payload, interactionException, message);
-                break;
-            case JobException jobException:
-                SetJobExceptionInfo(payload, jobException, source, message);
-                break;
-            case FrontendException frontendException:
-                SetFrontendExceptionInfo(payload, frontendException, source, message);
-                break;
-            default:
-                SetCommonExceptionInfo(payload, exception, source, message);
-                break;
-        }
+            ApiException apiException => CollectApiExceptionInfo(fields, apiException, message),
+            InteractionException interactionException => CollectInteractionExceptionInfo(fields, interactionException, message),
+            JobException jobException => CollectJobExceptionInfo(fields, jobException, source, message),
+            FrontendException frontendException => CollectFrontendExceptionInfo(fields, frontendException, source, message),
+            _ => CollectCommonExceptionInfo(fields, exception, source, message)
+        };
 
-        return payload;
+        return new ErrorNotificationPayload(title, fields, userId);
     }
 
-    private static void SetApiExceptionInfo(ErrorNotificationPayload payload, ApiException exception, string? message)
+    private static (string Title, ulong? UserId) CollectApiExceptionInfo(List<ErrorNotificationField> fields, ApiException exception, string? message)
     {
-        payload.Title = "Při zpracování požadavku na API došlo k chybě";
+        ulong? userId = null;
 
         if (!string.IsNullOrEmpty(exception.Path))
-            payload.Fields.Add(new("Adresa", exception.Path, false));
+            fields.Add(new("Adresa", exception.Path, false));
         if (!string.IsNullOrEmpty(exception.ControllerInfo))
-            payload.Fields.Add(new("Controller", exception.ControllerInfo, false));
+            fields.Add(new("Controller", exception.ControllerInfo, false));
 
         if (exception.LoggedUser is not null)
         {
-            payload.UserId = exception.LoggedUser.Id;
-            payload.Fields.Add(new("Přihlášený uživatel", exception.LoggedUser.GetFullName(), false));
+            userId = exception.LoggedUser.Id;
+            fields.Add(new("Přihlášený uživatel", exception.LoggedUser.GetFullName(), false));
         }
 
-        var exceptionMessage = CreateExceptionContentMessage(message, exception);
-        payload.Fields.Add(new("Obsah chyby", exceptionMessage, false));
+        fields.Add(new("Obsah chyby", CreateExceptionContentMessage(message, exception), false));
+        return ("Při zpracování požadavku na API došlo k chybě", userId);
     }
 
-    private static void SetInteractionExceptionInfo(ErrorNotificationPayload payload, InteractionException exception, string? message)
+    private static (string Title, ulong? UserId) CollectInteractionExceptionInfo(List<ErrorNotificationField> fields, InteractionException exception, string? message)
     {
         var context = exception.InteractionContext;
         var cmd = exception.CommandInfo;
 
-        payload.Title = "Při provádění příkazu došlo k chybě.";
-        payload.UserId = context.User.Id;
-
         if (context.Guild is not null)
-            payload.Fields.Add(new("Server", context.Guild.Name, true));
+            fields.Add(new("Server", context.Guild.Name, true));
 
-        payload.Fields.Add(new("Kanál", context.Channel.Name, true));
-        payload.Fields.Add(new("Uživatel", context.User.GetFullName(), false));
-        payload.Fields.Add(new("Příkaz", $"{cmd.Name} ({cmd.Module}/{cmd.MethodName})", false));
+        fields.Add(new("Kanál", context.Channel.Name, true));
+        fields.Add(new("Uživatel", context.User.GetFullName(), false));
+        fields.Add(new("Příkaz", $"{cmd.Name} ({cmd.Module}/{cmd.MethodName})", false));
+        fields.Add(new("Obsah chyby", CreateExceptionContentMessage(message, exception.InnerException!), false));
 
-        var exceptionMessage = CreateExceptionContentMessage(message, exception.InnerException!);
-        payload.Fields.Add(new("Obsah chyby", exceptionMessage, false));
+        return ("Při provádění příkazu došlo k chybě.", context.User.Id);
     }
 
-    private static void SetJobExceptionInfo(ErrorNotificationPayload payload, JobException exception, string source, string? message)
+    private static (string Title, ulong? UserId) CollectJobExceptionInfo(List<ErrorNotificationField> fields, JobException exception, string source, string? message)
     {
-        payload.Title = "Při běhu naplánované úlohy došlo k chybě.";
+        ulong? userId = null;
 
-        payload.Fields.Add(new("Zdroj", source, true));
-        payload.Fields.Add(new("Typ", exception.InnerException!.GetType().Name, true));
+        fields.Add(new("Zdroj", source, true));
+        fields.Add(new("Typ", exception.InnerException!.GetType().Name, true));
 
         if (exception.LoggedUser is not null)
         {
-            payload.UserId = exception.LoggedUser.Id;
-            payload.Fields.Add(new("Spustil", exception.LoggedUser.GetFullName(), false));
+            userId = exception.LoggedUser.Id;
+            fields.Add(new("Spustil", exception.LoggedUser.GetFullName(), false));
         }
 
-        var exceptionMessage = CreateExceptionContentMessage(message, exception.InnerException!);
-        payload.Fields.Add(new("Obsah chyby", exceptionMessage, false));
+        fields.Add(new("Obsah chyby", CreateExceptionContentMessage(message, exception.InnerException!), false));
+        return ("Při běhu naplánované úlohy došlo k chybě.", userId);
     }
 
-    private static void SetCommonExceptionInfo(ErrorNotificationPayload payload, Exception exception, string source, string? message)
+    private static (string Title, ulong? UserId) CollectCommonExceptionInfo(List<ErrorNotificationField> fields, Exception exception, string source, string? message)
     {
-        payload.Title = "Došlo k neočekávané chybě.";
+        fields.Add(new("Zdroj", source, true));
+        fields.Add(new("Typ", exception.GetType().Name, true));
+        fields.Add(new("Obsah chyby", CreateExceptionContentMessage(message, exception), false));
 
-        payload.Fields.Add(new("Zdroj", source, true));
-        payload.Fields.Add(new("Typ", exception.GetType().Name, true));
-
-        var exceptionMessage = CreateExceptionContentMessage(message, exception);
-        payload.Fields.Add(new("Obsah chyby", exceptionMessage, false));
+        return ("Došlo k neočekávané chybě.", null);
     }
 
-    private static void SetFrontendExceptionInfo(ErrorNotificationPayload payload, FrontendException exception, string source, string? message)
+    private static (string Title, ulong? UserId) CollectFrontendExceptionInfo(List<ErrorNotificationField> fields, FrontendException exception, string source, string? message)
     {
-        payload.Title = "Došlo k neočekávané chybě na webu.";
-        payload.UserId = exception.LoggedUser.Id;
+        fields.Add(new("Zdroj", source, true));
+        fields.Add(new("Typ", exception.GetType().Name, true));
+        fields.Add(new("Obsah chyby", CreateExceptionContentMessage(message, exception), false));
 
-        payload.Fields.Add(new("Zdroj", source, true));
-        payload.Fields.Add(new("Typ", exception.GetType().Name, true));
-
-        var exceptionMessage = CreateExceptionContentMessage(message, exception);
-        payload.Fields.Add(new("Obsah chyby", exceptionMessage, false));
+        return ("Došlo k neočekávané chybě na webu.", exception.LoggedUser.Id);
     }
 
     private static string CreateExceptionContentMessage(string? message, Exception exception)

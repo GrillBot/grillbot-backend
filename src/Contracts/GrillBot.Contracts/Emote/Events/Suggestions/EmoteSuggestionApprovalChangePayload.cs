@@ -1,28 +1,9 @@
-﻿using Discord;
-using GrillBot.Core.RabbitMQ.V2.Messages;
+using Discord;
 
 namespace GrillBot.Contracts.Emote.Events.Suggestions;
 
-public class EmoteSuggestionApprovalChangePayload : IRabbitMessage
+public sealed record EmoteSuggestionApprovalChangePayload(Guid SuggestionId, bool IsApprovedForVote, ulong ApprovedByUserId)
 {
-    public string Topic => "Emote";
-    public string Queue => "EmoteSuggestionApprovalChange";
-
-    public Guid SuggestionId { get; set; }
-    public bool IsApprovedForVote { get; set; }
-    public ulong ApprovedByUserId { get; set; }
-
-    public EmoteSuggestionApprovalChangePayload()
-    {
-    }
-
-    public EmoteSuggestionApprovalChangePayload(Guid suggestionId, bool isApprovedForVote, ulong approvedByUserId)
-    {
-        SuggestionId = suggestionId;
-        IsApprovedForVote = isApprovedForVote;
-        ApprovedByUserId = approvedByUserId;
-    }
-
     public static EmoteSuggestionApprovalChangePayload Create(Guid suggestionId, bool isApprovedForVote, IUser approvedBy)
         => new(suggestionId, isApprovedForVote, approvedBy.Id);
 }

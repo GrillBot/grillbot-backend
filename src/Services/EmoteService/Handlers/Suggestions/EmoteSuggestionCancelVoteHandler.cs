@@ -1,22 +1,16 @@
-﻿using GrillBot.Contracts.Emote.Events.Suggestions;
+using GrillBot.Contracts.Emote.Events.Suggestions;
 using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Contracts.Bot.Events.Messages;
 using Microsoft.EntityFrameworkCore;
 
 namespace EmoteService.Handlers.Suggestions;
 
-public class EmoteSuggestionCancelVoteHandler(IServiceProvider serviceProvider) : EmoteSuggestionHandlerBase<EmoteSuggestionCancelVotePayload>(serviceProvider)
+public class EmoteSuggestionCancelVoteHandler(IServiceProvider serviceProvider) : EmoteSuggestionHandlerBase(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        EmoteSuggestionCancelVotePayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(EmoteSuggestionCancelVotePayload message, CancellationToken cancellationToken)
     {
         if (message.SuggestionId == Guid.Empty)
-            return RabbitConsumptionResult.Reject;
+            return;
 
         var suggestionQuery = DbContext.EmoteSuggestions
             .Include(o => o.VoteSession)
@@ -30,19 +24,17 @@ public class EmoteSuggestionCancelVoteHandler(IServiceProvider serviceProvider) 
 
         var suggestion = await ContextHelper.ReadFirstOrDefaultEntityAsync(suggestionQuery, cancellationToken);
         if (suggestion == null)
-            return RabbitConsumptionResult.Reject;
+            return;
 
         var guildQuery = DbContext.Guilds.Where(o => o.GuildId == suggestion.GuildId);
         var guild = await ContextHelper.ReadFirstOrDefaultEntityAsync(guildQuery, cancellationToken);
         if (guild == null)
-            return RabbitConsumptionResult.Reject;
+            return;
 
         suggestion.VoteSession!.KilledAtUtc = DateTime.UtcNow;
 
         await ContextHelper.SaveChangesAsync(cancellationToken);
         var notificationMessage = CreateAdminChannelNotification(suggestion, guild, suggestion.SuggestionMessageId);
-        await Publisher.PublishAsync((DiscordEditMessagePayload)notificationMessage, cancellationToken: cancellationToken);
-
-        return RabbitConsumptionResult.Success;
+        await Publisher.PublishAsync((DiscordEditMessagePayload)notificationMessage);
     }
 }

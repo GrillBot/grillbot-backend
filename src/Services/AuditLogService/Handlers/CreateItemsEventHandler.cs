@@ -1,12 +1,11 @@
-﻿using AuditLogService.Core.Entity;
+using AuditLogService.Core.Entity;
 using GrillBot.Contracts.AuditLog.Enums;
 using AuditLogService.Managers;
 using GrillBot.Contracts.AuditLog.Events.Create;
 using AuditLogService.Processors;
 using AuditLogService.Processors.Request.Abstractions;
 using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
-using GrillBot.Services.Common.Infrastructure.RabbitMQ;
+using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
 
 #pragma warning disable S3604 // Member initializer values should not be redundant
 namespace AuditLogService.Handlers;
@@ -15,11 +14,11 @@ public class CreateItemsEventHandler(
     IServiceProvider serviceProvider,
     DataRecalculationManager _dataRecalculation,
     RequestProcessorFactory _requestProcessorFactory
-) : BaseEventHandlerWithDb<CreateItemsMessage, AuditLogServiceContext>(serviceProvider)
+) : EventHandlerBaseWithDb<AuditLogServiceContext>(serviceProvider)
 {
-    private readonly CreateItemsMessage _processingInfoBatch = new();
+    private readonly CreateItemsMessage _processingInfoBatch = new([]);
 
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(CreateItemsMessage message, ICurrentUserProvider currentUser, Dictionary<string, string> headers, CancellationToken cancellationToken = default)
+    public async Task HandleAsync(CreateItemsMessage message, CancellationToken cancellationToken)
     {
         var entities = new List<LogItem>();
 
@@ -37,8 +36,8 @@ public class CreateItemsEventHandler(
         await _dataRecalculation.EnqueueRecalculationAsync(entities, cancellationToken);
 
         if (_processingInfoBatch.Items.Count > 0)
-            await Publisher.PublishAsync(_processingInfoBatch, cancellationToken: cancellationToken);
-        return RabbitConsumptionResult.Success;
+            await Publisher.PublishAsync(_processingInfoBatch);
+        return;
     }
 
     private async Task<LogItem> CreateLogItemAsync(LogRequest request)

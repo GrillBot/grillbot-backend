@@ -18,6 +18,8 @@ global using System.Globalization;
 global using System.Text;
 global using Humanizer;
 global using GrillBot.App.Extensions;
+// Wolverine also defines an IMessage; in this project the Discord one is always what is meant.
+global using IMessage = Discord.IMessage;
 using GrillBot.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;

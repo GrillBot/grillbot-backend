@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Actions;
 
@@ -14,7 +14,7 @@ public static class ActionsExtensions
 
     private static IServiceCollection AddServiceBridge(this IServiceCollection services)
     {
-        services.AddScoped<RabbitMQPublisherAction>();
+        services.AddScoped<AsyncMessagePublisherAction>();
 
         return services
             .AddScoped<Api.ServiceBridgeAction<AuditLog.IAuditLogServiceClient>>()

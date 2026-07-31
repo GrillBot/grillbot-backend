@@ -1,11 +1,12 @@
-﻿using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.AuditLog.Enums;
 using GrillBot.Contracts.AuditLog.Events.Create;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Core.Redis.Extensions;
 using GrillBot.Services.Common.Discord;
-using GrillBot.Services.Common.Infrastructure.RabbitMQ;
+using GrillBot.Core.AsyncMessaging.Extensions;
+using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
+using Wolverine;
 using InviteService.Core.Entity;
 using InviteService.Extensions;
 using InviteService.Models.Cache;
@@ -22,19 +23,12 @@ public class SynchronizeGuildInvitesEventHandler(
     DiscordManager _discordManager,
     IDistributedCache _cache,
     ILogger<SynchronizeGuildInvitesEventHandler> _logger
-) : BaseEventHandlerWithDb<SynchronizeGuildInvitesPayload, InviteContext>(serviceProvider)
+) : EventHandlerBaseWithDb<InviteContext>(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        SynchronizeGuildInvitesPayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(SynchronizeGuildInvitesPayload message, Envelope envelope, CancellationToken cancellationToken)
     {
         await ClearInvitesForGuildAsync(message.GuildId, cancellationToken);
-        await DownloadInvitesToCacheAsync(message.GuildId, currentUser, message.IgnoreLog, cancellationToken);
-
-        return RabbitConsumptionResult.Success;
+        await DownloadInvitesToCacheAsync(message.GuildId, envelope.CurrentUser(), message.IgnoreLog, cancellationToken);
     }
 
     private async Task ClearInvitesForGuildAsync(string guildId, CancellationToken cancellationToken = default)
@@ -73,7 +67,7 @@ public class SynchronizeGuildInvitesEventHandler(
                 }
             };
 
-            await Publisher.PublishAsync(new CreateItemsMessage(logRequest), cancellationToken: cancellationToken);
+            await Publisher.PublishAsync(new CreateItemsMessage(logRequest));
         }
 
         foreach (var invite in invites)

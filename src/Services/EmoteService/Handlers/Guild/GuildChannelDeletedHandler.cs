@@ -1,29 +1,23 @@
-﻿using EmoteService.Core.Entity;
+using EmoteService.Core.Entity;
 using GrillBot.Contracts.Emote.Events.Guild;
 using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
-using GrillBot.Services.Common.Infrastructure.RabbitMQ;
+using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
 
 namespace EmoteService.Handlers.Guild;
 
-public class GuildChannelDeletedHandler(IServiceProvider serviceProvider) : BaseEventHandlerWithDb<GuildChannelDeletedPayload, EmoteServiceContext>(serviceProvider)
+public class GuildChannelDeletedHandler(IServiceProvider serviceProvider) : EventHandlerBaseWithDb<EmoteServiceContext>(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        GuildChannelDeletedPayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(GuildChannelDeletedPayload message, CancellationToken cancellationToken)
     {
         if (message.GuildId == 0 || message.ChannelId == 0)
-            return RabbitConsumptionResult.Reject;
+            return;
 
         var guildQuery = DbContext.Guilds
             .Where(o => o.GuildId == message.GuildId);
 
         var guild = await ContextHelper.ReadFirstOrDefaultEntityAsync(guildQuery, cancellationToken);
         if (guild is null)
-            return RabbitConsumptionResult.Success;
+            return;
 
         // Clear configuration if channel is private channel for suggestions.
         if (guild.SuggestionChannelId == message.ChannelId)
@@ -44,6 +38,5 @@ public class GuildChannelDeletedHandler(IServiceProvider serviceProvider) : Base
         }
 
         await ContextHelper.SaveChangesAsync(cancellationToken);
-        return RabbitConsumptionResult.Success;
     }
 }

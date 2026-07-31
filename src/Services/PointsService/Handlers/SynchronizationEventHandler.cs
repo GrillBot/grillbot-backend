@@ -1,5 +1,4 @@
-﻿using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
+using GrillBot.Core.Infrastructure.Auth;
 using PointsService.Core.Entity;
 using PointsService.Handlers.Abstractions;
 using GrillBot.Contracts.Points.Channels;
@@ -10,14 +9,9 @@ namespace PointsService.Handlers;
 
 public class SynchronizationEventHandler(
     IServiceProvider serviceProvider
-) : BasePointsEvent<SynchronizationPayload>(serviceProvider)
+) : BasePointsEvent(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        SynchronizationPayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(SynchronizationPayload message, CancellationToken cancellationToken)
     {
         foreach (var userInfo in message.Users)
             await SynchronizeUserAsync(message.GuildId, userInfo);
@@ -26,7 +20,7 @@ public class SynchronizationEventHandler(
             await SynchronizeChannelAsync(message.GuildId, channelInfo);
 
         await ContextHelper.SaveChangesAsync(cancellationToken);
-        return RabbitConsumptionResult.Success;
+        return;
     }
 
     private async Task SynchronizeUserAsync(string guildId, UserSyncItem user)

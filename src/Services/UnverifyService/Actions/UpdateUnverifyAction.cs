@@ -1,8 +1,7 @@
-﻿using GrillBot.Core.Extensions;
-using UnverifyService.Models.Events;
+using GrillBot.Core.Extensions;
+using GrillBot.Contracts.Unverify.Events;
 using GrillBot.Core.Extensions.Discord;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Contracts.Bot;
 using GrillBot.Contracts.Bot.Events.Messages;
 using GrillBot.Services.Common.Discord;
@@ -12,15 +11,16 @@ using Microsoft.EntityFrameworkCore;
 using UnverifyService.Core.Entity;
 using UnverifyService.Core.Entity.Logs;
 using GrillBot.Contracts.Unverify.Enums;
-using GrillBot.Contracts.Unverify.Events;
 using GrillBot.Contracts.Unverify.Requests;
 using GrillBot.Contracts.UserMeasures.Events;
+using Wolverine;
+
 
 namespace UnverifyService.Actions;
 
 public class UpdateUnverifyAction(
     IServiceProvider serviceProvider,
-    IRabbitPublisher _rabbitPublisher,
+    IMessageBus _rabbitPublisher,
     DiscordManager _discordManager
 ) : ApiAction<UnverifyContext>(serviceProvider)
 {
@@ -94,7 +94,7 @@ public class UpdateUnverifyAction(
     private Task NotifyUserMeasuresAsync(ActiveUnverify unverify)
     {
         var payload = new UnverifyModifyPayload(unverify.LogItem.LogNumber, unverify.EndAtUtc);
-        return _rabbitPublisher.PublishAsync(payload, cancellationToken: CancellationToken);
+        return _rabbitPublisher.PublishAsync(payload).AsTask();
     }
 
     private async Task SendUserNotificationAsync(ActiveUnverify unverify, UnverifyLogItem updateLogItem)
@@ -126,7 +126,7 @@ public class UpdateUnverifyAction(
         );
 
         payload.WithLocalization(locale: userLocale);
-        await _rabbitPublisher.PublishAsync(payload, cancellationToken: CancellationToken);
+        await _rabbitPublisher.PublishAsync(payload);
     }
 
     private async Task<ApiResult> CreateResultAsync(ActiveUnverify unverify, UnverifyLogItem updateLogItem)
@@ -150,5 +150,5 @@ public class UpdateUnverifyAction(
     }
 
     private Task RecalculateMetricsAsync()
-        => _rabbitPublisher.PublishAsync(new RecalculateMetricsMessage(), cancellationToken: CancellationToken);
+        => _rabbitPublisher.PublishAsync(new RecalculateMetricsMessage()).AsTask();
 }

@@ -1,10 +1,9 @@
-﻿using GrillBot.Core.Extensions;
+using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Contracts.AuditLog.Enums;
 using GrillBot.Contracts.AuditLog.Events.Create;
 using GrillBot.Services.Common.Discord;
-using GrillBot.Services.Common.Infrastructure.RabbitMQ;
+using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
 using System.Text;
 using UserManagementService.Core.Entity;
 using GrillBot.Contracts.UserManagement.Events;
@@ -14,33 +13,26 @@ namespace UserManagementService.Handlers;
 public class NicknameChangedHandler(
     IServiceProvider serviceProvider,
     DiscordManager _discordManager
-) : BaseEventHandlerWithDb<NicknameChangedMessage, UserManagementContext>(serviceProvider)
+) : EventHandlerBaseWithDb<UserManagementContext>(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        NicknameChangedMessage message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(NicknameChangedMessage message, CancellationToken cancellationToken)
     {
         if (message.NicknameBefore == message.NicknameAfter)
-            return RabbitConsumptionResult.Success;
+            return;
 
         var user = await _discordManager.GetUserAsync(message.UserId, cancellationToken);
         if (user is null)
-            return RabbitConsumptionResult.Reject;
+            return;
 
         var isUser = !(user.IsBot || user.IsWebhook);
-        message.NicknameBefore = SanitizeNickname(message.NicknameBefore, isUser);
-        message.NicknameAfter = SanitizeNickname(message.NicknameAfter, isUser);
+        var nicknameBefore = SanitizeNickname(message.NicknameBefore, isUser);
+        var nicknameAfter = SanitizeNickname(message.NicknameAfter, isUser);
 
-        await UpdateNicknameHistoryAsync(message.GuildId, message.UserId, message.NicknameBefore);
-        await UpdateNicknameHistoryAsync(message.GuildId, message.UserId, message.NicknameAfter);
-        await UpdateCurrentNicknameAsync(message);
+        await UpdateNicknameHistoryAsync(message.GuildId, message.UserId, nicknameBefore);
+        await UpdateNicknameHistoryAsync(message.GuildId, message.UserId, nicknameAfter);
+        await UpdateCurrentNicknameAsync(message, nicknameAfter);
         await ContextHelper.SaveChangesAsync(cancellationToken);
         await NotifyAuditLogAsync(message);
-
-        return RabbitConsumptionResult.Success;
     }
 
     private async Task UpdateNicknameHistoryAsync(ulong guildId, ulong userId, string? nickname)
@@ -60,7 +52,7 @@ public class NicknameChangedHandler(
         });
     }
 
-    private async Task UpdateCurrentNicknameAsync(NicknameChangedMessage message)
+    private async Task UpdateCurrentNicknameAsync(NicknameChangedMessage message, string? currentNickname)
     {
         var guildUserQuery = DbContext.GuildUsers.Where(o => o.GuildId == message.GuildId && o.UserId == message.UserId);
         var guildUser = await ContextHelper.ReadFirstOrDefaultEntityAsync(guildUserQuery);
@@ -76,7 +68,7 @@ public class NicknameChangedHandler(
             await DbContext.AddAsync(guildUser);
         }
 
-        guildUser.CurrentNickname = message.NicknameAfter;
+        guildUser.CurrentNickname = currentNickname;
     }
 
     private Task NotifyAuditLogAsync(NicknameChangedMessage message)
@@ -86,7 +78,7 @@ public class NicknameChangedHandler(
             MemberUpdated = new MemberUpdatedRequest { UserId = message.UserId.ToString() }
         };
 
-        return Publisher.PublishAsync(new CreateItemsMessage(logRequest));
+        return Publisher.PublishAsync(new CreateItemsMessage(logRequest)).AsTask();
     }
 
     private static string? SanitizeNickname(string? nickname, bool isUser)

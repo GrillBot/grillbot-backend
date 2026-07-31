@@ -1,11 +1,12 @@
-﻿using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
+using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Contracts.UserManagement.Events;
+using Wolverine;
+
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
 
 public class UserManagementOrchestrationHandler(
-    IRabbitPublisher _rabbitPublisher
+    IMessageBus _rabbitPublisher
 ) : IGuildMemberUpdatedEvent
 {
     // GuildMemberUpdated
@@ -13,6 +14,6 @@ public class UserManagementOrchestrationHandler(
     {
         return before is null || before.Nickname == after.Nickname
             ? Task.CompletedTask
-            : _rabbitPublisher.PublishAsync(NicknameChangedMessage.Create(before, after));
+            : _rabbitPublisher.PublishAsync(NicknameChangedMessage.Create(before, after)).AsTask();
     }
 }

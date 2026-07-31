@@ -1,24 +1,18 @@
-﻿using EmoteService.Core.Entity;
+using EmoteService.Core.Entity;
 using EmoteService.Extensions.QueryExtensions;
 using GrillBot.Contracts.Emote.Events;
 using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
-using GrillBot.Services.Common.Infrastructure.RabbitMQ;
+using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
 
 namespace EmoteService.Handlers;
 
-public class EmoteEventEventHandler(IServiceProvider serviceProvider) : BaseEventHandlerWithDb<EmoteEventPayload, EmoteServiceContext>(serviceProvider)
+public class EmoteEventEventHandler(IServiceProvider serviceProvider) : EventHandlerBaseWithDb<EmoteServiceContext>(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        EmoteEventPayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(EmoteEventPayload message, CancellationToken cancellationToken)
     {
         var emoteValue = Discord.Emote.Parse(message.EmoteId);
         if (message.IsIncrement && !await IsSupportedEmoteAsync(emoteValue))
-            return RabbitConsumptionResult.Success;
+            return;
 
         var entity = await GetEntityAsync(message.GuildId, message.UserId, emoteValue);
         if (entity is null)
@@ -26,7 +20,7 @@ public class EmoteEventEventHandler(IServiceProvider serviceProvider) : BaseEven
             if (message.IsIncrement)
                 entity = await CreateEntityAsync(message.GuildId, message.UserId, emoteValue);
             else
-                return RabbitConsumptionResult.Success;
+                return;
         }
 
         if (message.IsIncrement)
@@ -46,7 +40,7 @@ public class EmoteEventEventHandler(IServiceProvider serviceProvider) : BaseEven
         }
 
         await ContextHelper.SaveChangesAsync(cancellationToken);
-        return RabbitConsumptionResult.Success;
+        return;
     }
 
     private void ValidationFailed(string message)

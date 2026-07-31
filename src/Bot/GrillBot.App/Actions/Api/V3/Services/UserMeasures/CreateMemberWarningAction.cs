@@ -1,16 +1,16 @@
-﻿using GrillBot.Common.Models;
+using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Contracts.UserMeasures.Events;
 using GrillBot.Data.Models.API.UserMeasures;
+using Wolverine;
 
 namespace GrillBot.App.Actions.Api.V3.Services.UserMeasures;
 
 public class CreateMemberWarningAction : ApiAction
 {
-    private readonly IRabbitPublisher _rabbitPublisher;
+    private readonly IMessageBus _rabbitPublisher;
 
-    public CreateMemberWarningAction(ApiRequestContext apiContext, IRabbitPublisher rabbitPublisher) : base(apiContext)
+    public CreateMemberWarningAction(ApiRequestContext apiContext, IMessageBus rabbitPublisher) : base(apiContext)
     {
         _rabbitPublisher = rabbitPublisher;
     }

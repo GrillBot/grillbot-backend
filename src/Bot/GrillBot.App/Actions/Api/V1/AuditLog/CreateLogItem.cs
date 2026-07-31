@@ -1,18 +1,18 @@
-﻿using GrillBot.Common.Extensions;
+using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Contracts.AuditLog.Enums;
 using GrillBot.Contracts.AuditLog.Events.Create;
 using GrillBot.Data.Models.API.AuditLog;
+using Wolverine;
 
 namespace GrillBot.App.Actions.Api.V1.AuditLog;
 
 public class CreateLogItem(
     ApiRequestContext apiContext,
     ITextsManager _texts,
-    IRabbitPublisher _rabbitPublisher
+    IMessageBus _rabbitPublisher
 ) : ApiAction(apiContext)
 {
     public override async Task<ApiResult> ProcessAsync()

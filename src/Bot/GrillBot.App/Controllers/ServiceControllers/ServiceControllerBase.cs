@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Actions;
+using GrillBot.App.Actions;
 using GrillBot.App.Actions.Api;
 using GrillBot.Core.Infrastructure;
 using GrillBot.Core.Infrastructure.Actions;
@@ -39,7 +39,7 @@ public abstract class ServiceControllerBase<TService>(
     }
 
     protected Task<IActionResult> ExecuteRabbitPayloadAsync(Func<object> createPayload)
-        => ProcessAsync<RabbitMQPublisherAction>(createPayload());
+        => ProcessAsync<AsyncMessagePublisherAction>(createPayload());
 
     protected Task<IActionResult> ExecuteRabbitPayloadAsync(object payload)
         => ExecuteRabbitPayloadAsync(() => payload);

@@ -1,21 +1,15 @@
-﻿using GrillBot.Contracts.Emote.Events.Suggestions;
+using GrillBot.Contracts.Emote.Events.Suggestions;
 using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
 using Microsoft.EntityFrameworkCore;
 
 namespace EmoteService.Handlers.Suggestions;
 
-public class EmoteSuggestionVoteMessageCreatedHandler(IServiceProvider serviceProvider) : EmoteSuggestionHandlerBase<EmoteSuggestionVoteMessageCreatedPayload>(serviceProvider)
+public class EmoteSuggestionVoteMessageCreatedHandler(IServiceProvider serviceProvider) : EmoteSuggestionHandlerBase(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        EmoteSuggestionVoteMessageCreatedPayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(EmoteSuggestionVoteMessageCreatedPayload message, CancellationToken cancellationToken)
     {
         if (message.SuggestionId == Guid.Empty)
-            return RabbitConsumptionResult.Reject;
+            return;
 
         var suggestionQuery = DbContext.EmoteSuggestions
             .Include(o => o.VoteSession)
@@ -23,11 +17,9 @@ public class EmoteSuggestionVoteMessageCreatedHandler(IServiceProvider servicePr
 
         var suggestion = await ContextHelper.ReadFirstOrDefaultEntityAsync(suggestionQuery, cancellationToken);
         if (suggestion == null)
-            return RabbitConsumptionResult.Reject;
+            return;
 
         suggestion.VoteSession!.VoteMessageId = message.MessageId;
         await DbContext.SaveChangesAsync(cancellationToken);
-
-        return RabbitConsumptionResult.Success;
     }
 }

@@ -1,5 +1,4 @@
-﻿using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
+using GrillBot.Core.Infrastructure.Auth;
 using UserMeasuresService.Handlers.Abstractions;
 using GrillBot.Contracts.UserMeasures.Events;
 
@@ -7,23 +6,17 @@ namespace UserMeasuresService.Handlers;
 
 public class UnverifyModifyEventHandler(
     IServiceProvider serviceProvider
-) : BaseMeasuresHandler<UnverifyModifyPayload>(serviceProvider)
+) : BaseMeasuresHandler(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        UnverifyModifyPayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(UnverifyModifyPayload message, CancellationToken cancellationToken)
     {
         var item = await ContextHelper.ReadFirstOrDefaultEntityAsync(DbContext.Unverifies.Where(o => o.LogSetId == message.LogSetId), cancellationToken);
         if (item is null)
-            return RabbitConsumptionResult.Success;
+            return;
 
         if (message.NewEndUtc.HasValue)
             item.ValidTo = message.NewEndUtc.Value.ToUniversalTime();
 
         await SaveEntityAsync(item);
-        return RabbitConsumptionResult.Success;
     }
 }

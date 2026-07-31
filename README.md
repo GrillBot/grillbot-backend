@@ -13,7 +13,7 @@ GrillBot is a Discord bot for fun and management of the VUT FIT Discord server.
 
 | Path | Contents |
 |---|---|
-| `src/Core/` | Shared libraries (`GrillBot.Core`, `.HealthCheck`, `.Metrics`, `.RabbitMQ.V2`, `.Redis`, `.Services`) |
+| `src/Core/` | Shared libraries (`GrillBot.Core`, `.AsyncMessaging`, `.HealthCheck`, `.Metrics`, `.Redis`, `.Services`) |
 | `src/Contracts/` | `GrillBot.Contracts` — the integration events, requests and responses exchanged between services, one folder per bounded context |
 | `src/Bot/` | Discord bot host (`GrillBot.App` + `Cache`, `Common`, `Data`, `Database`) |
 | `src/Services/` | `GrillBot.Services.Common`, 12 .NET microservices and the Node/TypeScript `Graphics` service |
@@ -33,6 +33,35 @@ carry come from `GrillBot.Contracts`. Contracts carry data, validation attribute
 and self-contained invariants; anything that needs service state (options, the
 database) belongs in a `ModelValidator<T>` in the owning service, which
 `ModelValidationFilter` resolves and runs.
+
+## Async messaging
+
+Services talk to each other asynchronously through **WolverineFx over RabbitMQ**
+(`src/Core/GrillBot.Core.AsyncMessaging`). The topology is:
+
+- one **direct exchange per bounded context** — `points`, `audit-log`, `emote`,
+  `unverify`, `grillbot`, …;
+- one **queue per deployable**, named after its key in `docker/deployables.json`
+  (`points_service`, `bot`, …);
+- a **routing key per message**, bound from the owning exchange to the queue of
+  the service that handles it.
+
+`Topology/MessageTopology.cs` is the single table mapping a message type to its
+exchange and routing key, built from the `MessagingConstants` class of each
+bounded context. Contracts themselves carry no transport: an integration event is
+a plain `record` that knows nothing about queues, and a test asserts that every
+event in `GrillBot.Contracts` has a route.
+
+Writing a handler needs no registration — Wolverine discovers any public class
+whose name ends in `Handler` with a `Handle`/`HandleAsync` method whose first
+argument is the message. Publishing is `IMessageBus.PublishAsync(payload)`, or
+`PublishAsync(payload, currentUser)` to forward the caller's `Authorization`
+header so the handler can act on their behalf.
+
+A handler that throws gets the retry cooldowns from `AsyncMessaging:RetryCooldowns`,
+then a Discord error notification and an audit log entry, then Wolverine's error
+queue. Throw `TransientMessageException` when a retry is expected and the
+notification should be skipped.
 
 ## Requirements
 
@@ -120,6 +149,11 @@ Recommended:
 
 Services take `ConnectionStrings:Default`, the `RabbitMQ:*` block and, where
 applicable, `Redis:Endpoint`/`Redis:Password` and `Services:<Name>:Api`.
+
+Broker credentials stay in `RabbitMQ:*`. The Wolverine tuning lives next to it in
+the `AsyncMessaging` block of each `appsettings.json` — queue name, listener count,
+retry cooldowns, dead-letter expiration. `AsyncMessaging:QueueName` must equal the
+application's key in `docker/deployables.json`; startup fails fast if it does not.
 
 When running the bot in Docker, bind `/GrillBotData` as a volume.
 

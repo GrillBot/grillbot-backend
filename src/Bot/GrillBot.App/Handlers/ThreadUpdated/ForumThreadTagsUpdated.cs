@@ -1,15 +1,15 @@
-﻿using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
+using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Contracts.AuditLog.Enums;
 using GrillBot.Contracts.AuditLog.Events.Create;
+using Wolverine;
 
 namespace GrillBot.App.Handlers.ThreadUpdated;
 
 public class ForumThreadTagsUpdated : IThreadUpdatedEvent
 {
-    private readonly IRabbitPublisher _rabbitPublisher;
+    private readonly IMessageBus _rabbitPublisher;
 
-    public ForumThreadTagsUpdated(IRabbitPublisher rabbitPublisher)
+    public ForumThreadTagsUpdated(IMessageBus rabbitPublisher)
     {
         _rabbitPublisher = rabbitPublisher;
     }

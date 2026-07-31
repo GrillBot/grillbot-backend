@@ -1,15 +1,15 @@
-﻿using GrillBot.Core.Managers.Performance;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
+using GrillBot.Core.Managers.Performance;
 using Microsoft.Extensions.Options;
 using PointsService.Core.Entity;
 using PointsService.Core.Options;
+using Wolverine;
 
 namespace PointsService.Actions.Merge;
 
 public class MergeValidTransactionsAction(
     ICounterManager counterManager,
     PointsServiceContext dbContext,
-    IRabbitPublisher publisher,
+    IMessageBus publisher,
     IOptions<AppOptions> _options
 ) : MergeTransactionsBaseAction(counterManager, dbContext, publisher)
 {

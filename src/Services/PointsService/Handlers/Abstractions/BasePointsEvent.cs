@@ -1,13 +1,13 @@
-﻿using GrillBot.Core.RabbitMQ.V2.Messages;
-using GrillBot.Services.Common.Infrastructure.RabbitMQ;
+using GrillBot.Core.AsyncMessaging.Extensions;
+using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
 using PointsService.Core.Entity;
 using GrillBot.Contracts.Points.Events;
 
 namespace PointsService.Handlers.Abstractions;
 
-public abstract class BasePointsEvent<TPayload>(
+public abstract class BasePointsEvent(
     IServiceProvider serviceProvider
-) : BaseEventHandlerWithDb<TPayload, PointsServiceContext>(serviceProvider) where TPayload : class, IRabbitMessage, new()
+) : EventHandlerBaseWithDb<PointsServiceContext>(serviceProvider)
 {
     protected async Task<User> FindOrCreateUserAsync(string guildId, string userId)
     {
@@ -30,12 +30,9 @@ public abstract class BasePointsEvent<TPayload>(
         return entity;
     }
 
-    protected Task EnqueueUserForRecalculationAsync(string guildId, string userId)
+    protected ValueTask EnqueueUserForRecalculationAsync(string guildId, string userId)
         => Publisher.PublishAsync(new UserRecalculationPayload(guildId, userId));
 
-    protected Task EnqueueUsersForRecalculationAsync(IEnumerable<(string guildId, string userId)> users)
-    {
-        var payloads = users.Select(o => new UserRecalculationPayload(o.guildId, o.userId)).ToList();
-        return Publisher.PublishAsync(payloads);
-    }
+    protected ValueTask EnqueueUsersForRecalculationAsync(IEnumerable<(string guildId, string userId)> users)
+        => Publisher.PublishAllAsync(users.Select(o => new UserRecalculationPayload(o.guildId, o.userId)));
 }

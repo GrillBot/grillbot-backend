@@ -1,4 +1,6 @@
-﻿using GrillBot.Core;
+using GrillBot.Core;
+using GrillBot.Core.AsyncMessaging;
+
 using GrillBot.Core.HealthCheck;
 using GrillBot.Core.Metrics;
 using GrillBot.Services.Common.Discord;
@@ -17,6 +19,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
+using Wolverine;
+using Wolverine.RabbitMQ;
 
 namespace GrillBot.Services.Common;
 
@@ -31,7 +35,9 @@ public static class ServiceBuilder
         Action<IHealthChecksBuilder, IConfiguration>? configureHealthChecks = null,
         Func<IApplicationBuilder, IServiceProvider, Task>? preRunInitialization = null,
         Action<IApplicationBuilder>? configureMiddleware = null,
-        Action<IApplicationBuilder>? configureDevOnlyMiddleware = null
+        Action<IApplicationBuilder>? configureDevOnlyMiddleware = null,
+        Action<WolverineOptions>? configureWolverine = null,
+        Action<IRabbitMqQueue>? configureWolverineQueue = null
     ) where TAppOptions : class
     {
         var builder = WebApplication.CreateBuilder(args);
@@ -89,7 +95,7 @@ public static class ServiceBuilder
         // Registrators
         builder.Services.RegisterActionsFromAssembly(runningAssembly);
         builder.Services.RegisterValidatorsFromAssembly(runningAssembly);
-        builder.Services.RegisterRabbitMQFromAssembly(builder.Configuration, runningAssembly);
+        builder.UseAsyncMessaging(runningAssembly, configureWolverine, configureWolverineQueue);
         builder.Services.RegisterCacheFromAssembly(runningAssembly);
 
         // Other services and configurations.
@@ -138,7 +144,9 @@ public static class ServiceBuilder
         Action<IHealthChecksBuilder, IConfiguration>? configureHealthChecks = null,
         Func<IApplicationBuilder, IServiceProvider, Task>? preRunInitialization = null,
         Action<IApplicationBuilder>? configureMiddleware = null,
-        Action<IApplicationBuilder>? configureDevOnlyMiddleware = null
+        Action<IApplicationBuilder>? configureDevOnlyMiddleware = null,
+        Action<WolverineOptions>? configureWolverine = null,
+        Action<IRabbitMqQueue>? configureWolverineQueue = null
     )
     {
         return CreateWebAppAsync<object>(
@@ -150,7 +158,9 @@ public static class ServiceBuilder
             configureHealthChecks,
             preRunInitialization,
             configureMiddleware,
-            configureDevOnlyMiddleware
+            configureDevOnlyMiddleware,
+            configureWolverine,
+            configureWolverineQueue
         );
     }
 }

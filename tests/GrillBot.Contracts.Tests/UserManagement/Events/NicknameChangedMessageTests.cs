@@ -8,20 +8,7 @@ namespace GrillBot.Contracts.Tests.UserManagement.Events;
 public class NicknameChangedMessageTests
 {
     [TestMethod]
-    public void DefaultConstructor_InitializesProperties()
-    {
-        var message = new NicknameChangedMessage();
-
-        Assert.AreEqual("UserManagement", message.Topic);
-        Assert.AreEqual("NicknameChanged", message.Queue);
-        Assert.AreEqual(0UL, message.GuildId);
-        Assert.AreEqual(0UL, message.UserId);
-        Assert.IsNull(message.NicknameBefore);
-        Assert.IsNull(message.NicknameAfter);
-    }
-
-    [TestMethod]
-    public void ParameterizedConstructor_SetsAllProperties()
+    public void Constructor_SetsAllProperties()
     {
         var message = new NicknameChangedMessage(123UL, 456UL, "oldNick", "newNick");
 
@@ -48,5 +35,14 @@ public class NicknameChangedMessageTests
         Assert.AreEqual(1011UL, message.UserId);
         Assert.AreEqual("beforeNick", message.NicknameBefore);
         Assert.AreEqual("afterNick", message.NicknameAfter);
+    }
+
+    [TestMethod]
+    public void Equality_ComparesByValue()
+    {
+        Assert.AreEqual(
+            new NicknameChangedMessage(1UL, 2UL, "a", "b"),
+            new NicknameChangedMessage(1UL, 2UL, "a", "b")
+        );
     }
 }

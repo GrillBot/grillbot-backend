@@ -55,6 +55,9 @@ public static class TelemetryExtensions
                 .AddProcessInstrumentation()
                 .AddPrometheusExporter()
                 .AddMeter(METER_NAME)
+                // Wolverine's meter is named "Wolverine:<ServiceName>", so the wildcard is
+                // required - a bare "Wolverine" matches nothing and the metrics never export.
+                .AddMeter("Wolverine*")
             );
 
         builder.Services.AddSingleton(

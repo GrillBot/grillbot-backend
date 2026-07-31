@@ -1,13 +1,13 @@
-﻿using GrillBot.App.Helpers;
+using GrillBot.App.Helpers;
 using GrillBot.Common.Managers.Localization;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Contracts.Emote.Events.Suggestions;
+using Wolverine;
 
 namespace GrillBot.App.Actions.Commands.Emotes.Suggestions;
 
 public class CreateEmoteSuggestionAction(
     DownloadHelper _downloadHelper,
-    IRabbitPublisher _rabbitPublisher,
+    IMessageBus _rabbitPublisher,
     ITextsManager _texts
 ) : CommandAction
 {

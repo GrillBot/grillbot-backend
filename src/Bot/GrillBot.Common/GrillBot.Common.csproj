@@ -25,7 +25,7 @@
 		<ProjectReference Include="..\..\Core\GrillBot.Core\GrillBot.Core.csproj" />
 		<ProjectReference Include="..\..\Core\GrillBot.Core.HealthCheck\GrillBot.Core.HealthCheck.csproj" />
 		<ProjectReference Include="..\..\Core\GrillBot.Core.Metrics\GrillBot.Core.Metrics.csproj" />
-		<ProjectReference Include="..\..\Core\GrillBot.Core.RabbitMQ.V2\GrillBot.Core.RabbitMQ.V2.csproj" />
+		<ProjectReference Include="..\..\Core\GrillBot.Core.AsyncMessaging\GrillBot.Core.AsyncMessaging.csproj" />
 		<ProjectReference Include="..\..\Core\GrillBot.Core.Redis\GrillBot.Core.Redis.csproj" />
 		<ProjectReference Include="..\..\Core\GrillBot.Core.Services\GrillBot.Core.Services.csproj" />
 	</ItemGroup>

@@ -1,24 +1,17 @@
-﻿using AuditLogService.Core.Entity;
-using AuditLogService.Models.Events.Recalculation;
+using AuditLogService.Core.Entity;
+using GrillBot.Contracts.AuditLog.Events.Recalculation;
 using GrillBot.Contracts.AuditLog.Enums;
 using AuditLogService.Handlers.Recalculation.Actions;
 using AuditLogService.Handlers.Recalculation.Actions.Telemetry;
-using GrillBot.Contracts.AuditLog.Events.Recalculation;
 using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
-using GrillBot.Services.Common.Infrastructure.RabbitMQ;
+using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
 
 namespace AuditLogService.Handlers.Recalculation;
 
 public class RecalculationHandler(IServiceProvider serviceProvider)
-    : BaseEventHandlerWithDb<RecalculationPayload, AuditLogServiceContext>(serviceProvider)
+    : EventHandlerBaseWithDb<AuditLogServiceContext>(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        RecalculationPayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> header,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(RecalculationPayload message, CancellationToken cancellationToken)
     {
         foreach (var action in GetRecalculationActions(message).Where(a => a.CheckPreconditions(message)))
         {
@@ -26,7 +19,7 @@ public class RecalculationHandler(IServiceProvider serviceProvider)
                 await action.ProcessAsync(message);
         }
 
-        return RabbitConsumptionResult.Success;
+        return;
     }
 
     private IEnumerable<RecalculationActionBase> GetRecalculationActions(RecalculationPayload payload)

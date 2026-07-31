@@ -1,6 +1,5 @@
-﻿using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
-using GrillBot.Services.Common.Infrastructure.RabbitMQ;
+using GrillBot.Core.Infrastructure.Auth;
+using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
 using Microsoft.Extensions.Caching.Distributed;
 using GrillBot.Contracts.Rubbergod.Events.Pins;
 
@@ -9,18 +8,13 @@ namespace RubbergodService.Handlers.Pins;
 public class ClearPinCacheEventHandler(
     IServiceProvider serviceProvider,
     IDistributedCache _cache
-) : BaseEventHandler<ClearPinCachePayload>(serviceProvider)
+) : EventHandlerBase(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        ClearPinCachePayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(ClearPinCachePayload message, CancellationToken cancellationToken)
     {
         await RemoveItemAsync("md", message);
         await RemoveItemAsync("json", message);
-        return RabbitConsumptionResult.Success;
+        return;
     }
 
     private async Task RemoveItemAsync(string type, ClearPinCachePayload payload)

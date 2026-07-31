@@ -1,5 +1,4 @@
-﻿using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
+using GrillBot.Core.Infrastructure.Auth;
 using PointsService.Core.Entity;
 using PointsService.Handlers.Abstractions;
 using GrillBot.Contracts.Points.Events;
@@ -8,23 +7,18 @@ namespace PointsService.Handlers;
 
 public class DeleteTransactionsEventHandler(
     IServiceProvider serviceProvider
-) : BasePointsEvent<DeleteTransactionsPayload>(serviceProvider)
+) : BasePointsEvent(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        DeleteTransactionsPayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(DeleteTransactionsPayload message, CancellationToken cancellationToken)
     {
         var transactions = await ReadTransactionsAsync(message);
         if (transactions.Count == 0)
-            return RabbitConsumptionResult.Success;
+            return;
 
         DbContext.RemoveRange(transactions);
         await ContextHelper.SaveChangesAsync(cancellationToken);
         await EnqueueUserForRecalculationAsync(transactions);
-        return RabbitConsumptionResult.Success;
+        return;
     }
 
     private async Task<List<Transaction>> ReadTransactionsAsync(DeleteTransactionsPayload payload)
@@ -43,6 +37,6 @@ public class DeleteTransactionsEventHandler(
             .GroupBy(o => new { o.GuildId, o.UserId })
             .Select(o => (o.Key.GuildId, o.Key.UserId));
 
-        return EnqueueUsersForRecalculationAsync(users);
+        return EnqueueUsersForRecalculationAsync(users).AsTask();
     }
 }

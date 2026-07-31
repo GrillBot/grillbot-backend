@@ -1,18 +1,19 @@
-﻿using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.AuditLog.Enums;
 using GrillBot.Contracts.AuditLog.Events.Create;
 using EmoteService.Core.Entity;
 using EmoteService.Extensions.QueryExtensions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Managers.Performance;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Services.Common.Infrastructure.Api;
+using Wolverine;
+
 
 namespace EmoteService.Actions.Statistics;
 
 public class DeleteStatisticsAction(
     ICounterManager counterManager,
     EmoteServiceContext dbContext,
-    IRabbitPublisher _rabbitPublisher
+    IMessageBus _rabbitPublisher
 ) : ApiAction<EmoteServiceContext>(counterManager, dbContext)
 {
     public override async Task<ApiResult> ProcessAsync()
@@ -48,6 +49,6 @@ public class DeleteStatisticsAction(
             }
         };
 
-        return _rabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest));
+        return _rabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest)).AsTask();
     }
 }

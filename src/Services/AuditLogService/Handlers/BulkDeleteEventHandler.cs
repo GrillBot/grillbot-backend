@@ -1,11 +1,10 @@
-﻿using AuditLogService.Core.Entity;
+using AuditLogService.Core.Entity;
 using GrillBot.Contracts.AuditLog.Enums;
 using AuditLogService.Core.Extensions;
 using AuditLogService.Managers;
 using GrillBot.Contracts.AuditLog.Events;
 using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
-using GrillBot.Services.Common.Infrastructure.RabbitMQ;
+using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuditLogService.Handlers;
@@ -13,9 +12,9 @@ namespace AuditLogService.Handlers;
 public class BulkDeleteEventHandler(
     IServiceProvider serviceProvider,
     DataRecalculationManager _dataRecalculation
-) : BaseEventHandlerWithDb<BulkDeletePayload, AuditLogServiceContext>(serviceProvider)
+) : EventHandlerBaseWithDb<AuditLogServiceContext>(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(BulkDeletePayload message, ICurrentUserProvider currentUser, Dictionary<string, string> headers, CancellationToken cancellationToken = default)
+    public async Task HandleAsync(BulkDeletePayload message, CancellationToken cancellationToken)
     {
         foreach (var chunk in message.Ids.Distinct().Chunk(100))
         {
@@ -32,10 +31,10 @@ public class BulkDeleteEventHandler(
             await _dataRecalculation.EnqueueRecalculationAsync(logItems, cancellationToken);
 
             if (filesForDelete.Count > 0)
-                await Publisher.PublishAsync(filesForDelete, cancellationToken: cancellationToken);
+                await Publisher.PublishAsync(filesForDelete);
         }
 
-        return RabbitConsumptionResult.Success;
+        return;
     }
 
     private async Task<List<LogItem>> ReadLogItemsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)

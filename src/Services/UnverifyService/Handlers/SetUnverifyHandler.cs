@@ -1,17 +1,17 @@
-﻿using GrillBot.Contracts.AuditLog.Enums;
-using UnverifyService.Models.Events;
+using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.Unverify.Events;
 using UnverifyService.Models;
 using GrillBot.Contracts.AuditLog.Events.Create;
 using Discord;
 using GrillBot.Core.Extensions.Discord;
 using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Services.Common.Discord;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using UnverifyService.Actions;
 using GrillBot.Contracts.Unverify;
-using GrillBot.Contracts.Unverify.Events;
+using GrillBot.Core.AsyncMessaging.Errors;
+using Wolverine;
 
 namespace UnverifyService.Handlers;
 
@@ -19,31 +19,30 @@ public partial class SetUnverifyHandler(
     IServiceProvider serviceProvider,
     CheckUnverifyRequirementsAction _unverifyCheck,
     DiscordManager _discordManager
-) : UnverifyServiceBaseHandler<SetUnverifyMessage>(serviceProvider)
+) : UnverifyServiceBaseHandler(serviceProvider)
 {
     private static readonly JsonSerializerOptions _serializerOptions = new() { WriteIndented = false };
 
-    protected override async Task<RabbitConsumptionResult> ProcessHandlerAsync(
-        SetUnverifyMessage message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(SetUnverifyMessage message, Envelope envelope, CancellationToken cancellationToken)
     {
+        var currentUser = await TryGetCurrentUserAsync(envelope);
+        if (currentUser is null)
+            return;
+
         var isValidUnverify = await CheckUnverifyRequirementsAsync(message, currentUser, cancellationToken);
         if (!isValidUnverify)
-            return RabbitConsumptionResult.Reject;
+            return;
 
         var session = await CreateSessionAsync(message, cancellationToken);
-        if (message.TestRun)
+        if (message.Request.TestRun)
         {
             await RecalculateMetricsAsync(cancellationToken);
             await SendUnverifyMessageToChannelAsync(session, message, currentUser, cancellationToken);
-            return RabbitConsumptionResult.Success;
+            return;
         }
 
         var dbStrategy = DbContext.Database.CreateExecutionStrategy();
-        return await dbStrategy.ExecuteAsync(async cancelToken =>
+        await dbStrategy.ExecuteAsync(async cancelToken =>
         {
             await using var transaction = await DbContext.Database.BeginTransactionAsync(cancelToken);
 
@@ -57,7 +56,6 @@ public partial class SetUnverifyHandler(
                 await SendUnverifyMessageToChannelAsync(session, message, currentUser, cancelToken);
 
                 await transaction.CommitAsync(cancelToken);
-                return RabbitConsumptionResult.Success;
             }
             catch (Exception ex)
             {
@@ -65,7 +63,8 @@ public partial class SetUnverifyHandler(
                 await RollbackAccessAsync(session, cancelToken);
                 await transaction.RollbackAsync(cancelToken);
 
-                return RabbitConsumptionResult.Retry;
+                // The access was rolled back, so the whole message can be safely replayed.
+                throw new TransientMessageException("Unable to remove access, the unverify will be retried.", ex);
             }
             finally
             {
@@ -77,7 +76,7 @@ public partial class SetUnverifyHandler(
 
     private async Task<bool> CheckUnverifyRequirementsAsync(SetUnverifyMessage message, ICurrentUserProvider currentUser, CancellationToken cancellationToken = default)
     {
-        _unverifyCheck.Init(null!, [message], currentUser);
+        _unverifyCheck.Init(null!, [message.Request], currentUser);
         _unverifyCheck.SetCancellationToken(cancellationToken);
 
         var unverifyCheckResult = await _unverifyCheck.ProcessAsync();
@@ -85,7 +84,7 @@ public partial class SetUnverifyHandler(
             return true;
 
         var logData = JsonSerializer.Serialize(unverifyCheckResult.Data, _serializerOptions);
-        var logRequest = new LogRequest(LogType.Warning, DateTime.UtcNow, message.GuildId.ToString(), message.UserId.ToString())
+        var logRequest = new LogRequest(LogType.Warning, DateTime.UtcNow, message.Request.GuildId.ToString(), message.Request.UserId.ToString())
         {
             LogMessage = new(
                 $"Unverify request does not meet the requirements.\n{logData}",
@@ -94,27 +93,28 @@ public partial class SetUnverifyHandler(
             )
         };
 
-        await Publisher.PublishAsync(new CreateItemsMessage(logRequest), cancellationToken: cancellationToken);
+        await Publisher.PublishAsync(new CreateItemsMessage(logRequest));
         return false;
     }
 
     private async Task<UnverifySession> CreateSessionAsync(SetUnverifyMessage message, CancellationToken cancellationToken = default)
     {
-        var guild = (await _discordManager.GetGuildAsync(message.GuildId, false, cancellationToken))!;
-        var targetUser = (await _discordManager.GetGuildUserAsync(message.GuildId, message.UserId, cancellationToken))!;
-        var reason = message.IsSelfUnverify ? null : (message.Reason ?? "").Trim();
+        var request = message.Request;
+        var guild = (await _discordManager.GetGuildAsync(request.GuildId, false, cancellationToken))!;
+        var targetUser = (await _discordManager.GetGuildUserAsync(request.GuildId, request.UserId, cancellationToken))!;
+        var reason = request.IsSelfUnverify ? null : (request.Reason ?? "").Trim();
         var keepablesQuery = DbContext.SelfUnverifyKeepables.AsNoTracking().GroupBy(o => o.Group);
         var keepables = await ContextHelper.ReadToDictionaryAsync(keepablesQuery, o => o.Key, o => o.Select(x => x.Name).ToList(), cancellationToken);
-        var guildQuery = DbContext.Guilds.AsNoTracking().Where(o => o.GuildId == message.GuildId);
+        var guildQuery = DbContext.Guilds.AsNoTracking().Where(o => o.GuildId == request.GuildId);
         var guildEntity = await ContextHelper.ReadFirstOrDefaultEntityAsync(guildQuery, cancellationToken);
         var mutedRole = guildEntity?.MuteRoleId == null ? null : guild.GetRole(guildEntity.MuteRoleId.Value);
         var dbUserQuery = DbContext.Users.AsNoTracking().Where(o => o.Id == targetUser.Id);
         var dbUser = await ContextHelper.ReadFirstOrDefaultEntityAsync(dbUserQuery, cancellationToken);
 
-        var session = new UnverifySession(targetUser, dbUser, DateTime.UtcNow, message.EndAtUtc, reason, message.IsSelfUnverify);
+        var session = new UnverifySession(targetUser, dbUser, DateTime.UtcNow, request.EndAtUtc, reason, request.IsSelfUnverify);
 
-        await ProcessRolesAsync(session, keepables, mutedRole, message.RequiredKeepables, cancellationToken);
-        await ProcessChannelsAsync(session, message.RequiredKeepables, cancellationToken);
+        await ProcessRolesAsync(session, keepables, mutedRole, request.RequiredKeepables, cancellationToken);
+        await ProcessChannelsAsync(session, request.RequiredKeepables, cancellationToken);
 
         return session;
     }
@@ -205,5 +205,5 @@ public partial class SetUnverifyHandler(
     }
 
     private Task RecalculateMetricsAsync(CancellationToken cancellationToken = default)
-        => Publisher.PublishAsync(new RecalculateMetricsMessage(), cancellationToken: cancellationToken);
+        => Publisher.PublishAsync(new RecalculateMetricsMessage()).AsTask();
 }

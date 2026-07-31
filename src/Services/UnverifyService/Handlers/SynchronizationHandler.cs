@@ -1,32 +1,26 @@
-﻿using GrillBot.Core.Infrastructure.Auth;
-using UnverifyService.Models.Events;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
-using GrillBot.Services.Common.Infrastructure.RabbitMQ;
-using UnverifyService.Core.Entity;
+using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Contracts.Unverify.Events;
+using GrillBot.Contracts.Unverify.Events.Users;
+using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
+using UnverifyService.Core.Entity;
 
 namespace UnverifyService.Handlers;
 
 public class SynchronizationHandler(IServiceProvider serviceProvider)
-    : BaseEventHandlerWithDb<SynchronizationMessage, UnverifyContext>(serviceProvider)
+    : EventHandlerBaseWithDb<UnverifyContext>(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        SynchronizationMessage message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(SynchronizationMessage message, CancellationToken cancellationToken)
     {
         foreach (var user in message.Users)
             await SynchronizeUserAsync(user, cancellationToken);
 
         await DbContext.SaveChangesAsync(cancellationToken);
-        await Publisher.PublishAsync(new RecalculateMetricsMessage(), cancellationToken: cancellationToken);
+        await Publisher.PublishAsync(new RecalculateMetricsMessage());
 
-        return RabbitConsumptionResult.Success;
+        return;
     }
 
-    private async Task SynchronizeUserAsync(UserSyncMessage syncItem, CancellationToken cancellationToken = default)
+    private async Task SynchronizeUserAsync(UserSyncItem syncItem, CancellationToken cancellationToken = default)
     {
         var userQuery = DbContext.Users.Where(o => o.Id == syncItem.UserId);
         var entity = await ContextHelper.ReadFirstOrDefaultEntityAsync(userQuery, cancellationToken);

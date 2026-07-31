@@ -1,4 +1,4 @@
-﻿using GrillBot.Core.Extensions;
+using GrillBot.Core.Extensions;
 using UnverifyService.Models;
 using GrillBot.Core.Infrastructure.Auth;
 using UnverifyService.Core.Entity.Logs;
@@ -79,6 +79,6 @@ public partial class SetUnverifyHandler
             logItem.LogNumber
         );
 
-        return Publisher.PublishAsync(payload, cancellationToken: cancellationToken);
+        return Publisher.PublishAsync(payload).AsTask();
     }
 }

@@ -1,11 +1,10 @@
-﻿using GrillBot.App.Helpers;
+using GrillBot.App.Helpers;
 using GrillBot.App.Managers.Points;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Contracts.AuditLog.Enums;
 using GrillBot.Contracts.AuditLog.Events.Create;
 using GrillBot.Contracts.Message.Events;
@@ -14,6 +13,8 @@ using GrillBot.Contracts.Points.Channels;
 using GrillBot.Contracts.Points.Users;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Database.Enums;
+using Wolverine;
+
 
 namespace GrillBot.App.Actions.Api.V1.Channel;
 
@@ -25,10 +26,10 @@ public class UpdateChannel : ApiAction
     private IDiscordClient DiscordClient { get; }
 
     private readonly PointsManager _pointsManager;
-    private readonly IRabbitPublisher _rabbitPublisher;
+    private readonly IMessageBus _rabbitPublisher;
 
     public UpdateChannel(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, ChannelHelper channelHelper,
-        IDiscordClient discordClient, PointsManager pointsManager, IRabbitPublisher rabbitPublisher) : base(apiContext)
+        IDiscordClient discordClient, PointsManager pointsManager, IMessageBus rabbitPublisher) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Texts = texts;
@@ -117,6 +118,6 @@ public class UpdateChannel : ApiAction
             IsDeleted = after.HasFlag(ChannelFlag.Deleted)
         };
 
-        return _rabbitPublisher.PublishAsync(new SynchronizationPayload([syncItem]));
+        return _rabbitPublisher.PublishAsync(new SynchronizationPayload([syncItem])).AsTask();
     }
 }

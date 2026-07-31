@@ -1,14 +1,15 @@
-﻿using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
+using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Contracts.AuditLog.Enums;
 using GrillBot.Contracts.AuditLog.Events.Create;
 using System.Reflection;
+using Wolverine;
+
 
 namespace GrillBot.App.Handlers.ChannelDestroyed;
 
 public class GuildConfigurationChannelDestroyedHandler(
     GrillBotDatabaseBuilder _databaseBuilder,
-    IRabbitPublisher _rabbitPublisher
+    IMessageBus _rabbitPublisher
 ) : IChannelDestroyedEvent
 {
     public async Task ProcessAsync(IChannel channel)
@@ -46,7 +47,7 @@ public class GuildConfigurationChannelDestroyedHandler(
             }
         };
 
-        return _rabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest));
+        return _rabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest)).AsTask();
     }
 
     private static void ResetProperty(ulong expectedId, Database.Entity.Guild guild, string propertyName, List<string> log)

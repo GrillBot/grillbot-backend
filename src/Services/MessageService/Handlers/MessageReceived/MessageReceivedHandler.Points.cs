@@ -1,4 +1,4 @@
-﻿using GrillBot.Contracts.Message.Events;
+using GrillBot.Contracts.Message.Events;
 using GrillBot.Contracts.Points;
 using GrillBot.Contracts.Points.Events;
 
@@ -24,6 +24,6 @@ public partial class MessageReceivedHandler
             }
         );
 
-        return Publisher.PublishAsync(payload);
+        return Publisher.PublishAsync(payload).AsTask();
     }
 }

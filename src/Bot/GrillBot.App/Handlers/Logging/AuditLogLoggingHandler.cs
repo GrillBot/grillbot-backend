@@ -1,12 +1,12 @@
-﻿using Discord.Interactions;
+using Discord.Interactions;
 using GrillBot.App.Infrastructure.Jobs;
 using GrillBot.Common.Exceptions;
 using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Logging;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Contracts.AuditLog.Enums;
 using GrillBot.Contracts.AuditLog.Events.Create;
 using Microsoft.Extensions.DependencyInjection;
+using Wolverine;
 
 namespace GrillBot.App.Handlers.Logging;
 
@@ -53,7 +53,7 @@ public class AuditLogLoggingHandler(
         var payload = new CreateItemsMessage(logRequest);
 
         using var scope = _serviceProvider.CreateScope();
-        var rabbitPublisher = scope.ServiceProvider.GetRequiredService<IRabbitPublisher>();
+        var rabbitPublisher = scope.ServiceProvider.GetRequiredService<IMessageBus>();
 
         await rabbitPublisher.PublishAsync(payload);
     }

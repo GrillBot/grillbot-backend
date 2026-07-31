@@ -1,16 +1,18 @@
-﻿using GrillBot.Common.Models;
+using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Contracts.Rubbergod.Events.Karma;
 using GrillBot.Data.Models.API.Users;
+using GrillBot.Core.AsyncMessaging.Extensions;
+using Wolverine;
+
 
 namespace GrillBot.App.Actions.Api.V2.User;
 
 public class StoreKarma : ApiAction
 {
-    private readonly IRabbitPublisher _rabbitPublisher;
+    private readonly IMessageBus _rabbitPublisher;
 
-    public StoreKarma(ApiRequestContext apiContext, IRabbitPublisher rabbitPublisher) : base(apiContext)
+    public StoreKarma(ApiRequestContext apiContext, IMessageBus rabbitPublisher) : base(apiContext)
     {
         _rabbitPublisher = rabbitPublisher;
     }
@@ -22,10 +24,10 @@ public class StoreKarma : ApiAction
         var batches = items
             .Select(o => new KarmaUser(o.MemberId, o.KarmaValue, o.Positive, o.Negative))
             .Chunk(100)
-            .Select(ch => new KarmaBatchPayload(ch))
+            .Select(ch => new KarmaBatchPayload([.. ch]))
             .ToList();
 
-        await _rabbitPublisher.PublishAsync(batches);
+        await _rabbitPublisher.PublishAllAsync(batches);
         return ApiResult.Ok();
     }
 }

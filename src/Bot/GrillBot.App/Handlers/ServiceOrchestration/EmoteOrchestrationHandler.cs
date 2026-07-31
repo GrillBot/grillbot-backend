@@ -1,18 +1,19 @@
-﻿using GrillBot.Cache.Services.Managers.MessageCache;
+using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.Extensions;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.Common.Executor;
 using Emote;
 using GrillBot.Contracts.Emote.Events;
 using GrillBot.Contracts.Emote.Events.Guild;
 using Microsoft.Extensions.Logging;
+using Wolverine;
+
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
 
 public partial class EmoteOrchestrationHandler(
-    IRabbitPublisher _rabbitPublisher,
+    IMessageBus _rabbitPublisher,
     IMessageCacheManager _messageCache,
     IDiscordClient _discordClient,
     IServiceClientExecutor<IEmoteServiceClient> _emoteService,
@@ -110,6 +111,6 @@ public partial class EmoteOrchestrationHandler(
     {
         return channel is not IGuildChannel guildChannel
             ? Task.CompletedTask
-            : _rabbitPublisher.PublishAsync(GuildChannelDeletedPayload.Create(guildChannel));
+            : _rabbitPublisher.PublishAsync(GuildChannelDeletedPayload.Create(guildChannel)).AsTask();
     }
 }
