@@ -1,19 +1,19 @@
-﻿using EmoteService.Core.Entity;
+using EmoteService.Core.Entity;
 using EmoteService.Core.Entity.Suggestions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Managers.Performance;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Contracts.Bot.Events.Messages;
 using GrillBot.Contracts.Bot.Events.Messages.Embeds;
 using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.EntityFrameworkCore;
+using Wolverine;
 
 namespace EmoteService.Actions.EmoteSuggestions;
 
 public class FinishSuggestionVotesAction(
     ICounterManager counterManager,
     EmoteServiceContext dbContext,
-    IRabbitPublisher _rabbitPublisher
+    IMessageBus _rabbitPublisher
 ) : ApiAction<EmoteServiceContext>(counterManager, dbContext)
 {
     public override async Task<ApiResult> ProcessAsync()

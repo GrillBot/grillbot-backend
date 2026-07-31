@@ -1,17 +1,17 @@
-﻿using GrillBot.Core.Infrastructure.Actions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Managers.Performance;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Services.Common.Infrastructure.Api;
 using RemindService.Core.Entity;
 using GrillBot.Contracts.Remind.Events;
 using GrillBot.Contracts.Remind.Responses;
+using Wolverine;
 
 namespace RemindService.Actions;
 
 public class ProcessPendingRemindersAction(
     ICounterManager counterManager,
     RemindServiceContext dbContext,
-    IRabbitPublisher publisher
+    IMessageBus publisher
 ) : ApiAction<RemindServiceContext>(counterManager, dbContext)
 {
     public override async Task<ApiResult> ProcessAsync()

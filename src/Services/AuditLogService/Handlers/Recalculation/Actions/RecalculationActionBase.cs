@@ -1,7 +1,6 @@
-﻿using AuditLogService.Core.Entity;
-using AuditLogService.Models.Events.Recalculation;
-using AuditLogService.Core.Entity.Statistics;
+using AuditLogService.Core.Entity;
 using GrillBot.Contracts.AuditLog.Events.Recalculation;
+using AuditLogService.Core.Entity.Statistics;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 

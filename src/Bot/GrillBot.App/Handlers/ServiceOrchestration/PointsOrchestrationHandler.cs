@@ -1,4 +1,4 @@
-﻿using GrillBot.App.Managers.Points;
+using GrillBot.App.Managers.Points;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
@@ -51,7 +51,7 @@ public class PointsOrchestrationHandler(
             return Task.CompletedTask;
 
         var payload = new DeleteTransactionsPayload(guildChannel.GuildId.ToString(), cachedMessage.Id.ToString());
-        return _pointsManager.PushPayloadAsync(payload);
+        return _pointsManager.PushPayloadAsync(payload).AsTask();
     }
 
     // ReactionAdded
@@ -104,6 +104,6 @@ public class PointsOrchestrationHandler(
         }.GetReactionId();
 
         var payload = new DeleteTransactionsPayload(textChannel.GuildId.ToString(), cachedMessage.Id.ToString(), reactionId);
-        return _pointsManager.PushPayloadAsync(payload);
+        return _pointsManager.PushPayloadAsync(payload).AsTask();
     }
 }

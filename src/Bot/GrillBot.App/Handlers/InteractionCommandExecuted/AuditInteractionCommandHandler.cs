@@ -1,15 +1,15 @@
-﻿using Discord.Interactions;
+using Discord.Interactions;
 using GrillBot.App.Services.Discord;
 using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.Extensions;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Contracts.AuditLog.Enums;
 using GrillBot.Contracts.AuditLog.Events.Create;
+using Wolverine;
 
 namespace GrillBot.App.Handlers.InteractionCommandExecuted;
 
-public class AuditInteractionCommandHandler(IRabbitPublisher _rabbitPublisher) : IInteractionCommandExecutedEvent
+public class AuditInteractionCommandHandler(IMessageBus _rabbitPublisher) : IInteractionCommandExecutedEvent
 {
     public async Task ProcessAsync(ICommandInfo commandInfo, IInteractionContext context, IResult result)
     {

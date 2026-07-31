@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--
+      Async messaging for the whole backend: WolverineFx over RabbitMQ.
+
+      This project owns everything the broker knows about - exchanges, the single
+      queue each service listens to, the bindings between them and the error
+      policies. The contracts in GrillBot.Contracts stay plain records; the map
+      from a message type to its exchange and routing key lives in
+      Topology/MessageTopology.cs and nowhere else.
+
+      Note the reference direction: this project depends on GrillBot.Contracts,
+      not the other way around. That is deliberate - a data contract must never
+      have to know how it travels.
+    -->
+
+    <ItemGroup>
+        <PackageReference Include="JasperFx.RuntimeCompiler" />
+        <PackageReference Include="WolverineFx.RabbitMQ" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Contracts\GrillBot.Contracts\GrillBot.Contracts.csproj" />
+        <ProjectReference Include="..\GrillBot.Core\GrillBot.Core.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -1,36 +1,29 @@
-﻿using GrillBot.Core.Infrastructure.Auth;
-using UnverifyService.Models.Events;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
-using GrillBot.Services.Common.Infrastructure.RabbitMQ;
+using GrillBot.Core.Infrastructure.Auth;
+using GrillBot.Contracts.Unverify.Events;
+using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
 using Microsoft.EntityFrameworkCore;
 using UnverifyService.Core.Entity;
 using UnverifyService.Core.Entity.Logs;
-using GrillBot.Contracts.Unverify.Events;
 
 namespace UnverifyService.Handlers;
 
 public class LogBulkDeleteHandler(
     IServiceProvider serviceProvider
-) : BaseEventHandlerWithDb<LogBulkDeleteMessage, UnverifyContext>(serviceProvider)
+) : EventHandlerBaseWithDb<UnverifyContext>(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        LogBulkDeleteMessage message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(LogBulkDeleteMessage message, CancellationToken cancellationToken)
     {
         if (message.Ids.Count == 0)
-            return RabbitConsumptionResult.Success;
+            return;
 
         var logItems = await ReadLogItemsAsync(message.Ids, cancellationToken);
         if (logItems.Count == 0)
-            return RabbitConsumptionResult.Success;
+            return;
 
         DbContext.RemoveRange(logItems);
         await ContextHelper.SaveChangesAsync(cancellationToken);
-        await Publisher.PublishAsync(new RecalculateMetricsMessage(), cancellationToken: cancellationToken);
-        return RabbitConsumptionResult.Success;
+        await Publisher.PublishAsync(new RecalculateMetricsMessage());
+        return;
     }
 
     private async Task<List<UnverifyLogItem>> ReadLogItemsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)

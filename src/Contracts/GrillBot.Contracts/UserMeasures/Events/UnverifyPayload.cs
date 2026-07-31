@@ -1,20 +1,11 @@
-﻿namespace GrillBot.Contracts.UserMeasures.Events;
+namespace GrillBot.Contracts.UserMeasures.Events;
 
-public class UnverifyPayload : BasePayload
-{
-    public override string Queue => "Unverify";
-
-    public DateTime EndAtUtc { get; set; }
-    public long LogSetId { get; set; }
-
-    public UnverifyPayload()
-    {
-    }
-
-    public UnverifyPayload(DateTime createdAtUtc, string reason, string guildId, string moderatorId, string targetUserId, DateTime endAtUtc, long logSetId)
-        : base(createdAtUtc, reason, guildId, moderatorId, targetUserId)
-    {
-        EndAtUtc = endAtUtc;
-        LogSetId = logSetId;
-    }
-}
+public sealed record UnverifyPayload(
+    DateTime CreatedAtUtc,
+    string Reason,
+    string GuildId,
+    string ModeratorId,
+    string TargetUserId,
+    DateTime EndAtUtc,
+    long LogSetId
+) : BasePayload(CreatedAtUtc, Reason, GuildId, ModeratorId, TargetUserId);

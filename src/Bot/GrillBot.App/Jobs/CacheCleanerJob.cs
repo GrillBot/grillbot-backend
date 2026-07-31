@@ -1,11 +1,11 @@
-﻿using GrillBot.App.Infrastructure.Jobs;
+using GrillBot.App.Infrastructure.Jobs;
 using GrillBot.App.Jobs.Abstractions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Cooldown;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Contracts.Invite.Events;
 using Quartz;
 using StackExchange.Redis;
+using Wolverine;
 
 namespace GrillBot.App.Jobs;
 
@@ -15,7 +15,7 @@ public class CacheCleanerJob(
     IServiceProvider serviceProvider,
     CooldownManager _cooldownManager,
     IServer _redisServer,
-    IRabbitPublisher _rabbitPublisher
+    IMessageBus _rabbitPublisher
 ) : CleanerJobBase(serviceProvider)
 {
     protected override async Task RunAsync(IJobExecutionContext context)

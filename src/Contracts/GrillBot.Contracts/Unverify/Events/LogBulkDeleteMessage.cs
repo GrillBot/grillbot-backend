@@ -1,25 +1,11 @@
-﻿using GrillBot.Core.RabbitMQ.V2.Messages;
+using System.Text.Json.Serialization;
 
 namespace GrillBot.Contracts.Unverify.Events;
 
-public class LogBulkDeleteMessage : IRabbitMessage
+[method: JsonConstructor]
+public sealed record LogBulkDeleteMessage(List<Guid> Ids)
 {
-    public string Topic => "Unverify";
-    public string Queue => "LogBulkDelete";
-
-    public List<Guid> Ids { get; set; } = [];
-
-    public LogBulkDeleteMessage()
+    public LogBulkDeleteMessage(Guid id) : this([id])
     {
-    }
-
-    public LogBulkDeleteMessage(IEnumerable<Guid> ids)
-    {
-        Ids = [.. ids];
-    }
-
-    public LogBulkDeleteMessage(Guid id)
-    {
-        Ids = [id];
     }
 }

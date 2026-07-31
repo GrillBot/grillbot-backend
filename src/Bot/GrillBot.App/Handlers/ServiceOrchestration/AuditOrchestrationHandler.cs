@@ -1,26 +1,27 @@
-﻿using GrillBot.App.Helpers;
+using GrillBot.App.Helpers;
 using GrillBot.App.Managers;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.Managers.Performance;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Contracts.AuditLog.Enums;
 using GrillBot.Contracts.AuditLog.Events.Create;
+using Wolverine;
+
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
 
 public partial class AuditOrchestrationHandler : IGuildMemberUpdatedEvent, IGuildUpdatedEvent, IChannelCreatedEvent, IChannelDestroyedEvent, IChannelUpdatedEvent, IMessageUpdatedEvent,
     IRoleDeletedEvent, IThreadDeletedEvent, IUserJoinedEvent, IUserLeftEvent, IUserUnbannedEvent
 {
-    private readonly IRabbitPublisher _rabbitPublisher;
+    private readonly IMessageBus _rabbitPublisher;
     private readonly AuditLogManager _auditLogManager;
     private readonly ICounterManager _counterManager;
     private readonly DownloadHelper _downloadHelper;
     private readonly IMessageCacheManager _messageCache;
     private readonly ChannelHelper _channelHelper;
 
-    public AuditOrchestrationHandler(IRabbitPublisher rabbitPublisher, AuditLogManager auditLogManager, ICounterManager counterManager, DownloadHelper downloadHelper,
+    public AuditOrchestrationHandler(IMessageBus rabbitPublisher, AuditLogManager auditLogManager, ICounterManager counterManager, DownloadHelper downloadHelper,
         IMessageCacheManager messageCache, ChannelHelper channelHelper)
     {
         _rabbitPublisher = rabbitPublisher;
@@ -35,7 +36,7 @@ public partial class AuditOrchestrationHandler : IGuildMemberUpdatedEvent, IGuil
     // GuildMemberUpdated
     public async Task ProcessAsync(IGuildUser? before, IGuildUser after)
     {
-        var payload = new CreateItemsMessage();
+        var payload = new CreateItemsMessage([]);
 
         await ProcessRoleChangesAsync(before, after, payload);
         ProcessUserChanges(before, after, payload);
@@ -46,7 +47,7 @@ public partial class AuditOrchestrationHandler : IGuildMemberUpdatedEvent, IGuil
     // GuildUpdated
     public async Task ProcessAsync(IGuild before, IGuild after)
     {
-        var payload = new CreateItemsMessage();
+        var payload = new CreateItemsMessage([]);
 
         ProcessRemovedEmotes(before, after, payload);
         await ProcessGuildChangesAsync(before, after, payload);
@@ -57,7 +58,7 @@ public partial class AuditOrchestrationHandler : IGuildMemberUpdatedEvent, IGuil
     // ChannelUpdated
     public async Task ProcessAsync(IChannel before, IChannel after)
     {
-        var payload = new CreateItemsMessage();
+        var payload = new CreateItemsMessage([]);
 
         ProcessChannelChanges(before, after, payload);
         await ProcessOverwriteChangesAsync(after, payload);

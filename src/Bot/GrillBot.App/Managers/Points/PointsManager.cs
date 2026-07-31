@@ -1,7 +1,7 @@
-﻿using GrillBot.Core.RabbitMQ.V2.Messages;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Contracts.Points.Channels;
 using GrillBot.Contracts.Points.Users;
+using Wolverine;
+
 
 namespace GrillBot.App.Managers.Points;
 
@@ -10,9 +10,9 @@ public class PointsManager
     private readonly PointsSynchronizationManager _synchronizationManager;
     private readonly PointsValidationManager _validationManager;
 
-    private readonly IRabbitPublisher _rabbitPublisher;
+    private readonly IMessageBus _rabbitPublisher;
 
-    public PointsManager(PointsSynchronizationManager synchronizationManager, PointsValidationManager validationManager, IRabbitPublisher rabbitPublisher)
+    public PointsManager(PointsSynchronizationManager synchronizationManager, PointsValidationManager validationManager, IMessageBus rabbitPublisher)
     {
         _synchronizationManager = synchronizationManager;
         _validationManager = validationManager;
@@ -37,7 +37,7 @@ public class PointsManager
 
     #region Push
 
-    public Task PushPayloadAsync<TPayload>(TPayload payload) where TPayload : IRabbitMessage
+    public ValueTask PushPayloadAsync<TPayload>(TPayload payload) where TPayload : notnull
         => _rabbitPublisher.PublishAsync(payload);
 
     #endregion

@@ -1,4 +1,4 @@
-﻿using GrillBot.Common.Managers;
+using GrillBot.Common.Managers;
 using Quartz;
 using System.Reflection;
 using GrillBot.Cache.Services.Managers;
@@ -6,9 +6,10 @@ using GrillBot.Common.Managers.Logging;
 using GrillBot.Contracts.AuditLog.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using GrillBot.Contracts.AuditLog.Events.Create;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.App.Managers.Auth;
 using GrillBot.Core.Infrastructure.Auth;
+using Wolverine;
+
 
 namespace GrillBot.App.Infrastructure.Jobs;
 
@@ -77,7 +78,7 @@ public abstract class Job(IServiceProvider serviceProvider) : IJob
         };
 
         var payload = new CreateItemsMessage(request);
-        return ResolveService<IRabbitPublisher>().PublishAsync(payload);
+        return ResolveService<IMessageBus>().PublishAsync(payload).AsTask();
     }
 
     private async Task<bool> CanRunAsync()

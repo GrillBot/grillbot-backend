@@ -1,14 +1,14 @@
-﻿using System.IO.Compression;
+using System.IO.Compression;
 using GrillBot.App.Helpers;
 using GrillBot.App.Jobs.Abstractions;
 using GrillBot.Common.FileStorage;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using AuditLog;
 using GrillBot.Contracts.AuditLog.Events;
 using GrillBot.Contracts.AuditLog.Responses;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Services.Repository;
 using Quartz;
+using Wolverine;
 
 namespace GrillBot.App.Jobs;
 
@@ -40,7 +40,7 @@ public class AuditLogClearingJob(
         var formattedZipSize = zipSize.Bytes().ToString();
 
         var bulkDeletePayload = new BulkDeletePayload(archivationResult.Ids);
-        await ResolveService<IRabbitPublisher>().PublishAsync(bulkDeletePayload);
+        await ResolveService<IMessageBus>().PublishAsync(bulkDeletePayload);
 
         context.Result = BuildReport(archivationResult, xmlSize, formattedZipSize);
     }

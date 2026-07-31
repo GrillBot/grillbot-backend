@@ -1,26 +1,20 @@
-﻿using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
-using GrillBot.Services.Common.Infrastructure.RabbitMQ;
+using GrillBot.Core.Infrastructure.Auth;
+using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
 using MessageService.Core.Entity;
 using GrillBot.Contracts.Message.Events;
 using GrillBot.Contracts.Message.Events.Channels;
 
 namespace MessageService.Handlers;
 
-public class SynchronizationEventHandler(IServiceProvider serviceProvider) : BaseEventHandlerWithDb<SynchronizationPayload, MessageContext>(serviceProvider)
+public class SynchronizationEventHandler(IServiceProvider serviceProvider) : EventHandlerBaseWithDb<MessageContext>(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        SynchronizationPayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(SynchronizationPayload message, CancellationToken cancellationToken)
     {
         foreach (var channel in message.Channels)
             await SynchronizeChannelAsync(channel);
 
         await ContextHelper.SaveChangesAsync(cancellationToken);
-        return RabbitConsumptionResult.Success;
+        return;
     }
 
     private async Task SynchronizeChannelAsync(ChannelSynchronizationItem channel)

@@ -1,4 +1,4 @@
-﻿using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.AuditLog.Enums;
 using GrillBot.Contracts.AuditLog.Events.Create;
 using PointsService.Core.Entity;
 using GrillBot.Contracts.Points.Events;
@@ -7,7 +7,7 @@ namespace PointsService.Handlers.Abstractions;
 
 public abstract class CreateTransactionBaseEventHandler<TPayload>(
     IServiceProvider serviceProvider
-) : BasePointsEvent<TPayload>(serviceProvider) where TPayload : CreateTransactionBasePayload, new()
+) : BasePointsEvent(serviceProvider) where TPayload : CreateTransactionBasePayload
 {
     protected async Task<bool> ValidationFailedAsync(TPayload payload, string? channelId, string message, bool suppressAudit = false)
     {
@@ -32,7 +32,7 @@ public abstract class CreateTransactionBaseEventHandler<TPayload>(
             }
         };
 
-        return Publisher.PublishAsync(new CreateItemsMessage(logRequest));
+        return Publisher.PublishAsync(new CreateItemsMessage(logRequest)).AsTask();
     }
 
     protected async Task CommitTransactionAsync(Transaction transaction)

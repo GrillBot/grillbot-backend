@@ -1,16 +1,16 @@
-﻿using GrillBot.Common.Models;
+using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Contracts.AuditLog.Enums;
 using GrillBot.Contracts.AuditLog.Events.Create;
+using Wolverine;
 
 namespace GrillBot.App.Actions.Api.V2.AuditLog;
 
 public class CreateAuditLogMessageAction : ApiAction
 {
-    private readonly IRabbitPublisher _rabbitPublisher;
+    private readonly IMessageBus _rabbitPublisher;
 
-    public CreateAuditLogMessageAction(ApiRequestContext apiContext, IRabbitPublisher rabbitPublisher) : base(apiContext)
+    public CreateAuditLogMessageAction(ApiRequestContext apiContext, IMessageBus rabbitPublisher) : base(apiContext)
     {
         _rabbitPublisher = rabbitPublisher;
     }

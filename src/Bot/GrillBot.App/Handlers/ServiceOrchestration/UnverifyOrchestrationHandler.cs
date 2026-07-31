@@ -1,18 +1,19 @@
-﻿using Discord.Interactions;
+using Discord.Interactions;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Core.Extensions;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.Common.Exceptions;
 using GrillBot.Core.Services.Common.Executor;
 using StackExchange.Redis;
 using UnverifyService;
+using Wolverine;
+
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
 
 public class UnverifyOrchestrationHandler(
-    IRabbitPublisher _rabbitPublisher,
+    IMessageBus _rabbitPublisher,
     IServiceClientExecutor<IUnverifyServiceClient> _unverifyClient,
     IDiscordClient _discordClient,
     LoggingManager _logging
@@ -21,28 +22,23 @@ public class UnverifyOrchestrationHandler(
     // UserLeft
     public Task ProcessAsync(IGuild guild, IUser user)
     {
-        var message = new GrillBot.Contracts.Unverify.Events.GuildUserLeftMessage
-        {
-            GuildId = guild.Id,
-            UserId = user.Id
-        };
+        var message = new GrillBot.Contracts.Unverify.Events.GuildUserLeftMessage(guild.Id, user.Id);
 
-        return _rabbitPublisher.PublishAsync(message);
+        return _rabbitPublisher.PublishAsync(message).AsTask();
     }
 
     // InteractionCommandExecuted
     public Task ProcessAsync(ICommandInfo commandInfo, IInteractionContext context, IResult result)
     {
         var message = new GrillBot.Contracts.Unverify.Events.SynchronizationMessage([
-            new GrillBot.Contracts.Unverify.Events.UserSyncMessage
-            {
-                IsBot = context.User.IsBot,
-                UserId = context.User.Id,
-                UserLanguage = TextsManager.FixLocale(context.Interaction.UserLocale)
-            }
+            new GrillBot.Contracts.Unverify.Events.Users.UserSyncItem(
+                context.User.Id,
+                context.User.IsBot,
+                TextsManager.FixLocale(context.Interaction.UserLocale)
+            )
         ]);
 
-        return _rabbitPublisher.PublishAsync(message);
+        return _rabbitPublisher.PublishAsync(message).AsTask();
     }
 
     // RoleDeleted

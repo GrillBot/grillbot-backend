@@ -33,7 +33,6 @@ using System.Text.Json;
 using GrillBot.App.Infrastructure.JsonConverters;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
-using GrillBot.Core.RabbitMQ.V2;
 using Microsoft.AspNetCore.HttpLogging;
 using OpenTelemetry.Instrumentation.AspNetCore;
 using OpenTelemetry.Resources;
@@ -45,6 +44,8 @@ using GrillBot.App.Telemetry;
 using GrillBot.Core.Metrics.Services;
 using GrillBot.App.Managers.Auth;
 using GrillBot.Common.Extensions;
+using GrillBot.Core.AsyncMessaging;
+
 using GrillBot.Core.HealthCheck;
 
 namespace GrillBot.App;
@@ -52,10 +53,12 @@ namespace GrillBot.App;
 public class Startup
 {
     public IConfiguration Configuration { get; }
+    private IWebHostEnvironment HostEnvironment { get; }
 
-    public Startup(IConfiguration configuration)
+    public Startup(IConfiguration configuration, IWebHostEnvironment environment)
     {
         Configuration = configuration;
+        HostEnvironment = environment;
     }
 
     public void ConfigureServices(IServiceCollection services)
@@ -104,7 +107,6 @@ public class Startup
             .AddMemoryCache()
             .AddActions()
             .AddSingleton<BlobManagerFactory>()
-            .AddRabbitMQ(Configuration)
             .AddControllers(c =>
             {
                 c.Filters.Add<ExceptionFilter>();
@@ -126,6 +128,8 @@ public class Startup
             .Select(Assembly.Load)
             .ToArray();
         services.AddAutoMapper(_ => { }, new[] { new[] { currentAssembly }, referencedAssemblies }.SelectMany(o => o));
+
+        services.AddAsyncMessaging(Configuration, HostEnvironment, currentAssembly);
 
         services
             .AddHandlers()
@@ -297,6 +301,9 @@ public class Startup
                 .AddProcessInstrumentation()
                 .AddPrometheusExporter()
                 .AddMeter(TelemetryExtensions.METER_NAME)
+                // Wolverine's meter is named "Wolverine:<ServiceName>", so the wildcard is
+                // required - a bare "Wolverine" matches nothing and the metrics never export.
+                .AddMeter("Wolverine*")
             );
 
         services.AddSingleton(provider => provider.GetRequiredService<IMeterFactory>().Create(TelemetryExtensions.METER_NAME));

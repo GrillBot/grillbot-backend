@@ -1,23 +1,12 @@
-﻿using GrillBot.Core.RabbitMQ.V2.Messages;
+using System.Text.Json.Serialization;
 
 namespace GrillBot.Contracts.AuditLog.Events.Create;
 
-public class CreateItemsMessage : IRabbitMessage
+// The secondary constructor is by far the most common way this message is built,
+// so the primary one has to be pointed out to the serializer explicitly.
+[method: JsonConstructor]
+public sealed record CreateItemsMessage(List<LogRequest> Items)
 {
-    public string Topic => "AuditLog";
-    public string Queue => "CreateItems";
-
-    public List<LogRequest> Items { get; set; } = [];
-
-    public CreateItemsMessage()
-    {
-    }
-
-    public CreateItemsMessage(List<LogRequest> items)
-    {
-        Items = items;
-    }
-
     public CreateItemsMessage(LogRequest item) : this([item])
     {
     }

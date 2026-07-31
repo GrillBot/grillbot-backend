@@ -8,16 +8,20 @@
       nor its callers may keep a private copy - that duplication is what the
       CS0436 suppressions in the service projects used to hide.
 
+      Contracts carry no transport. An integration event is a plain record; the
+      exchange and routing key it travels on are string constants in the
+      MessagingConstants class of its bounded context, and the map from a message
+      type to those constants lives in GrillBot.Core.AsyncMessaging - which
+      references this project, never the other way around.
+
       Keep the dependency surface minimal: GrillBot.Core for the shared
-      primitives (IDictionaryObject, validation attributes, paging/sorting) and
-      GrillBot.Core.RabbitMQ.V2 for IRabbitMessage. No Refit, no HTTP, no
-      Discord.Net - a contract must be usable by anything that speaks to a
-      service, not just by our Refit clients.
+      primitives (IDictionaryObject, validation attributes, paging/sorting).
+      No Refit, no HTTP, no messaging library - a contract must be usable by
+      anything that speaks to a service, not just by our Refit clients.
     -->
 
     <ItemGroup>
         <ProjectReference Include="..\..\Core\GrillBot.Core\GrillBot.Core.csproj" />
-        <ProjectReference Include="..\..\Core\GrillBot.Core.RabbitMQ.V2\GrillBot.Core.RabbitMQ.V2.csproj" />
     </ItemGroup>
 
 </Project>

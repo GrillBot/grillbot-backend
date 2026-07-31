@@ -1,30 +1,29 @@
-﻿using GrillBot.Contracts.AuditLog.Enums;
-using UnverifyService.Models.Events;
+using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.Unverify.Events;
 using GrillBot.Contracts.AuditLog.Events.Create;
 using Discord;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Services.Common.Discord;
 using Microsoft.EntityFrameworkCore;
 using UnverifyService.Core.Entity.Logs;
 using GrillBot.Contracts.Unverify.Enums;
-using GrillBot.Contracts.Unverify.Events;
+
+using Wolverine;
 
 namespace UnverifyService.Handlers;
 
 public class RecoverAccessHandler(
     IServiceProvider serviceProvider,
     DiscordManager _discordManager
-) : UnverifyServiceBaseHandler<RecoverAccessMessage>(serviceProvider)
+) : UnverifyServiceBaseHandler(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> ProcessHandlerAsync(
-        RecoverAccessMessage message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(RecoverAccessMessage message, Envelope envelope, CancellationToken cancellationToken)
     {
+        var currentUser = await TryGetCurrentUserAsync(envelope);
+        if (currentUser is null)
+            return;
+
         var logItem = await FindLogItemAsync(message, cancellationToken);
         if (logItem is null)
         {
@@ -37,8 +36,8 @@ public class RecoverAccessHandler(
                 )
             };
 
-            await Publisher.PublishAsync(new CreateItemsMessage(logRequest), cancellationToken: cancellationToken);
-            return RabbitConsumptionResult.Reject;
+            await Publisher.PublishAsync(new CreateItemsMessage(logRequest));
+            return;
         }
 
         if (await IsAnyActiveUnverifyAsync(logItem, cancellationToken))
@@ -52,8 +51,8 @@ public class RecoverAccessHandler(
                 )
             };
 
-            await Publisher.PublishAsync(new CreateItemsMessage(logRequest), cancellationToken: cancellationToken);
-            return RabbitConsumptionResult.Reject;
+            await Publisher.PublishAsync(new CreateItemsMessage(logRequest));
+            return;
         }
 
         var targetUser = await _discordManager.GetGuildUserAsync(logItem.GuildId, logItem.ToUserId, cancellationToken);
@@ -62,7 +61,7 @@ public class RecoverAccessHandler(
             // There is nothing to return when the user is no longer on the server.
             // Only send metrics recalculation to refresh prometheus data.
             await RecalculateMetricsAsync(cancellationToken);
-            return RabbitConsumptionResult.Success;
+            return;
         }
 
         var discordGuild = await _discordManager.GetGuildAsync(logItem.GuildId, false, cancellationToken);
@@ -71,7 +70,7 @@ public class RecoverAccessHandler(
             // There is nothing to return when bot is no longer on the server.
             // Only send metrics recalculation to refresh prometheus data.
             await RecalculateMetricsAsync(cancellationToken);
-            return RabbitConsumptionResult.Success;
+            return;
         }
 
         var muteRole = await FindMutedRoleAsync(discordGuild, logItem, cancellationToken);
@@ -106,7 +105,7 @@ public class RecoverAccessHandler(
             await targetUser.RemoveRoleAsync(muteRole, new() { CancelToken = cancellationToken });
 
         await RecalculateMetricsAsync(cancellationToken);
-        return RabbitConsumptionResult.Success;
+        return;
     }
 
     private async Task<UnverifyLogItem?> FindLogItemAsync(RecoverAccessMessage message, CancellationToken cancellationToken = default)
@@ -189,5 +188,5 @@ public class RecoverAccessHandler(
     }
 
     private Task RecalculateMetricsAsync(CancellationToken cancellationToken = default)
-        => Publisher.PublishAsync(new RecalculateMetricsMessage(), cancellationToken: cancellationToken);
+        => Publisher.PublishAsync(new RecalculateMetricsMessage()).AsTask();
 }

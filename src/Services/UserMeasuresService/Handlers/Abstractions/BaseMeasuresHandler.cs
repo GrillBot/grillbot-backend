@@ -1,12 +1,11 @@
-﻿using GrillBot.Core.RabbitMQ.V2.Messages;
-using GrillBot.Services.Common.Infrastructure.RabbitMQ;
+using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
 using UserMeasuresService.Core.Entity;
 
 namespace UserMeasuresService.Handlers.Abstractions;
 
-public abstract class BaseMeasuresHandler<TPayload>(
+public abstract class BaseMeasuresHandler(
     IServiceProvider serviceProvider
-) : BaseEventHandlerWithDb<TPayload, UserMeasuresContext>(serviceProvider) where TPayload : class, IRabbitMessage, new()
+) : EventHandlerBaseWithDb<UserMeasuresContext>(serviceProvider)
 {
     protected async Task SaveEntityAsync<TEntity>(TEntity entity) where TEntity : BaseEntity
     {

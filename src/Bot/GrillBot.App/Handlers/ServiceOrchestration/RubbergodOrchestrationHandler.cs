@@ -1,9 +1,9 @@
-﻿using GrillBot.App.Helpers;
+using GrillBot.App.Helpers;
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Contracts.Rubbergod.Events.Pins;
+using Wolverine;
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
 
@@ -11,9 +11,9 @@ public class RubbergodOrchestrationHandler : IMessageUpdatedEvent, IThreadDelete
 {
     private readonly IMessageCacheManager _messageCache;
     private readonly ChannelHelper _channelHelper;
-    private readonly IRabbitPublisher _rabbitPublisher;
+    private readonly IMessageBus _rabbitPublisher;
 
-    public RubbergodOrchestrationHandler(IMessageCacheManager messageCache, ChannelHelper channelHelper, IRabbitPublisher rabbitPublisher)
+    public RubbergodOrchestrationHandler(IMessageCacheManager messageCache, ChannelHelper channelHelper, IMessageBus rabbitPublisher)
     {
         _messageCache = messageCache;
         _channelHelper = channelHelper;

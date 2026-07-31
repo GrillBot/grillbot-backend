@@ -1,11 +1,10 @@
-﻿using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.AuditLog.Enums;
 using GrillBot.Contracts.AuditLog.Events.Create;
 using Discord;
 using EmoteService.Core.Entity.Suggestions;
 using EmoteService.Core.Options;
 using GrillBot.Contracts.Emote.Events.Suggestions;
 using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Contracts.Bot.Events.Messages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -16,21 +15,16 @@ namespace EmoteService.Handlers.Suggestions;
 public partial class EmoteSuggestionRequestHandler(
     IServiceProvider serviceProvider,
     IOptions<AppOptions> _options
-) : EmoteSuggestionHandlerBase<EmoteSuggestionRequestPayload>(serviceProvider)
+) : EmoteSuggestionHandlerBase(serviceProvider)
 {
     [GeneratedRegex(@"\w+", RegexOptions.IgnoreCase)]
     private static partial Regex EmoteNameRegex();
 
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        EmoteSuggestionRequestPayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(EmoteSuggestionRequestPayload message, CancellationToken cancellationToken)
     {
         var guild = await ValidateInputAndGetGuildAsync(message);
         if (guild is null)
-            return RabbitConsumptionResult.Reject;
+            return;
 
         var entity = await CreateSuggestionEntityAsync(message);
 
@@ -40,8 +34,8 @@ public partial class EmoteSuggestionRequestHandler(
             CreateUserNotification(entity, message.Locale)
         };
 
-        await Publisher.PublishAsync(messages, cancellationToken: cancellationToken);
-        return RabbitConsumptionResult.Success;
+        await Publisher.PublishAsync(messages);
+        return;
     }
 
     private async Task<Core.Entity.Guild?> ValidateInputAndGetGuildAsync(EmoteSuggestionRequestPayload message)

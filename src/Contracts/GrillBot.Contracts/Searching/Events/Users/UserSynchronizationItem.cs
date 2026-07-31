@@ -1,24 +1,10 @@
-﻿using Discord;
+using Discord;
 
 namespace GrillBot.Contracts.Searching.Events.Users;
 
-public class UserSynchronizationItem
-{
-    public string GuildId { get; set; } = null!;
-    public string UserId { get; set; } = null!;
-
-    public bool IsAdmin { get; set; }
-    public GuildPermission GuildPermissions { get; set; }
-
-    public UserSynchronizationItem()
-    {
-    }
-
-    public UserSynchronizationItem(string guildId, string userId, bool isAdmin, GuildPermission permissions)
-    {
-        GuildId = guildId;
-        UserId = userId;
-        IsAdmin = isAdmin;
-        GuildPermissions = permissions;
-    }
-}
+public sealed record UserSynchronizationItem(
+    string GuildId,
+    string UserId,
+    bool IsAdmin,
+    GuildPermission GuildPermissions
+);

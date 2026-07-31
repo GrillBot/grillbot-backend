@@ -1,6 +1,5 @@
-﻿using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
-using GrillBot.Services.Common.Infrastructure.RabbitMQ;
+using GrillBot.Core.Infrastructure.Auth;
+using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
 using RubbergodService.Core.Entity;
 using GrillBot.Contracts.Rubbergod.Events.Karma;
 
@@ -8,14 +7,9 @@ namespace RubbergodService.Handlers.Karma;
 
 public class StoreKarmaEventHandler(
     IServiceProvider serviceProvider
-) : BaseEventHandlerWithDb<KarmaBatchPayload, RubbergodServiceContext>(serviceProvider)
+) : EventHandlerBaseWithDb<RubbergodServiceContext>(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        KarmaBatchPayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(KarmaBatchPayload message, CancellationToken cancellationToken)
     {
         foreach (var chunk in message.Users.Where(o => !string.IsNullOrEmpty(o.MemberId)).Chunk(50))
         {
@@ -33,7 +27,7 @@ public class StoreKarmaEventHandler(
         }
 
         await ContextHelper.SaveChangesAsync(cancellationToken);
-        return RabbitConsumptionResult.Success;
+        return;
     }
 
     private async Task<Dictionary<string, Core.Entity.Karma>> GetOrCreateEntitiesAsync(List<string> memberIds)

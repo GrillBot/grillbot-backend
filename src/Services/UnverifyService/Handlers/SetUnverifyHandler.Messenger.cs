@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using UnverifyService.Models;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Extensions.Discord;
@@ -41,7 +41,7 @@ public partial class SetUnverifyHandler
         );
 
         discordMessage.WithLocalization(locale: session.TargetUserEntity?.Language ?? "en-US");
-        return Publisher.PublishAsync(discordMessage, cancellationToken: cancellationToken);
+        return Publisher.PublishAsync(discordMessage).AsTask();
     }
 
     private async Task SendUnverifyMessageToChannelAsync(UnverifySession session, SetUnverifyMessage message, ICurrentUserProvider currentUser, CancellationToken cancellationToken = default)
@@ -64,12 +64,12 @@ public partial class SetUnverifyHandler
         }
 
         var discordMessage = new DiscordSendMessagePayload(
-            guildId: message.GuildId,
-            channelId: message.ChannelId,
+            guildId: message.Request.GuildId,
+            channelId: message.Request.ChannelId,
             content: new LocalizedMessageContent(localizationKey, [.. localizationArgs]),
             attachments: [],
             serviceId: "Unverify",
-            reference: new(message.MessageId, message.ChannelId, message.GuildId, false, MessageReferenceType.Default)
+            reference: new(message.Request.MessageId, message.Request.ChannelId, message.Request.GuildId, false, MessageReferenceType.Default)
         );
 
         var currentUserId = currentUser.Id.ToUlong();
@@ -77,6 +77,6 @@ public partial class SetUnverifyHandler
         var currentUserLocale = (await ContextHelper.ReadFirstOrDefaultEntityAsync(localeQuery, cancellationToken)) ?? "en-US";
 
         discordMessage.WithLocalization(locale: currentUserLocale);
-        await Publisher.PublishAsync(discordMessage, cancellationToken: cancellationToken);
+        await Publisher.PublishAsync(discordMessage);
     }
 }

@@ -1,23 +1,17 @@
-﻿using EmoteService.Core.Entity.Suggestions;
+using EmoteService.Core.Entity.Suggestions;
 using GrillBot.Contracts.Emote.Events.Suggestions;
 using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Contracts.Bot.Events.Messages;
 using Microsoft.EntityFrameworkCore;
 
 namespace EmoteService.Handlers.Suggestions;
 
-public class EmoteSuggestionUserVoteHandler(IServiceProvider serviceProvider) : EmoteSuggestionHandlerBase<EmoteSuggestionUserVotePayload>(serviceProvider)
+public class EmoteSuggestionUserVoteHandler(IServiceProvider serviceProvider) : EmoteSuggestionHandlerBase(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        EmoteSuggestionUserVotePayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(EmoteSuggestionUserVotePayload message, CancellationToken cancellationToken)
     {
         if (message.SuggestionId == Guid.Empty)
-            return RabbitConsumptionResult.Reject;
+            return;
 
         ArgumentOutOfRangeException.ThrowIfZero(message.UserId);
 
@@ -32,12 +26,12 @@ public class EmoteSuggestionUserVoteHandler(IServiceProvider serviceProvider) : 
 
         var suggestion = await ContextHelper.ReadFirstOrDefaultEntityAsync(suggestionQuery, cancellationToken);
         if (suggestion == null)
-            return RabbitConsumptionResult.Reject;
+            return;
 
         var guildQuery = DbContext.Guilds.Where(o => o.GuildId == suggestion.GuildId && o.SuggestionChannelId != 0);
         var guild = await ContextHelper.ReadFirstOrDefaultEntityAsync(guildQuery, cancellationToken);
         if (guild is null)
-            return RabbitConsumptionResult.Reject;
+            return;
 
         var userVote = suggestion.VoteSession!.UserVotes.FirstOrDefault(o => o.UserId == message.UserId);
         if (userVote is null)
@@ -55,8 +49,6 @@ public class EmoteSuggestionUserVoteHandler(IServiceProvider serviceProvider) : 
         await ContextHelper.SaveChangesAsync(cancellationToken);
 
         var notificationMessage = CreateAdminChannelNotification(suggestion, guild, suggestion.SuggestionMessageId);
-        await Publisher.PublishAsync((DiscordEditMessagePayload)notificationMessage, cancellationToken: cancellationToken);
-
-        return RabbitConsumptionResult.Success;
+        await Publisher.PublishAsync((DiscordEditMessagePayload)notificationMessage);
     }
 }

@@ -1,18 +1,18 @@
-﻿using GrillBot.Contracts.AuditLog.Enums;
-using UnverifyService.Models.Events;
+using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.Unverify.Events;
 using GrillBot.Contracts.AuditLog.Events.Create;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Services.Common.Infrastructure.Api;
 using UnverifyService.Core.Entity;
-using GrillBot.Contracts.Unverify.Events;
 using GrillBot.Contracts.Unverify.Requests.Users;
+using Wolverine;
+
 
 namespace UnverifyService.Actions.Users;
 
 public class ModifyUserAction(
     IServiceProvider serviceProvider,
-    IRabbitPublisher _rabbitPublisher
+    IMessageBus _rabbitPublisher
 ) : ApiAction<UnverifyContext>(serviceProvider)
 {
     public override async Task<ApiResult> ProcessAsync()
@@ -66,9 +66,9 @@ public class ModifyUserAction(
             }
         };
 
-        return _rabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest), cancellationToken: CancellationToken);
+        return _rabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest)).AsTask();
     }
 
     private Task RecalculateMetricsAsync()
-        => _rabbitPublisher.PublishAsync(new RecalculateMetricsMessage(), cancellationToken: CancellationToken);
+        => _rabbitPublisher.PublishAsync(new RecalculateMetricsMessage()).AsTask();
 }

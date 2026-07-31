@@ -1,15 +1,15 @@
-﻿using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Contracts.AuditLog.Enums;
 using GrillBot.Contracts.AuditLog.Events.Create;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
+using Wolverine;
 
 namespace GrillBot.Services.Common.Infrastructure.Api.Filters;
 
 public class ExceptionFilter(
-    IRabbitPublisher _rabbitPublisher,
+    IMessageBus _rabbitPublisher,
     ILogger<ExceptionFilter> _logger
 ) : IAsyncExceptionFilter
 {

@@ -1,12 +1,10 @@
-﻿using GrillBot.Core.Infrastructure.Auth;
-using UnverifyService.Models.Events;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
-using GrillBot.Services.Common.Infrastructure.RabbitMQ;
+using GrillBot.Core.Infrastructure.Auth;
+using GrillBot.Contracts.Unverify.Events;
+using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
 using Microsoft.EntityFrameworkCore;
 using UnverifyService.Actions.Archivation;
 using UnverifyService.Core.Entity;
 using GrillBot.Contracts.Unverify.Enums;
-using GrillBot.Contracts.Unverify.Events;
 using UnverifyService.Telemetry;
 
 namespace UnverifyService.Handlers;
@@ -15,19 +13,14 @@ public class RecalculateMetricsHandler(
     IServiceProvider serviceProvider,
     UnverifyTelemetryCollector _collector,
     CreateArchivationDataAction _archivationAction
-) : BaseEventHandlerWithDb<RecalculateMetricsMessage, UnverifyContext>(serviceProvider)
+) : EventHandlerBaseWithDb<UnverifyContext>(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        RecalculateMetricsMessage message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(RecalculateMetricsMessage message, CancellationToken cancellationToken)
     {
         await RecalculateActiveUnverifiesAsync(cancellationToken);
         await RecalculateUnverifyLogsAsync(cancellationToken);
 
-        return RabbitConsumptionResult.Success;
+        return;
     }
 
     private async Task RecalculateActiveUnverifiesAsync(CancellationToken cancellationToken = default)

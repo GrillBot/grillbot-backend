@@ -1,48 +1,19 @@
-﻿using Discord;
-using GrillBot.Core.RabbitMQ.V2.Messages;
+using Discord;
 using GrillBot.Contracts.Message.Events.Users;
 
 namespace GrillBot.Contracts.Message.Events;
 
-public class MessageReceivedPayload : IRabbitMessage
+public sealed record MessageReceivedPayload(
+    ulong Id,
+    ulong ChannelId,
+    ulong GuildId,
+    UserPayload Author,
+    MessageType Type,
+    MessageSource Source,
+    string? Content,
+    DateTimeOffset CreatedAt
+)
 {
-    public string Topic => "Message";
-    public string Queue => "MessageReceived";
-
-    public ulong Id { get; set; }
-    public ulong ChannelId { get; set; }
-    public ulong GuildId { get; set; }
-    public UserPayload Author { get; set; } = null!;
-    public MessageType Type { get; set; }
-    public MessageSource Source { get; set; }
-    public string? Content { get; set; }
-    public DateTimeOffset CreatedAt { get; set; }
-
-    public MessageReceivedPayload()
-    {
-    }
-
-    public MessageReceivedPayload(
-        ulong id,
-        ulong channelId,
-        ulong guildId,
-        UserPayload author,
-        MessageType type,
-        MessageSource source,
-        string? content,
-        DateTimeOffset createdAt
-    )
-    {
-        Id = id;
-        ChannelId = channelId;
-        GuildId = guildId;
-        Author = author;
-        Type = type;
-        Source = source;
-        Content = content;
-        CreatedAt = createdAt;
-    }
-
     public bool IsCommand()
         => Type is MessageType.ApplicationCommand or MessageType.ContextMenuCommand;
 

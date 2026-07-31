@@ -1,47 +1,18 @@
-﻿using Discord;
-using GrillBot.Core.RabbitMQ.V2.Messages;
+using Discord;
 
 namespace GrillBot.Contracts.Emote.Events.Suggestions;
 
-public class EmoteSuggestionRequestPayload : IRabbitMessage
+public sealed record EmoteSuggestionRequestPayload(
+    string Name,
+    string ReasonToAdd,
+    byte[] Image,
+    ulong GuildId,
+    ulong FromUserId,
+    DateTime CreatedAtUtc,
+    bool IsAnimated,
+    string Locale
+)
 {
-    public string Topic => "Emote";
-    public string Queue => "EmoteSuggestionRequests";
-
-    public string Name { get; set; } = null!;
-    public string ReasonToAdd { get; set; } = null!;
-    public byte[] Image { get; set; } = null!;
-    public ulong GuildId { get; set; }
-    public ulong FromUserId { get; set; }
-    public DateTime CreatedAtUtc { get; set; }
-    public bool IsAnimated { get; set; }
-    public string Locale { get; set; } = null!;
-
-    public EmoteSuggestionRequestPayload()
-    {
-    }
-
-    public EmoteSuggestionRequestPayload(
-        string name,
-        string reasonToAdd,
-        byte[] image,
-        ulong guildId,
-        ulong fromUserId,
-        DateTime createdAtUtc,
-        bool isAnimated,
-        string locale
-    )
-    {
-        Name = name;
-        ReasonToAdd = reasonToAdd;
-        Image = image;
-        GuildId = guildId;
-        FromUserId = fromUserId;
-        CreatedAtUtc = createdAtUtc;
-        IsAnimated = isAnimated;
-        Locale = locale;
-    }
-
     public static EmoteSuggestionRequestPayload Create(
         string name,
         string reasonToAdd,

@@ -1,11 +1,10 @@
-﻿using Discord.Interactions;
+using Discord.Interactions;
 using GrillBot.App.Actions;
 using GrillBot.App.Managers.Auth;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Core.Managers.Performance;
-using GrillBot.Core.RabbitMQ.V2.Messages;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Infrastructure;
@@ -210,9 +209,9 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
             command.Resolve<ICurrentUserProvider>().SetCustomToken(jwtToken.AccessToken);
     }
 
-    protected async Task SendViaRabbitAsync<TPayload>(TPayload payload) where TPayload : IRabbitMessage
+    protected async Task SendViaRabbitAsync<TPayload>(TPayload payload) where TPayload : notnull
     {
-        using var publisher = await GetActionAsCommandAsync<RabbitMQPublisherAction>();
+        using var publisher = await GetActionAsCommandAsync<AsyncMessagePublisherAction>();
         var currentUser = publisher.Resolve<ICurrentUserProvider>();
 
         publisher.Command.Init(null!, [payload], currentUser);

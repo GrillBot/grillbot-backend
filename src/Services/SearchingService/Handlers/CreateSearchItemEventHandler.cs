@@ -1,6 +1,5 @@
-﻿using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
-using GrillBot.Services.Common.Infrastructure.RabbitMQ;
+using GrillBot.Core.Infrastructure.Auth;
+using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
 using Microsoft.Extensions.Options;
 using SearchingService.Core.Entity;
 using GrillBot.Contracts.Searching.Events;
@@ -11,14 +10,9 @@ namespace SearchingService.Handlers;
 public class CreateSearchItemEventHandler(
     IServiceProvider serviceProvider,
     IOptions<AppOptions> _options
-) : BaseEventHandlerWithDb<SearchItemPayload, SearchingServiceContext>(serviceProvider)
+) : EventHandlerBaseWithDb<SearchingServiceContext>(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        SearchItemPayload payload,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(SearchItemPayload payload, CancellationToken cancellationToken)
     {
         var created = DateTime.UtcNow;
         var entity = new SearchItem
@@ -33,6 +27,5 @@ public class CreateSearchItemEventHandler(
 
         await DbContext.AddAsync(entity, cancellationToken);
         await ContextHelper.SaveChangesAsync(cancellationToken);
-        return RabbitConsumptionResult.Success;
     }
 }

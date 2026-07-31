@@ -1,4 +1,4 @@
-﻿using GrillBot.Common.Managers.Localization;
+using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Contracts.AuditLog.Enums;
 using GrillBot.Core.Exceptions;
@@ -13,7 +13,8 @@ using GrillBot.Database.Enums;
 using GrillBot.Contracts.Searching.Events;
 using GrillBot.Core.Extensions;
 using GrillBot.Contracts.Searching.Events.Users;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
+using Wolverine;
+
 
 namespace GrillBot.App.Actions.Api.V1.User;
 
@@ -24,10 +25,10 @@ public class UpdateUser : ApiAction
     private IDiscordClient DiscordClient { get; }
 
     private readonly PointsManager _pointsManager;
-    private readonly IRabbitPublisher _rabbitPublisher;
+    private readonly IMessageBus _rabbitPublisher;
 
     public UpdateUser(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, IDiscordClient discordClient, PointsManager pointsManager,
-        IRabbitPublisher rabbitPublisher) : base(apiContext)
+        IMessageBus rabbitPublisher) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Texts = texts;
@@ -108,7 +109,7 @@ public class UpdateUser : ApiAction
     private async Task SyncSearchingServiceAsync(Database.Entity.User user)
     {
         var guilds = await DiscordClient.GetGuildsAsync();
-        var payload = new SynchronizationPayload();
+        var syncItems = new List<UserSynchronizationItem>();
 
         foreach (var guild in guilds)
         {
@@ -118,10 +119,10 @@ public class UpdateUser : ApiAction
 
             var isAdmin = user.HaveFlags(UserFlags.BotAdmin);
             var permissions = guildUser.GuildPermissions.ToList().Aggregate((prev, curr) => prev | curr);
-            payload.Users.Add(new UserSynchronizationItem(guild.Id.ToString(), user.Id, isAdmin, permissions));
+            syncItems.Add(new UserSynchronizationItem(guild.Id.ToString(), user.Id, isAdmin, permissions));
         }
 
-        if (payload.Users.Count > 0)
-            await _rabbitPublisher.PublishAsync(payload);
+        if (syncItems.Count > 0)
+            await _rabbitPublisher.PublishAsync(new SynchronizationPayload(syncItems));
     }
 }

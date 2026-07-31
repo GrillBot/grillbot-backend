@@ -1,21 +1,23 @@
-﻿using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.Common.Exceptions;
 using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Contracts.Bot;
 using UnverifyService;
 using GrillBot.Contracts.Unverify.Events;
 using GrillBot.Contracts.Unverify.Requests;
+using GrillBot.Core.AsyncMessaging.Extensions;
+using Wolverine;
+
 
 namespace GrillBot.App.Actions.Commands.Unverify;
 
 public class SetUnverify(
     ITextsManager _texts,
     IServiceClientExecutor<IUnverifyServiceClient> _unverifyClient,
-    IRabbitPublisher _rabbitPublisher,
+    IMessageBus _rabbitPublisher,
     ICurrentUserProvider _currentUser
 ) : CommandAction
 {
@@ -64,9 +66,8 @@ public class SetUnverify(
         }
 
         var setRequest = new SetUnverifyMessage(request);
-        var headers = _currentUser.ToDictionary();
 
-        await _rabbitPublisher.PublishAsync(setRequest, headers!);
+        await _rabbitPublisher.PublishAsync(setRequest, _currentUser);
         return string.Format(_texts["Unverify/UnverifyStarted", Locale], user.GetDisplayName());
     }
 }

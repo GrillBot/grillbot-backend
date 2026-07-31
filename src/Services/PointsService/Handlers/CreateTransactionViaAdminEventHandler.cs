@@ -1,6 +1,5 @@
-﻿using Discord;
+using Discord;
 using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
 using PointsService.Core.Entity;
 using PointsService.Handlers.Abstractions;
 using GrillBot.Contracts.Points.Events;
@@ -11,15 +10,10 @@ public class CreateTransactionViaAdminEventHandler(
     IServiceProvider serviceProvider
 ) : CreateTransactionBaseEventHandler<CreateTransactionAdminPayload>(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        CreateTransactionAdminPayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(CreateTransactionAdminPayload message, CancellationToken cancellationToken)
     {
         if (!await CanCreateTransactionAsync(message))
-            return RabbitConsumptionResult.Success;
+            return;
 
         var transaction = new Transaction
         {
@@ -33,7 +27,7 @@ public class CreateTransactionViaAdminEventHandler(
 
         await CommitTransactionAsync(transaction);
         await EnqueueUserForRecalculationAsync(message.GuildId, message.UserId);
-        return RabbitConsumptionResult.Success;
+        return;
     }
 
     private async Task<bool> CanCreateTransactionAsync(CreateTransactionAdminPayload payload)

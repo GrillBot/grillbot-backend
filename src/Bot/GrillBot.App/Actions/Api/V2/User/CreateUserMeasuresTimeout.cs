@@ -1,17 +1,17 @@
-﻿using GrillBot.Common.Models;
+using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Contracts.UserMeasures.Events;
 using GrillBot.Data.Models.API.UserMeasures;
 using Microsoft.AspNetCore.Http;
+using Wolverine;
 
 namespace GrillBot.App.Actions.Api.V2.User;
 
 public class CreateUserMeasuresTimeout : ApiAction
 {
-    private readonly IRabbitPublisher _publisher;
+    private readonly IMessageBus _publisher;
 
-    public CreateUserMeasuresTimeout(ApiRequestContext apiContext, IRabbitPublisher publisher) : base(apiContext)
+    public CreateUserMeasuresTimeout(ApiRequestContext apiContext, IMessageBus publisher) : base(apiContext)
     {
         _publisher = publisher;
     }

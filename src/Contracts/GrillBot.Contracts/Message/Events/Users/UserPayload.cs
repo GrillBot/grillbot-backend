@@ -1,26 +1,9 @@
-﻿using Discord;
+using Discord;
 
 namespace GrillBot.Contracts.Message.Events.Users;
 
-public class UserPayload
+public sealed record UserPayload(ulong Id, DateTimeOffset CreatedAt, bool IsBot, bool IsWebhook)
 {
-    public ulong Id { get; set; }
-    public DateTimeOffset CreatedAt { get; set; }
-    public bool IsBot { get; set; }
-    public bool IsWebhook { get; set; }
-
-    public UserPayload()
-    {
-    }
-
-    public UserPayload(ulong id, DateTimeOffset createdAt, bool isBot, bool isWebhook)
-    {
-        Id = id;
-        CreatedAt = createdAt;
-        IsBot = isBot;
-        IsWebhook = isWebhook;
-    }
-
     public bool IsUser()
         => !IsBot && !IsWebhook;
 

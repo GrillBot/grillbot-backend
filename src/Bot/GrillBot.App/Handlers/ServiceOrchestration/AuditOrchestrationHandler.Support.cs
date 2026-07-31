@@ -1,4 +1,4 @@
-﻿using Discord.Net;
+using Discord.Net;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Contracts.AuditLog.Events.Create;
 
@@ -25,7 +25,7 @@ public partial class AuditOrchestrationHandler
     }
 
     private Task PushPayloadAsync(CreateItemsMessage payload)
-        => payload.Items.Count > 0 ? _rabbitPublisher.PublishAsync(payload) : Task.CompletedTask;
+        => payload.Items.Count > 0 ? _rabbitPublisher.PublishAsync(payload).AsTask() : Task.CompletedTask;
 
     private Task PushPayloadAsync(params LogRequest[] requests)
         => PushPayloadAsync(new CreateItemsMessage(requests.ToList()));

@@ -1,8 +1,7 @@
-﻿using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.AuditLog.Enums;
 using GrillBot.Contracts.AuditLog.Events.Create;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Managers.Performance;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -10,13 +9,15 @@ using RemindService.Core.Entity;
 using GrillBot.Contracts.Remind.Events;
 using GrillBot.Contracts.Remind.Requests;
 using RemindService.Options;
+using Wolverine;
+
 
 namespace RemindService.Actions;
 
 public class CancelReminderAction(
     ICounterManager counterManager,
     RemindServiceContext dbContext,
-    IRabbitPublisher _publisher
+    IMessageBus _publisher
 ) : ApiAction<RemindServiceContext>(counterManager, dbContext)
 {
     public override async Task<ApiResult> ProcessAsync()
@@ -71,7 +72,7 @@ public class CancelReminderAction(
         }
 
         var payload = new SendRemindNotificationPayload(request.RemindId, true);
-        return _publisher.PublishAsync(payload);
+        return _publisher.PublishAsync(payload).AsTask();
     }
 
     private Task WriteToAuditLogAsync(RemindMessage message, CancelReminderRequest request)
@@ -90,6 +91,6 @@ public class CancelReminderAction(
             }
         };
 
-        return _publisher.PublishAsync(new CreateItemsMessage(logRequest));
+        return _publisher.PublishAsync(new CreateItemsMessage(logRequest)).AsTask();
     }
 }

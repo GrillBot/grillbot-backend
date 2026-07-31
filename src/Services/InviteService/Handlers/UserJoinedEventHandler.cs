@@ -1,13 +1,12 @@
-﻿using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.AuditLog.Enums;
 using GrillBot.Contracts.AuditLog.Events.Create;
 using Discord;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Extensions.Discord;
 using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Core.Redis.Extensions;
 using GrillBot.Services.Common.Discord;
-using GrillBot.Services.Common.Infrastructure.RabbitMQ;
+using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
 using InviteService.Core.Entity;
 using InviteService.Extensions;
 using InviteService.Models.Cache;
@@ -23,22 +22,17 @@ public class UserJoinedEventHandler(
     DiscordManager _discordManager,
     IServer _redisServer,
     IDistributedCache _cache
-) : BaseEventHandlerWithDb<UserJoinedPayload, InviteContext>(serviceProvider)
+) : EventHandlerBaseWithDb<InviteContext>(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        UserJoinedPayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(UserJoinedPayload message, CancellationToken cancellationToken)
     {
         var guild = await _discordManager.GetGuildAsync(message.GuildId.ToUlong(), cancellationToken: cancellationToken);
         if (guild is null || !await guild.CanManageInvitesAsync(_discordManager.CurrentUser, cancellationToken))
-            return RabbitConsumptionResult.Success;
+            return;
 
         var user = await _discordManager.GetGuildUserAsync(guild.Id, message.UserId.ToUlong(), cancellationToken);
         if (user?.IsUser() != true)
-            return RabbitConsumptionResult.Success;
+            return;
 
         var latestInvites = await _discordManager.GetInvitesAsync(message.GuildId.ToUlong(), cancellationToken);
 
@@ -54,7 +48,7 @@ public class UserJoinedEventHandler(
             await SyncCacheAsync(guild, cancellationToken);
         }
 
-        return RabbitConsumptionResult.Success;
+        return;
     }
 
     private async Task<InviteMetadata?> FindUserInviteAsync(IGuildUser user, List<IInviteMetadata> metadata, CancellationToken cancellationToken = default)
@@ -102,7 +96,7 @@ public class UserJoinedEventHandler(
             }
         };
 
-        return Publisher.PublishAsync(new CreateItemsMessage(logRequest), cancellationToken: cancellationToken);
+        return Publisher.PublishAsync(new CreateItemsMessage(logRequest)).AsTask();
     }
 
     private async Task ProcessInviteAsync(IGuildUser user, InviteMetadata invite, CancellationToken cancellationToken = default)
@@ -155,6 +149,6 @@ public class UserJoinedEventHandler(
     private Task SyncCacheAsync(IGuild guild, CancellationToken cancellationToken = default)
     {
         var message = new SynchronizeGuildInvitesPayload(guild.Id.ToString(), true);
-        return Publisher.PublishAsync(message, cancellationToken: cancellationToken);
+        return Publisher.PublishAsync(message).AsTask();
     }
 }

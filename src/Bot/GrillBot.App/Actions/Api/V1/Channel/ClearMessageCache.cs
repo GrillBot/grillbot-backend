@@ -1,9 +1,9 @@
-﻿using GrillBot.Cache.Services.Managers.MessageCache;
+using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Contracts.AuditLog.Enums;
 using GrillBot.Contracts.AuditLog.Events.Create;
+using Wolverine;
 
 namespace GrillBot.App.Actions.Api.V1.Channel;
 
@@ -11,9 +11,9 @@ public class ClearMessageCache : ApiAction
 {
     private IDiscordClient DiscordClient { get; }
     private IMessageCacheManager MessageCache { get; }
-    private IRabbitPublisher RabbitPublisher { get; }
+    private IMessageBus RabbitPublisher { get; }
 
-    public ClearMessageCache(ApiRequestContext apiContext, IDiscordClient discordClient, IMessageCacheManager messageCache, IRabbitPublisher rabbitPublisher) : base(apiContext)
+    public ClearMessageCache(ApiRequestContext apiContext, IDiscordClient discordClient, IMessageCacheManager messageCache, IMessageBus rabbitPublisher) : base(apiContext)
     {
         DiscordClient = discordClient;
         MessageCache = messageCache;

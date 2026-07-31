@@ -1,5 +1,4 @@
-﻿using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
+using GrillBot.Core.Infrastructure.Auth;
 using UserMeasuresService.Core.Entity;
 using UserMeasuresService.Handlers.Abstractions;
 using GrillBot.Contracts.UserMeasures.Events;
@@ -8,14 +7,9 @@ namespace UserMeasuresService.Handlers;
 
 public class TimeoutEventHandler(
     IServiceProvider serviceProvider
-) : BaseMeasuresHandler<TimeoutPayload>(serviceProvider)
+) : BaseMeasuresHandler(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        TimeoutPayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(TimeoutPayload message, CancellationToken cancellationToken)
     {
         var entity = await GetOrCreateEntityAsync(message.ExternalId);
 
@@ -27,7 +21,7 @@ public class TimeoutEventHandler(
         entity.ValidTo = message.ValidToUtc;
 
         await SaveEntityAsync(entity);
-        return RabbitConsumptionResult.Success;
+        return;
     }
 
     private async Task<TimeoutItem> GetOrCreateEntityAsync(long externalId)

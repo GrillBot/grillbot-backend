@@ -1,12 +1,11 @@
-﻿using GrillBot.Contracts.AuditLog.Enums;
-using UnverifyService.Models.Events;
+using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.Unverify.Events;
 using UnverifyService.Models;
 using GrillBot.Contracts.AuditLog.Events.Create;
 using Discord;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Extensions.Discord;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Contracts.Bot;
 using GrillBot.Contracts.Bot.Events.Messages;
 using GrillBot.Services.Common.Discord;
@@ -16,16 +15,17 @@ using UnverifyService.Core.Entity;
 using UnverifyService.Core.Entity.Logs;
 using GrillBot.Contracts.Unverify.Enums;
 using GrillBot.Contracts.Unverify;
-using GrillBot.Contracts.Unverify.Events;
 using GrillBot.Contracts.Unverify.Responses;
 using GrillBot.Contracts.UserMeasures.Events;
+using Wolverine;
+
 
 namespace UnverifyService.Actions;
 
 public class RemoveUnverifyAction(
     IServiceProvider serviceProvider,
     DiscordManager _discordManager,
-    IRabbitPublisher _rabbitPublisher
+    IMessageBus _rabbitPublisher
 ) : ApiAction<UnverifyContext>(serviceProvider)
 {
     public override async Task<ApiResult> ProcessAsync()
@@ -87,7 +87,7 @@ public class RemoveUnverifyAction(
                     )
                 };
 
-                await _rabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest), cancellationToken: CancellationToken);
+                await _rabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest));
             }
 
             if (isAutoRemove)
@@ -201,7 +201,7 @@ public class RemoveUnverifyAction(
     private Task NotifyUserMeasuresAsync(ActiveUnverify unverify)
     {
         var payload = new UnverifyModifyPayload(unverify.LogItem.LogNumber, DateTime.UtcNow);
-        return _rabbitPublisher.PublishAsync(payload, cancellationToken: CancellationToken);
+        return _rabbitPublisher.PublishAsync(payload).AsTask();
     }
 
     private static ApiResult CreateSuccessResponse(UnverifySession session)
@@ -229,9 +229,9 @@ public class RemoveUnverifyAction(
         );
 
         message.WithLocalization(locale: session.TargetUserEntity?.Language ?? "cs");
-        return _rabbitPublisher.PublishAsync(message, cancellationToken: CancellationToken);
+        return _rabbitPublisher.PublishAsync(message).AsTask();
     }
 
     private Task RecalculateMetricsAsync()
-        => _rabbitPublisher.PublishAsync(new RecalculateMetricsMessage(), cancellationToken: CancellationToken);
+        => _rabbitPublisher.PublishAsync(new RecalculateMetricsMessage()).AsTask();
 }

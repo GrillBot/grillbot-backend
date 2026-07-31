@@ -1,26 +1,20 @@
-﻿using EmoteService.Core.Entity;
+using EmoteService.Core.Entity;
 using GrillBot.Contracts.Emote.Events;
 using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
-using GrillBot.Services.Common.Infrastructure.RabbitMQ;
+using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
 
 namespace EmoteService.Handlers;
 
 public class SynchronizeEmotesEventHandler(
     IServiceProvider serviceProvider
-) : BaseEventHandlerWithDb<SynchronizeEmotesPayload, EmoteServiceContext>(serviceProvider)
+) : EventHandlerBaseWithDb<EmoteServiceContext>(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        SynchronizeEmotesPayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(SynchronizeEmotesPayload message, CancellationToken cancellationToken)
     {
         await ClearEmotesAsync(message.GuildId);
         await InsertEmotesAsync(message.GuildId, message.Emotes);
 
-        return RabbitConsumptionResult.Success;
+        return;
     }
 
     private async Task ClearEmotesAsync(string guildId)

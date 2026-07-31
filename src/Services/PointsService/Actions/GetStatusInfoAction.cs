@@ -1,19 +1,19 @@
-﻿using GrillBot.Core.Infrastructure.Actions;
+using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Managers.Performance;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using PointsService.Core;
 using PointsService.Core.Entity;
 using PointsService.Core.Options;
 using GrillBot.Contracts.Points;
+using Wolverine;
 
 namespace PointsService.Actions;
 
 public class GetStatusInfoAction(
     ICounterManager counterManager,
     PointsServiceContext dbContext,
-    IRabbitPublisher publisher,
+    IMessageBus publisher,
     IOptions<AppOptions> _options
 ) : ApiAction(counterManager, dbContext, publisher)
 {

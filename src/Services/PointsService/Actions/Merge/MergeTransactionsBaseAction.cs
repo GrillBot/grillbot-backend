@@ -1,19 +1,19 @@
-﻿using Discord;
+using Discord;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Managers.Performance;
-using GrillBot.Core.RabbitMQ.V2.Publisher;
 using Microsoft.EntityFrameworkCore;
 using PointsService.Core;
 using PointsService.Core.Entity;
 using GrillBot.Contracts.Points;
 using System.Diagnostics;
+using Wolverine;
 
 namespace PointsService.Actions.Merge;
 
 public abstract class MergeTransactionsBaseAction(
     ICounterManager counterManager,
     PointsServiceContext dbContext,
-    IRabbitPublisher publisher
+    IMessageBus publisher
 ) : ApiAction(counterManager, dbContext, publisher)
 {
     protected abstract Task InitializeAsync();

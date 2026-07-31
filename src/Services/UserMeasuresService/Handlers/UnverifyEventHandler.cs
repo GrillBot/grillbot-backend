@@ -1,5 +1,4 @@
-﻿using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
+using GrillBot.Core.Infrastructure.Auth;
 using UserMeasuresService.Core.Entity;
 using UserMeasuresService.Handlers.Abstractions;
 using GrillBot.Contracts.UserMeasures.Events;
@@ -8,14 +7,9 @@ namespace UserMeasuresService.Handlers;
 
 public class UnverifyEventHandler(
     IServiceProvider serviceProvider
-) : BaseMeasuresHandler<UnverifyPayload>(serviceProvider)
+) : BaseMeasuresHandler(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        UnverifyPayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(UnverifyPayload message, CancellationToken cancellationToken)
     {
         var entity = new UnverifyItem
         {
@@ -29,6 +23,5 @@ public class UnverifyEventHandler(
         };
 
         await SaveEntityAsync(entity);
-        return RabbitConsumptionResult.Success;
     }
 }

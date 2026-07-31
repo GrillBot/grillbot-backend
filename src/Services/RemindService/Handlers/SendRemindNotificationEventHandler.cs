@@ -1,11 +1,10 @@
-﻿using Discord;
+using Discord;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Auth;
-using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Contracts.Bot.Events.Messages;
 using GrillBot.Contracts.Bot.Events.Messages.Components;
 using GrillBot.Contracts.Bot.Events.Messages.Embeds;
-using GrillBot.Services.Common.Infrastructure.RabbitMQ;
+using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
 using RemindService.Core.Entity;
 using GrillBot.Contracts.Remind.Events;
 using RemindService.Options;
@@ -15,25 +14,20 @@ namespace RemindService.Handlers;
 
 public class SendRemindNotificationEventHandler(
     IServiceProvider serviceProvider
-) : BaseEventHandlerWithDb<SendRemindNotificationPayload, RemindServiceContext>(serviceProvider)
+) : EventHandlerBaseWithDb<RemindServiceContext>(serviceProvider)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
-        SendRemindNotificationPayload message,
-        ICurrentUserProvider currentUser,
-        Dictionary<string, string> headers,
-        CancellationToken cancellationToken = default
-    )
+    public async Task HandleAsync(SendRemindNotificationPayload message, CancellationToken cancellationToken)
     {
         var remindMessage = await GetRemindMessageAsync(message.RemindId);
         if (remindMessage is null)
-            return RabbitConsumptionResult.Success;
+            return;
 
         var discordMessage = ProcessRemind(remindMessage, message.IsEarly);
 
         remindMessage.IsSendInProgress = true;
         await ContextHelper.SaveChangesAsync(cancellationToken);
-        await Publisher.PublishAsync(discordMessage, cancellationToken: cancellationToken);
-        return RabbitConsumptionResult.Success;
+        await Publisher.PublishAsync(discordMessage);
+        return;
     }
 
     private async Task<RemindMessage?> GetRemindMessageAsync(int id)
@@ -46,8 +40,7 @@ public class SendRemindNotificationEventHandler(
     {
         var embed = CreateRemindEmbed(remindMessage, isEarly);
         var postponeComponents = CreatePostponeComponents(isEarly);
-        var attachments = Enumerable.Empty<DiscordMessageFile>();
-        var message = new DiscordSendMessagePayload(null, remindMessage.ToUserId.ToUlong(), null, attachments, "Remind", null, null, embed, null, postponeComponents);
+        var message = new DiscordSendMessagePayload(null, remindMessage.ToUserId.ToUlong(), null, [], "Remind", null, null, embed, null, postponeComponents);
 
         message.WithLocalization(locale: remindMessage.Language);
         message.ServiceData.Add("RemindId", remindMessage.Id.ToString());
