@@ -36,7 +36,6 @@ EXPOSE ${PORT}
 ENV TZ=Europe/Prague
 ENV ASPNETCORE_URLS="http://+:${PORT}"
 ENV DOTNET_PRINT_TELEMETRY_MESSAGE=false
-ENV ENTRY_ASSEMBLY=${ASSEMBLY}
 ENV FONTCONFIG_PATH=/etc/fonts
 ENV FONTCONFIG_FILE=/etc/fonts/fonts.conf
 
@@ -59,4 +58,25 @@ RUN mkdir -p /etc/fonts/conf.d && fc-cache -fv
 RUN ln -snf "/usr/share/zoneinfo/${TZ}" /etc/localtime && echo "${TZ}" > /etc/timezone
 
 COPY --from=build /publish .
-ENTRYPOINT ["/bin/sh", "-c", "exec dotnet $ENTRY_ASSEMBLY"]
+
+# The assembly name differs per image and the exec form of ENTRYPOINT cannot
+# expand a build argument, but a shell wrapper must not be used to expand one
+# here: /bin/sh is dash, and dash discards every inherited environment variable
+# whose name is not a valid shell identifier. That is exactly the shape of an
+# ASP.NET Core setting passed as "Section:Key" (ConnectionStrings:Default,
+# RabbitMQ:Hostname, ...), so a shell entrypoint silently starts the app with
+# those settings unset.
+#
+# Symlink the published apphost to a fixed name instead and exec it directly.
+# The apphost resolves its .dll relative to its own real path, so the link works
+# from the same directory, the container environment reaches the process
+# untouched, and the app is PID 1 for Swarm's stop signals. `test -f` fails the
+# build rather than the deployment if the apphost was not published (it needs
+# `dotnet publish -r <rid>`, which is what the build stage above does).
+RUN set -eu; \
+    apphost="/app/$(basename "${ASSEMBLY}" .dll)"; \
+    test -f "${apphost}"; \
+    chmod +x "${apphost}"; \
+    ln -s "${apphost}" /app/entrypoint
+
+ENTRYPOINT ["/app/entrypoint"]

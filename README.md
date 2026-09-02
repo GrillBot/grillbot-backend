@@ -130,8 +130,21 @@ secret file layouts are supported, and you may name the keys whatever you like:
 
 Precedence, lowest to highest:
 `appsettings.json` < `appsettings.{Environment}.json` < `/run/secrets` <
-environment variables. A startup log line lists the configuration sources that
-were actually loaded, so you can confirm secrets were picked up.
+environment variables < command-line arguments. `AddDockerSecrets()` inserts its
+sources below the host's environment-variable provider rather than appending
+them, so the rest of the ASP.NET Core defaults are left exactly as they are. A
+startup log line lists the configuration sources that were actually loaded, so
+you can confirm secrets were picked up.
+
+> **Separate configuration keys with `__` in environment variables, never `:`.**
+> The keys below are written in canonical `Section:Key` notation, but as an
+> environment variable the separator must be a double underscore —
+> `ConnectionStrings__Default`, `RabbitMQ__Hostname`, `Services__AuditLog__Api`.
+> `Section:Key` happens to work on Windows and when a process is `exec`'d
+> directly, but a name containing a colon is not a valid shell identifier, so any
+> shell in between (`sh -c …`, an entrypoint wrapper, `su`, some CI runners)
+> drops the variable outright and the setting silently reads as empty. Docker
+> secret file names follow the same rule.
 
 Mandatory for the bot:
 
