@@ -146,14 +146,39 @@ you can confirm secrets were picked up.
 > drops the variable outright and the setting silently reads as empty. Docker
 > secret file names follow the same rule.
 
+### Startup validation
+
+Sensitive keys ship as **empty placeholders** in the committed `appsettings.json`,
+so a missing override does not read as missing — it reads as an empty string. Left
+unchecked, a host would start on those placeholders, report healthy and only fail
+much later, on the first Discord login or database call.
+
+Every host therefore validates the configuration it cannot run without **while it
+starts**, using the standard options pipeline (`AddValidatedOptions(…)` in
+`GrillBot.Core`, which binds the section, applies its `[Required]`/`IValidateOptions`
+rules and calls `ValidateOnStart()`). A missing value stops the host with an
+`OptionsValidationException` naming every key that was left empty, all at once.
+
+What is checked is derived from what the application declares: a host that needs a
+database or a Redis server ships the (empty) section, one that does not — for example
+ImageProcessingService, which has neither — ships nothing and is left alone.
+
+| Section | Validated | Where |
+|---|---|---|
+| `RabbitMQ` | `Hostname`, `Username`, `Password` | every host |
+| `AsyncMessaging` | `QueueName` is present and is a key in `docker/deployables.json`; the listener counts, timeouts and retry cooldowns are positive | every host |
+| `ConnectionStrings` | `Default` (`BotToken` stays optional — an empty one deliberately turns a service's Discord client off) | every host declaring the section |
+| `Redis` | `Endpoint` (`Password` optional) | every host declaring the section |
+| `Discord` | `Token` | the bot |
+| `Auth:OAuth2` | `ClientId`, `ClientSecret` | the bot |
+
 Mandatory for the bot:
 
 - `ConnectionStrings:Default` — main database
-- `ConnectionStrings:Cache` — cache database
-- `ConnectionStrings:StorageAccount` — Azure Storage account or emulator
 - `Discord:Token` — Discord authentication token
-- `Auth:OAuth2:ClientId`, `Auth:OAuth2:ClientSecret` — admin login
+- `Auth:OAuth2:ClientId`, `Auth:OAuth2:ClientSecret` — admin login and JWT signing
 - `RabbitMQ:Hostname`, `RabbitMQ:Username`, `RabbitMQ:Password`
+- `Redis:Endpoint` — distributed cache
 
 Recommended:
 
@@ -166,7 +191,9 @@ applicable, `Redis:Endpoint`/`Redis:Password` and `Services:<Name>:Api`.
 Broker credentials stay in `RabbitMQ:*`. The Wolverine tuning lives next to it in
 the `AsyncMessaging` block of each `appsettings.json` — queue name, listener count,
 retry cooldowns, dead-letter expiration. `AsyncMessaging:QueueName` must equal the
-application's key in `docker/deployables.json`; startup fails fast if it does not.
+application's key in `docker/deployables.json`; startup fails fast if it does not
+(checked both while Wolverine is configured and by the startup validation above,
+through the same validator).
 
 When running the bot in Docker, bind `/GrillBotData` as a volume.
 

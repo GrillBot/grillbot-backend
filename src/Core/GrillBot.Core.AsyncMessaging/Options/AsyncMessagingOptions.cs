@@ -6,6 +6,8 @@ namespace GrillBot.Core.AsyncMessaging.Options;
 /// </summary>
 public class AsyncMessagingOptions
 {
+    public const string SectionName = "AsyncMessaging";
+
     /// <summary>
     /// The single queue this application listens to. Must match the application's key in
     /// docker/deployables.json, which is also its image tag, Swarm service name and health path.

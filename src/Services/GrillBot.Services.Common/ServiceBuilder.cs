@@ -1,5 +1,6 @@
 using GrillBot.Core;
 using GrillBot.Core.AsyncMessaging;
+using GrillBot.Core.Configuration;
 
 using GrillBot.Core.HealthCheck;
 using GrillBot.Core.Metrics;
@@ -91,6 +92,12 @@ public static class ServiceBuilder
         // AppSettings
         if (typeof(TAppOptions) != typeof(object))
             builder.Services.Configure<TAppOptions>(builder.Configuration);
+
+        // Startup validation. The sensitive keys are empty placeholders in appsettings.json and
+        // are expected to be overridden from /run/secrets or the environment; without this the
+        // service would start on the placeholders and only fail on its first database call.
+        // The "RabbitMQ" and "AsyncMessaging" sections are validated by UseAsyncMessaging below.
+        builder.Services.AddValidatedOptionsWhenDeclared<ConnectionStringsOptions>(builder.Configuration, ConnectionStringsOptions.SectionName);
 
         // Registrators
         builder.Services.RegisterActionsFromAssembly(runningAssembly);

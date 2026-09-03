@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+using GrillBot.Core.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
 
@@ -14,13 +15,17 @@ public static class RedisExtensions
 
     public static IServiceCollection AddRedisDistributedCache(this IServiceCollection services, IConfiguration configuration)
     {
-        var redisConfig = configuration.GetSection("Redis");
+        var redisConfig = configuration.GetSection(RedisOptions.SectionName);
         if (!redisConfig.Exists())
             return services;
 
+        // Declaring the section is what makes Redis mandatory for this host, so the endpoint
+        // has to be filled in before the host is allowed to finish starting.
+        services.AddValidatedOptions<RedisOptions>(configuration, RedisOptions.SectionName);
+
         services.AddScoped(provider =>
         {
-            var config = provider.GetRequiredService<IConfiguration>().GetSection("Redis")!;
+            var config = provider.GetRequiredService<IConfiguration>().GetSection(RedisOptions.SectionName)!;
             return ConnectionMultiplexer.Connect(CreateRedisOptions(config));
         });
 
@@ -28,7 +33,7 @@ public static class RedisExtensions
 
         services.AddScoped(provider =>
         {
-            var config = provider.GetRequiredService<IConfiguration>().GetSection("Redis")!;
+            var config = provider.GetRequiredService<IConfiguration>().GetSection(RedisOptions.SectionName)!;
             var connection = provider.GetRequiredService<ConnectionMultiplexer>();
 
             return connection.GetServer(config["Endpoint"]!);
