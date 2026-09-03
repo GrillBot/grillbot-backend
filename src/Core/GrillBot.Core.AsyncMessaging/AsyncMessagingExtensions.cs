@@ -2,6 +2,7 @@ using GrillBot.Core.AsyncMessaging.Errors;
 using GrillBot.Core.AsyncMessaging.HealthChecks;
 using GrillBot.Core.AsyncMessaging.Options;
 using GrillBot.Core.AsyncMessaging.Topology;
+using GrillBot.Core.Configuration;
 using JasperFx.CodeGeneration.Model;
 using JasperFx.RuntimeCompiler;
 using Microsoft.Extensions.Configuration;
@@ -40,6 +41,8 @@ public static class AsyncMessagingExtensions
         Action<IRabbitMqQueue>? configureQueue = null
     )
     {
+        builder.Services.AddMessagingConfigurationValidation(builder.Configuration);
+
         builder.UseWolverine(opts =>
             Configure(opts, builder.Configuration, builder.Environment, runningAssembly, configureWolverine, configureQueue));
 
@@ -61,6 +64,8 @@ public static class AsyncMessagingExtensions
         Action<IRabbitMqQueue>? configureQueue = null
     )
     {
+        services.AddMessagingConfigurationValidation(configuration);
+
         services.AddWolverine(opts =>
             Configure(opts, configuration, environment, runningAssembly, configureWolverine, configureQueue));
 
@@ -140,19 +145,36 @@ public static class AsyncMessagingExtensions
             .Then.MoveToErrorQueue();
     }
 
+    /// <summary>
+    /// Registers startup validation for the two sections messaging needs: its own
+    /// "AsyncMessaging" tuning and the "RabbitMQ" broker credentials. Neither has a usable
+    /// default - an empty hostname makes every publish and every consumer fail - so the host
+    /// is stopped at startup rather than left running and silently disconnected.
+    /// </summary>
+    private static IServiceCollection AddMessagingConfigurationValidation(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddValidatedOptions<AsyncMessagingOptions, AsyncMessagingOptionsValidator>(configuration, AsyncMessagingOptions.SectionName);
+        services.AddValidatedOptions<RabbitMQOptions>(configuration, RabbitMQOptions.SectionName);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Reads the section while Wolverine is being configured. That happens before the service
+    /// provider exists, so <c>ValidateOnStart()</c> cannot have run yet and the same rules are
+    /// applied here directly - through the same validator, so both paths report identically.
+    /// </summary>
     private static AsyncMessagingOptions ReadOptions(IConfiguration configuration)
     {
-        var section = configuration.GetSection("AsyncMessaging");
+        var section = configuration.GetSection(AsyncMessagingOptions.SectionName);
         if (!section.Exists())
-            throw new InvalidOperationException("Missing the \"AsyncMessaging\" configuration section.");
+            throw new InvalidOperationException($"Missing the \"{AsyncMessagingOptions.SectionName}\" configuration section.");
 
         var options = section.Get<AsyncMessagingOptions>()!;
 
-        if (string.IsNullOrEmpty(options.QueueName))
-            throw new InvalidOperationException("\"AsyncMessaging:QueueName\" is required - it names the queue this application listens to.");
-
-        if (!Queues.All.Contains(options.QueueName))
-            throw new InvalidOperationException($"\"AsyncMessaging:QueueName\" is \"{options.QueueName}\", which is not a known deployable. See docker/deployables.json.");
+        var result = new AsyncMessagingOptionsValidator().Validate(Microsoft.Extensions.Options.Options.DefaultName, options);
+        if (result.Failed)
+            throw new InvalidOperationException(string.Join(Environment.NewLine, result.Failures));
 
         return options;
     }

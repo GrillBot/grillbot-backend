@@ -12,6 +12,7 @@ using NSwag;
 using NSwag.Generation.Processors.Security;
 using Quartz;
 using GrillBot.App.Infrastructure.OpenApi;
+using GrillBot.App.Infrastructure.Options;
 using GrillBot.App.Infrastructure.RequestProcessing;
 using GrillBot.App.Jobs;
 using GrillBot.App.Managers;
@@ -45,6 +46,7 @@ using GrillBot.Core.Metrics.Services;
 using GrillBot.App.Managers.Auth;
 using GrillBot.Common.Extensions;
 using GrillBot.Core.AsyncMessaging;
+using GrillBot.Core.Configuration;
 
 using GrillBot.Core.HealthCheck;
 
@@ -130,6 +132,16 @@ public class Startup
         services.AddAutoMapper(_ => { }, new[] { new[] { currentAssembly }, referencedAssemblies }.SelectMany(o => o));
 
         services.AddAsyncMessaging(Configuration, HostEnvironment, currentAssembly);
+
+        // Startup validation of the configuration the bot cannot run without. All of it is
+        // declared as empty placeholders in appsettings.json and overridden from /run/secrets,
+        // an appsettings.Development.json or the environment - so a missing override reads as an
+        // empty string rather than as nothing, and without this the bot would come up, report
+        // healthy and never connect. The "RabbitMQ", "AsyncMessaging" and "Redis" sections are
+        // covered by AddAsyncMessaging and AddCaching above.
+        services.AddValidatedOptions<ConnectionStringsOptions>(Configuration, ConnectionStringsOptions.SectionName);
+        services.AddValidatedOptions<DiscordOptions>(Configuration, DiscordOptions.SectionName);
+        services.AddValidatedOptions<OAuth2Options>(Configuration, OAuth2Options.SectionName);
 
         services
             .AddHandlers()
