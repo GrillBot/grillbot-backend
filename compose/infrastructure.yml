@@ -1,0 +1,96 @@
+# Local development infrastructure: RabbitMQ and the two Redis instances.
+# Standalone Docker (not Swarm) - start it before compose/grillbot.yml, because
+# it creates the shared "grillbot-dev" network the GrillBot stack joins.
+#
+#   docker compose -f compose/infrastructure.yml up -d
+#   docker compose -f compose/infrastructure.yml down        # keeps data volumes
+#   docker compose -f compose/infrastructure.yml down -v     # wipes them
+#
+# Credentials come from compose/.env (see compose/.env.example). Ports are
+# published on the host, so an app debugged from the IDE reaches them on
+# localhost: RabbitMQ 5672 (management UI 15672), redis-main 6379,
+# redis-ephemeral 6380.
+
+name: grillbot-infra
+
+services:
+  redis-main:
+    image: redis:alpine
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --requirepass
+      - ${REDIS_PASSWORD:-grillbot}
+      - --maxmemory
+      - 256mb
+      - --appendonly
+      - "yes"
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD:-grillbot}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_main_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - grillbot-dev
+
+  # Cache only - nothing is persisted, a restart starts it empty.
+  redis-ephemeral:
+    image: redis:alpine
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --requirepass
+      - ${REDIS_PASSWORD:-grillbot}
+      - --maxmemory
+      - 256mb
+      - --save
+      - ""
+      - --appendonly
+      - "no"
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD:-grillbot}
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - grillbot-dev
+
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    # A fixed hostname keeps the node name, and therefore the data in the volume,
+    # stable across container re-creation.
+    hostname: rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-grillbot}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-grillbot}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbit_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - grillbot-dev
+
+volumes:
+  redis_main_data:
+  rabbit_data:
+
+networks:
+  grillbot-dev:
+    name: grillbot-dev

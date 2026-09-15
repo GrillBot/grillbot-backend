@@ -1,0 +1,289 @@
+# Local development stack: the GrillBot microservices (the bot is not here - run
+# it from the IDE). Standalone Docker (not Swarm). Requires compose/infrastructure.yml
+# to be up, because it joins that stack's "grillbot-dev" network.
+#
+#   docker compose -f compose/grillbot.yml up -d                              # everything
+#   docker compose -f compose/grillbot.yml up -d --wait                       # ... and block until healthy
+#   docker compose -f compose/grillbot.yml up -d points_service emote_service # a subset
+#   docker compose -f compose/grillbot.yml ps                                 # health in the STATUS column
+#   docker compose -f compose/grillbot.yml up -d --build points_service       # from your working tree
+#   docker compose -f compose/grillbot.yml pull                               # back to the GHCR images
+#   docker compose -f compose/grillbot.yml stop points_service                # hand one over to the IDE
+#   docker compose -f compose/grillbot.yml down
+#
+# Images are pulled from GHCR when missing; `--build` builds them from this
+# repository instead (tagged with the same name, so the local build is used until
+# the next `pull`). Build arguments mirror docker/deployables.json.
+#
+# Every service publishes the same host port as on the development server
+# (3005-3019), which is what the bot's appsettings.json points at, so a bot
+# running in the IDE finds them on 127.0.0.1. Settings come from compose/.env
+# (see compose/.env.example).
+
+name: grillbot
+
+x-service: &service
+  restart: on-failure
+  pull_policy: missing
+  networks:
+    - grillbot-dev
+  extra_hosts:
+    # Lets a container reach something running on the host (the IDE, a local
+    # PostgreSQL). Docker Desktop provides this name already; Linux needs it.
+    - "host.docker.internal:host-gateway"
+  # GET /health must answer 200 ("Healthy"; 503 = Unhealthy). The .NET runtime
+  # image has no curl/wget, so the request is made with bash's /dev/tcp. The port
+  # is taken from ASPNETCORE_URLS, which the image sets to http://+:<port>, and a
+  # User-Agent is required - the endpoint answers 400 without one.
+  healthcheck:
+    test:
+      - CMD
+      - bash
+      - -c
+      - 'exec 3<>/dev/tcp/127.0.0.1/$${ASPNETCORE_URLS##*:} && printf "GET /health HTTP/1.1\r\nHost: localhost\r\nUser-Agent: docker-healthcheck\r\nConnection: close\r\n\r\n" >&3 && read -r _ code _ <&3 && [ "$$code" = 200 ]'
+    interval: 30s
+    timeout: 5s
+    retries: 3
+    start_period: 60s
+    start_interval: 5s
+
+x-environment: &environment
+  ASPNETCORE_ENVIRONMENT: Development
+  DOTNET_hostBuilder__reloadConfigOnChange: "false"
+  RabbitMQ__Hostname: rabbitmq
+  RabbitMQ__Username: ${RABBITMQ_USERNAME:-grillbot}
+  RabbitMQ__Password: ${RABBITMQ_PASSWORD:-grillbot}
+
+services:
+  audit_log_service:
+    <<: *service
+    image: ghcr.io/grillbot/grillbot.services:audit_log_service
+    build:
+      context: ..
+      dockerfile: docker/dotnet-service.Dockerfile
+      args:
+        PROJECT: src/Services/AuditLogService
+        ASSEMBLY: AuditLogService.dll
+        PORT: 5071
+    environment:
+      <<: *environment
+      ConnectionStrings__Default: Host=${DB_HOST:-host.docker.internal};Port=${DB_PORT:-5432};Database=AuditLogService;Username=${DB_USERNAME:-grillbot};Password=${DB_PASSWORD:-}
+      ConnectionStrings__BotToken: ${DISCORD_BOT_TOKEN:-}
+    ports:
+      - "3011:5071"
+
+  emote_service:
+    <<: *service
+    image: ghcr.io/grillbot/grillbot.services:emote_service
+    build:
+      context: ..
+      dockerfile: docker/dotnet-service.Dockerfile
+      args:
+        PROJECT: src/Services/EmoteService
+        ASSEMBLY: EmoteService.dll
+        PORT: 5062
+    environment:
+      <<: *environment
+      ConnectionStrings__Default: Host=${DB_HOST:-host.docker.internal};Port=${DB_PORT:-5432};Database=EmoteService;Username=${DB_USERNAME:-grillbot};Password=${DB_PASSWORD:-}
+      ConnectionStrings__BotToken: ${DISCORD_BOT_TOKEN:-}
+    ports:
+      - "3013:5062"
+
+  graphics:
+    <<: *service
+    image: ghcr.io/grillbot/grillbot.services:graphics
+    build:
+      context: ..
+      dockerfile: docker/Graphics.Dockerfile
+    # Node/Alpine image: no bash, but BusyBox wget (fails on any non-2xx status).
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-U", "docker-healthcheck", "-O", "/dev/null", "http://127.0.0.1:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+      start_interval: 5s
+    ports:
+      - "3005:3000"
+
+  image_processing_service:
+    <<: *service
+    image: ghcr.io/grillbot/grillbot.services:image_processing_service
+    build:
+      context: ..
+      dockerfile: docker/ImageProcessingService.Dockerfile
+    environment:
+      <<: *environment
+      Services__Graphics__Api: ${GRAPHICS_API:-http://graphics:3000/}
+      Redis__Endpoint: redis-ephemeral:6379
+      Redis__Password: ${REDIS_PASSWORD:-grillbot}
+    ports:
+      - "3010:5213"
+
+  invite_service:
+    <<: *service
+    image: ghcr.io/grillbot/grillbot.services:invite_service
+    build:
+      context: ..
+      dockerfile: docker/dotnet-service.Dockerfile
+      args:
+        PROJECT: src/Services/InviteService
+        ASSEMBLY: InviteService.dll
+        PORT: 5196
+    environment:
+      <<: *environment
+      ConnectionStrings__Default: Host=${DB_HOST:-host.docker.internal};Port=${DB_PORT:-5432};Database=InviteService;Username=${DB_USERNAME:-grillbot};Password=${DB_PASSWORD:-}
+      ConnectionStrings__BotToken: ${DISCORD_BOT_TOKEN:-}
+      Redis__Endpoint: redis-main:6379
+      Redis__Password: ${REDIS_PASSWORD:-grillbot}
+    ports:
+      - "3016:5196"
+
+  message_service:
+    <<: *service
+    image: ghcr.io/grillbot/grillbot.services:message_service
+    build:
+      context: ..
+      dockerfile: docker/dotnet-service.Dockerfile
+      args:
+        PROJECT: src/Services/MessageService
+        ASSEMBLY: MessageService.dll
+        PORT: 5045
+    environment:
+      <<: *environment
+      ConnectionStrings__Default: Host=${DB_HOST:-host.docker.internal};Port=${DB_PORT:-5432};Database=MessageService;Username=${DB_USERNAME:-grillbot};Password=${DB_PASSWORD:-}
+      ConnectionStrings__BotToken: ${DISCORD_BOT_TOKEN:-}
+      Redis__Endpoint: redis-ephemeral:6379
+      Redis__Password: ${REDIS_PASSWORD:-grillbot}
+    ports:
+      - "3018:5045"
+
+  points_service:
+    <<: *service
+    image: ghcr.io/grillbot/grillbot.services:points_service
+    build:
+      context: ..
+      dockerfile: docker/dotnet-service.Dockerfile
+      args:
+        PROJECT: src/Services/PointsService
+        ASSEMBLY: PointsService.dll
+        PORT: 5258
+    environment:
+      <<: *environment
+      ConnectionStrings__Default: Host=${DB_HOST:-host.docker.internal};Port=${DB_PORT:-5432};Database=PointsService;Username=${DB_USERNAME:-grillbot};Password=${DB_PASSWORD:-}
+    ports:
+      - "3009:5258"
+
+  remind_service:
+    <<: *service
+    image: ghcr.io/grillbot/grillbot.services:remind_service
+    build:
+      context: ..
+      dockerfile: docker/dotnet-service.Dockerfile
+      args:
+        PROJECT: src/Services/RemindService
+        ASSEMBLY: RemindService.dll
+        PORT: 5212
+    environment:
+      <<: *environment
+      ConnectionStrings__Default: Host=${DB_HOST:-host.docker.internal};Port=${DB_PORT:-5432};Database=RemindService;Username=${DB_USERNAME:-grillbot};Password=${DB_PASSWORD:-}
+    ports:
+      - "3014:5212"
+
+  rubbergod_service:
+    <<: *service
+    image: ghcr.io/grillbot/grillbot.services:rubbergod_service
+    build:
+      context: ..
+      dockerfile: docker/dotnet-service.Dockerfile
+      args:
+        PROJECT: src/Services/RubbergodService
+        ASSEMBLY: RubbergodService.dll
+        PORT: 5031
+    environment:
+      <<: *environment
+      ConnectionStrings__Default: Host=${DB_HOST:-host.docker.internal};Port=${DB_PORT:-5432};Database=RubbergodService;Username=${DB_USERNAME:-grillbot};Password=${DB_PASSWORD:-}
+      ConnectionStrings__BotToken: ${DISCORD_BOT_TOKEN:-}
+      DirectApi__Rubbergod__ChannelId: ${RUBBERGOD_CHANNEL_ID:-942801245486321705}
+      Redis__Endpoint: redis-ephemeral:6379
+      Redis__Password: ${REDIS_PASSWORD:-grillbot}
+    ports:
+      - "3006:5031"
+
+  searching_service:
+    <<: *service
+    image: ghcr.io/grillbot/grillbot.services:searching_service
+    build:
+      context: ..
+      dockerfile: docker/dotnet-service.Dockerfile
+      args:
+        PROJECT: src/Services/SearchingService
+        ASSEMBLY: SearchingService.dll
+        PORT: 5164
+    environment:
+      <<: *environment
+      ConnectionStrings__Default: Host=${DB_HOST:-host.docker.internal};Port=${DB_PORT:-5432};Database=SearchingService;Username=${DB_USERNAME:-grillbot};Password=${DB_PASSWORD:-}
+    ports:
+      - "3015:5164"
+
+  unverify_service:
+    <<: *service
+    image: ghcr.io/grillbot/grillbot.services:unverify_service
+    build:
+      context: ..
+      dockerfile: docker/dotnet-service.Dockerfile
+      args:
+        PROJECT: src/Services/UnverifyService
+        ASSEMBLY: UnverifyService.dll
+        PORT: 5037
+    environment:
+      <<: *environment
+      ConnectionStrings__Default: Host=${DB_HOST:-host.docker.internal};Port=${DB_PORT:-5432};Database=UnverifyService;Username=${DB_USERNAME:-grillbot};Password=${DB_PASSWORD:-}
+      ConnectionStrings__BotToken: ${DISCORD_BOT_TOKEN:-}
+      Redis__Endpoint: redis-ephemeral:6379
+      Redis__Password: ${REDIS_PASSWORD:-grillbot}
+    ports:
+      - "3019:5037"
+
+  user_management_service:
+    <<: *service
+    image: ghcr.io/grillbot/grillbot.services:user_management_service
+    build:
+      context: ..
+      dockerfile: docker/dotnet-service.Dockerfile
+      args:
+        PROJECT: src/Services/UserManagementService
+        ASSEMBLY: UserManagementService.dll
+        PORT: 5052
+    environment:
+      <<: *environment
+      ConnectionStrings__Default: Host=${DB_HOST:-host.docker.internal};Port=${DB_PORT:-5432};Database=UserManagementService;Username=${DB_USERNAME:-grillbot};Password=${DB_PASSWORD:-}
+      ConnectionStrings__BotToken: ${DISCORD_BOT_TOKEN:-}
+      Redis__Endpoint: redis-ephemeral:6379
+      Redis__Password: ${REDIS_PASSWORD:-grillbot}
+      Services__UserMeasures__Api: ${USER_MEASURES_API:-http://user_measures_service:5134/}
+      Services__Unverify__Api: ${UNVERIFY_API:-http://unverify_service:5037/}
+    ports:
+      - "3017:5052"
+
+  user_measures_service:
+    <<: *service
+    image: ghcr.io/grillbot/grillbot.services:user_measures_service
+    build:
+      context: ..
+      dockerfile: docker/dotnet-service.Dockerfile
+      args:
+        PROJECT: src/Services/UserMeasuresService
+        ASSEMBLY: UserMeasuresService.dll
+        PORT: 5134
+    environment:
+      <<: *environment
+      ConnectionStrings__Default: Host=${DB_HOST:-host.docker.internal};Port=${DB_PORT:-5432};Database=UserMeasuresService;Username=${DB_USERNAME:-grillbot};Password=${DB_PASSWORD:-}
+      ConnectionStrings__BotToken: ${DISCORD_BOT_TOKEN:-}
+    ports:
+      - "3012:5134"
+
+networks:
+  grillbot-dev:
+    name: grillbot-dev
+    external: true

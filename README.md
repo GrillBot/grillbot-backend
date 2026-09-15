@@ -197,6 +197,52 @@ through the same validator).
 
 When running the bot in Docker, bind `/GrillBotData` as a volume.
 
+## Local development with Docker Compose
+
+`compose/` holds two standalone Docker Compose stacks (plain `docker compose`, not
+Swarm) for running parts of the backend on your machine:
+
+| File | Project | Contents |
+|---|---|---|
+| `compose/infrastructure.yml` | `grillbot-infra` | RabbitMQ (`5672`, UI `15672`), `redis-main` (`6379`), `redis-ephemeral` (`6380`) |
+| `compose/database.yml` | `grillbot-db` | Optional PostgreSQL 18 (`5432`) with the `grillbot` role and all databases |
+| `compose/grillbot.yml` | `grillbot` | The 13 microservices, on the development server's host ports `3005`–`3019` |
+
+The infrastructure stack creates the `grillbot-dev` network, which the other two
+stacks join, so start it first.
+
+```bash
+cp compose/.env.example compose/.env
+docker compose -f compose/infrastructure.yml up -d
+docker compose -f compose/database.yml up -d --wait
+docker compose -f compose/grillbot.yml up -d
+```
+
+- **Database:** `compose/database.yml` is only for developers without a PostgreSQL
+  server. On its first start (empty volume) `compose/database/init/` creates the
+  `DB_USERNAME`/`DB_PASSWORD` role — not a superuser — and one database per service
+  plus `GrillBotDev`, all owned by that role. The applications create their tables
+  through EF Core migrations on startup. `.env.example` points `DB_HOST` at it
+  (`postgres`); from the IDE use `localhost:5432`. With your own server, skip that
+  stack and set `DB_HOST` to it instead. `down -v` wipes the data.
+
+- **Run a subset** by naming services:
+  `docker compose -f compose/grillbot.yml up -d points_service emote_service`.
+- **Health:** every container is health-checked against its `/health` endpoint,
+  so `docker compose ... ps` shows `healthy`/`unhealthy` and `up -d --wait` blocks
+  until the started services are healthy. Services do not `depends_on` each other,
+  so starting one never starts another.
+- **Images** are pulled from GHCR when missing. `up -d --build <service>` builds
+  from your working tree instead; `pull` returns to the published image.
+- **Bot in the IDE, services in containers:** start both stacks. The bot's
+  `appsettings.json` already points at `127.0.0.1:30xx`; in your
+  `appsettings.Development.json` use `localhost` for `RabbitMQ:Hostname` and
+  `localhost:6379` for `Redis:Endpoint`.
+- **One service in the IDE:** `stop` its container, run it from the IDE against
+  `localhost` for RabbitMQ and Redis. If a container calls it (`GRAPHICS_API`,
+  `USER_MEASURES_API`, `UNVERIFY_API`), point that variable at
+  `http://host.docker.internal:<port>/` and re-run `up -d` for the caller.
+
 ## Deployment
 
 `docker/deployables.json` lists every deployable unit. Its key is used as the

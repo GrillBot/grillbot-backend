@@ -1,0 +1,58 @@
+# Optional local PostgreSQL for development, for anyone who does not have a
+# database server of their own. Standalone Docker (not Swarm). Requires
+# compose/infrastructure.yml to be up (it joins that stack's "grillbot-dev"
+# network); start it before compose/grillbot.yml.
+#
+#   docker compose -f compose/database.yml up -d --wait
+#   docker compose -f compose/database.yml down        # keeps the data volume
+#   docker compose -f compose/database.yml down -v     # wipes it (re-runs the init script next time)
+#
+# On the first start (empty volume) database/init/ creates the application role
+# DB_USERNAME / DB_PASSWORD and one database per service plus GrillBotDev for the
+# bot, all owned by that role - the same layout as the development server. The
+# role is deliberately not a superuser. Tables are created by the applications
+# themselves: every host applies its EF Core migrations on startup.
+#
+# To use it, set in compose/.env:  DB_HOST=postgres  (containers, over grillbot-dev)
+# From the IDE connect to localhost:${DB_PUBLISHED_PORT:-5432} instead.
+# Using your own PostgreSQL? Don't start this stack; point DB_HOST at your server.
+
+name: grillbot-db
+
+services:
+  postgres:
+    # Major version pinned on purpose: a data volume cannot be opened by a
+    # different major version. Matches the development server (18.x).
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_SUPERUSER_PASSWORD:-postgres}
+      GRILLBOT_DB_USERNAME: ${DB_USERNAME:-grillbot}
+      GRILLBOT_DB_PASSWORD: ${DB_PASSWORD:-grillbot}
+      TZ: Europe/Prague
+    ports:
+      - "${DB_PUBLISHED_PORT:-5432}:5432"
+    volumes:
+      # PostgreSQL 18+ images keep data under /var/lib/postgresql/<major>/.
+      - postgres_data:/var/lib/postgresql
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      # Over TCP: during initialisation the temporary server only listens on
+      # the Unix socket, so this does not report ready too early.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+      start_interval: 2s
+    networks:
+      - grillbot-dev
+
+volumes:
+  postgres_data:
+
+networks:
+  grillbot-dev:
+    name: grillbot-dev
+    external: true
