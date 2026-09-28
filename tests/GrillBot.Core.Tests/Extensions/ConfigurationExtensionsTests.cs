@@ -113,6 +113,69 @@ public class ConfigurationExtensionsTests
         Assert.IsNull(configuration["secrets.json"]);
     }
 
+    /// <summary>
+    /// Secret files written by an editor or by <c>echo</c> end with a newline, which must not
+    /// become part of a password.
+    /// </summary>
+    [TestMethod]
+    [DataRow("value\r\n", DisplayName = "CRLF")]
+    public void AddDockerSecrets_TrailingCrLf_IsTrimmed(string content)
+    {
+        WriteSecret("RabbitMQ__Password", content);
+
+        var configuration = CreateHostLikeBuilder()
+            .AddDockerSecrets(SecretsPath)
+            .Build();
+
+        Assert.AreEqual("value", configuration["RabbitMQ:Password"]);
+    }
+
+    [TestMethod]
+    public void AddDockerSecrets_SpecialCharacters_AreKeptVerbatim()
+    {
+        const string password = "#~]x,\"y;=$z";
+        WriteSecret("Redis__Password", password);
+
+        var configuration = CreateHostLikeBuilder()
+            .AddDockerSecrets(SecretsPath)
+            .Build();
+
+        Assert.AreEqual(password, configuration["Redis:Password"]);
+    }
+
+    /// <summary>
+    /// The secret file names the production stack mounts, from a two-level to a three-level path.
+    /// </summary>
+    [TestMethod]
+    [DataRow("RabbitMQ__Password", "RabbitMQ:Password")]
+    [DataRow("Discord__Token", "Discord:Token")]
+    [DataRow("ConnectionStrings__BotToken", "ConnectionStrings:BotToken")]
+    [DataRow("Auth__AzureIdentity__ClientSecret", "Auth:AzureIdentity:ClientSecret")]
+    public void AddDockerSecrets_NestedKeyFileName_MapsToConfigurationSection(string fileName, string key)
+    {
+        WriteSecret(fileName, "secret-value");
+
+        var configuration = CreateHostLikeBuilder()
+            .AddDockerSecrets(SecretsPath)
+            .Build();
+
+        Assert.AreEqual("secret-value", configuration[key]);
+    }
+
+    [TestMethod]
+    public void AddDockerSecrets_MultipleJsonSecrets_LastInOrdinalOrderWins()
+    {
+        WriteSecret("b.json", """{ "RabbitMQ": { "Hostname": "from-b" } }""");
+        WriteSecret("a.json", """{ "RabbitMQ": { "Hostname": "from-a", "Username": "from-a" } }""");
+
+        var configuration = CreateHostLikeBuilder()
+            .AddDockerSecrets(SecretsPath)
+            .Build();
+
+        Assert.AreEqual("from-b", configuration["RabbitMQ:Hostname"]);
+        Assert.AreEqual("from-a", configuration["RabbitMQ:Username"]);
+    }
+
     [TestMethod]
     public void AddDockerSecrets_DotFiles_AreIgnored()
     {
