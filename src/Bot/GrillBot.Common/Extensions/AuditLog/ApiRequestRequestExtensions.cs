@@ -12,16 +12,15 @@ public static class ApiRequestRequestExtensions
             request.Parameters.Add(name, value);
     }
 
-    private static void AddHeader(this ApiRequestRequest request, string? name, string? value)
-    {
-        if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(value))
-            request.Headers.Add(name, value);
-    }
-
     public static void AddHeaders(this ApiRequestRequest request, string? name, StringValues values)
     {
-        foreach (var value in values)
-            request.AddHeader(name, value);
+        if (string.IsNullOrEmpty(name))
+            return;
+
+        // A header sent more than once arrives as multiple values; combine them as HTTP does (RFC 9110 §5.3).
+        var value = string.Join(", ", values.Where(o => !string.IsNullOrEmpty(o)));
+        if (!string.IsNullOrEmpty(value))
+            request.Headers[name] = value;
     }
 
     public static void AddParameters(this ApiRequestRequest request, IDictionaryObject? apiObject, int index = -1)
