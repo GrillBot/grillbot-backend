@@ -4,6 +4,7 @@ using Discord;
 using EmoteService.Core.Entity.Suggestions;
 using EmoteService.Core.Options;
 using GrillBot.Contracts.Emote.Events.Suggestions;
+using GrillBot.Core.AsyncMessaging.Extensions;
 using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Contracts.Bot.Events.Messages;
 using Microsoft.EntityFrameworkCore;
@@ -34,7 +35,7 @@ public partial class EmoteSuggestionRequestHandler(
             CreateUserNotification(entity, message.Locale)
         };
 
-        await Publisher.PublishAsync(messages);
+        await Publisher.PublishAllAsync(messages);
         return;
     }
 

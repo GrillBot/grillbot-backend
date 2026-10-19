@@ -3,6 +3,7 @@ using GrillBot.App.Jobs.Abstractions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Cooldown;
 using GrillBot.Contracts.Invite.Events;
+using GrillBot.Core.AsyncMessaging.Extensions;
 using Quartz;
 using StackExchange.Redis;
 using Wolverine;
@@ -66,7 +67,7 @@ public class CacheCleanerJob(
         }
 
         if (payloads.Count > 0)
-            await _rabbitPublisher.PublishAsync(payloads);
+            await _rabbitPublisher.PublishAllAsync(payloads);
     }
 
     private async Task<bool> KeyExistsAsync(string pattern)

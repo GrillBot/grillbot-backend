@@ -1,4 +1,5 @@
 ﻿using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Core.AsyncMessaging.Extensions;
 using GrillBot.Core.Extensions;
 using GrillBot.Contracts.Emote.Events;
 using GrillBot.Contracts.Emote.Events.Guild;
@@ -28,7 +29,7 @@ public partial class EmoteOrchestrationHandler
         }
 
         if (payloads.Count > 0)
-            await _rabbitPublisher.PublishAsync(payloads);
+            await _rabbitPublisher.PublishAllAsync(payloads);
     }
 
     private async Task ProcessMissingChannelsAsync(IReadOnlyCollection<IGuild> guilds)
@@ -55,6 +56,6 @@ public partial class EmoteOrchestrationHandler
         }
 
         if (payloads.Count > 0)
-            await _rabbitPublisher.PublishAsync(payloads);
+            await _rabbitPublisher.PublishAllAsync(payloads);
     }
 }

@@ -1,6 +1,7 @@
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Core.AsyncMessaging.Extensions;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Services.Common.Executor;
 using Emote;
@@ -45,7 +46,7 @@ public partial class EmoteOrchestrationHandler(
             .ToList();
 
         if (payloads.Count > 0)
-            await _rabbitPublisher.PublishAsync(payloads);
+            await _rabbitPublisher.PublishAllAsync(payloads);
     }
 
     // ReactionAdded

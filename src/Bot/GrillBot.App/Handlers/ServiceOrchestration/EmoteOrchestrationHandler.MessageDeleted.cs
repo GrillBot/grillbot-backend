@@ -1,6 +1,7 @@
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Contracts.Emote.Events;
 using GrillBot.Contracts.Emote.Events.Suggestions;
+using GrillBot.Core.AsyncMessaging.Extensions;
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
 
@@ -35,7 +36,7 @@ public partial class EmoteOrchestrationHandler
         var createdAt = DateTime.UtcNow;
         var payloads = emotes.ConvertAll(e => new EmoteEventPayload(guildId, userId, e.ToString(), createdAt, false));
 
-        await _rabbitPublisher.PublishAsync(payloads);
+        await _rabbitPublisher.PublishAllAsync(payloads);
     }
 
     private Task ProcessEmoteSuggestionsAsync(IMessage message, IGuild guild)

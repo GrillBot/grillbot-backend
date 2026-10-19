@@ -1,6 +1,7 @@
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Contracts.Invite.Events;
+using GrillBot.Core.AsyncMessaging.Extensions;
 using Wolverine;
 
 
@@ -28,7 +29,7 @@ public class InviteOrchestrationHandler(
             .Select(id => new SynchronizeGuildInvitesPayload(id, false))
             .ToList();
 
-        await _rabbitPublisher.PublishAsync(payloads);
+        await _rabbitPublisher.PublishAllAsync(payloads);
     }
 
     // User joined

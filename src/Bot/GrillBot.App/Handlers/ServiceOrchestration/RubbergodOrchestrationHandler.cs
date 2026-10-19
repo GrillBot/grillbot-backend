@@ -3,6 +3,7 @@ using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Contracts.Rubbergod.Events.Pins;
+using GrillBot.Core.AsyncMessaging.Extensions;
 using Wolverine;
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
@@ -39,7 +40,7 @@ public class RubbergodOrchestrationHandler : IMessageUpdatedEvent, IThreadDelete
 
         payloads = payloads.DistinctBy(o => $"{o.GuildId}/{o.ChannelId}").ToList();
         if (payloads.Count > 0)
-            await _rabbitPublisher.PublishAsync(payloads);
+            await _rabbitPublisher.PublishAllAsync(payloads);
     }
 
     // ThreadDeleted

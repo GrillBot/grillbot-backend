@@ -1,5 +1,6 @@
 using EmoteService.Core.Entity;
 using EmoteService.Core.Entity.Suggestions;
+using GrillBot.Core.AsyncMessaging.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Contracts.Bot.Events.Messages;
@@ -40,7 +41,7 @@ public class FinishSuggestionVotesAction(
         }
 
         if (messages.Count > 0)
-            await _rabbitPublisher.PublishAsync(messages);
+            await _rabbitPublisher.PublishAllAsync(messages);
         await ContextHelper.SaveChangesAsync();
 
         return ApiResult.Ok(suggestions.Count);

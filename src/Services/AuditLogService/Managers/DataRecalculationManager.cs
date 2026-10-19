@@ -1,6 +1,7 @@
 using AuditLogService.Core.Entity;
 using GrillBot.Contracts.AuditLog.Events.Recalculation;
 using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Core.AsyncMessaging.Extensions;
 using GrillBot.Core.Extensions;
 using Wolverine;
 
@@ -12,7 +13,7 @@ public class DataRecalculationManager(IMessageBus _publisher)
     public async Task EnqueueRecalculationAsync(List<LogItem> items, CancellationToken cancellationToken = default)
     {
         var batches = CreateBatches(items);
-        await _publisher.PublishAsync(batches);
+        await _publisher.PublishAllAsync(batches);
     }
 
     private static List<RecalculationPayload> CreateBatches(List<LogItem> items)

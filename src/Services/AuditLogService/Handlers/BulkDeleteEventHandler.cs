@@ -3,6 +3,7 @@ using GrillBot.Contracts.AuditLog.Enums;
 using AuditLogService.Core.Extensions;
 using AuditLogService.Managers;
 using GrillBot.Contracts.AuditLog.Events;
+using GrillBot.Core.AsyncMessaging.Extensions;
 using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
 using Microsoft.EntityFrameworkCore;
@@ -31,7 +32,7 @@ public class BulkDeleteEventHandler(
             await _dataRecalculation.EnqueueRecalculationAsync(logItems, cancellationToken);
 
             if (filesForDelete.Count > 0)
-                await Publisher.PublishAsync(filesForDelete);
+                await Publisher.PublishAllAsync(filesForDelete);
         }
 
         return;

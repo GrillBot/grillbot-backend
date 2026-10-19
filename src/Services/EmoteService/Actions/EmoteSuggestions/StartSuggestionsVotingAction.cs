@@ -1,5 +1,6 @@
 using EmoteService.Core.Entity;
 using EmoteService.Core.Entity.Suggestions;
+using GrillBot.Core.AsyncMessaging.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Contracts.Bot.Events.Messages;
@@ -43,7 +44,7 @@ public class StartSuggestionsVotingAction(
         foreach (var suggestion in suggestions)
             voteMessages.Add(ProcessSuggestionToVote(suggestion, guild));
 
-        await _rabbitPublisher.PublishAsync(voteMessages);
+        await _rabbitPublisher.PublishAllAsync(voteMessages);
         await DbContext.SaveChangesAsync();
 
         return ApiResult.Ok(suggestions.Count);
