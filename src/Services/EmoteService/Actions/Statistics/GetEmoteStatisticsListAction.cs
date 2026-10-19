@@ -9,7 +9,6 @@ using GrillBot.Services.Common.EntityFramework.Extensions;
 using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using System.Reactive.Linq;
 
 namespace EmoteService.Actions.Statistics;
 
