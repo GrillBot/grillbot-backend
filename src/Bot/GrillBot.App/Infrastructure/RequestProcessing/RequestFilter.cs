@@ -78,6 +78,9 @@ public class RequestFilter(
 
     private void SetApiRequest(ActionContext context)
     {
+        // Set before anything can throw, so a request that fails here still logs with a language.
+        _apiRequestContext.LogRequest.Language = _apiRequestContext.Language;
+
         var descriptor = (ControllerActionDescriptor)context.ActionDescriptor;
         _apiRequestContext.LogRequest.StartAt = DateTime.UtcNow;
         _apiRequestContext.LogRequest.TemplatePath = descriptor.AttributeRouteInfo!.Template!;
