@@ -119,7 +119,8 @@ public class ConfigurationExtensionsTests
     /// </summary>
     [TestMethod]
     [DataRow("value\r\n", DisplayName = "CRLF")]
-    public void AddDockerSecrets_TrailingCrLf_IsTrimmed(string content)
+    [DataRow("value\n", DisplayName = "LF")]
+    public void AddDockerSecrets_TrailingNewLine_IsTrimmed(string content)
     {
         WriteSecret("RabbitMQ__Password", content);
 

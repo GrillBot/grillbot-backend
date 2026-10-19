@@ -57,7 +57,7 @@ public static class ConfigurationExtensions
         {
             // Key-per-file secrets. Skip dotfiles and *.json (JSON secrets are handled below so
             // they aren't collapsed into a single opaque string value).
-            new KeyPerFileConfigurationSource
+            new SecretFileConfigurationSource
             {
                 FileProvider = fileProvider,
                 Optional = true,
@@ -152,5 +152,27 @@ public static class ConfigurationExtensions
         }
 
         return -1;
+    }
+
+    /// <summary>
+    /// Key-per-file source whose values lose every trailing line break. The stock provider only
+    /// strips <see cref="Environment.NewLine"/>, so on Linux a secret file saved with CRLF would
+    /// keep a trailing <c>\r</c> in the value.
+    /// </summary>
+    private sealed class SecretFileConfigurationSource : KeyPerFileConfigurationSource, IConfigurationSource
+    {
+        IConfigurationProvider IConfigurationSource.Build(IConfigurationBuilder builder)
+            => new SecretFileConfigurationProvider(this);
+    }
+
+    private sealed class SecretFileConfigurationProvider(KeyPerFileConfigurationSource source) : KeyPerFileConfigurationProvider(source)
+    {
+        public override void Load()
+        {
+            base.Load();
+
+            foreach (var key in Data.Keys.ToList())
+                Data[key] = Data[key]?.TrimEnd('\r', '\n');
+        }
     }
 }
