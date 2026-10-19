@@ -25,7 +25,7 @@ public interface IRemindServiceClient : IServiceClient
     [Post("/api/remind/copy")]
     Task<CreateReminderResult> CopyReminderAsync(CopyReminderRequest request, CancellationToken cancellationToken = default);
 
-    [Post("/api/remind/suggestions/{userId}")]
+    [Get("/api/remind/suggestions/{userId}")]
     Task<List<ReminderSuggestionItem>> GetSuggestionsAsync(string userId, CancellationToken cancellationToken = default);
 
     [Put("/api/remind/postpone/{notificationMessageId}/{hours}")]
