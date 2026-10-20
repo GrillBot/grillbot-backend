@@ -143,7 +143,7 @@ public class JwtTokenManager(
             yield return "Emote(Admin)";
             yield return "Points(Admin)";
             yield return "Remind(Admin)";
-            yield return "UserMeasures(Admin)";
+            yield return "Infractions(Admin)";
             yield return "Searching(Admin)";
             yield return "Invite(Admin)";
             yield return "Message(Admin)";
@@ -153,7 +153,7 @@ public class JwtTokenManager(
         {
             yield return "Remind(OnlyMyReminders)";
             yield return "Remind(CancelMyReminders)";
-            yield return "UserMeasures(OnlyMyMeasures)";
+            yield return "Infractions(OnlyMine)";
             yield return "Searching(OnlyMySearches)";
         }
 

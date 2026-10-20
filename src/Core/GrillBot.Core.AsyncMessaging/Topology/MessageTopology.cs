@@ -19,7 +19,6 @@ using RubbergodMessaging = GrillBot.Contracts.Rubbergod.Events.MessagingConstant
 using SearchingEvents = GrillBot.Contracts.Searching.Events;
 using UnverifyEvents = GrillBot.Contracts.Unverify.Events;
 using UserManagementEvents = GrillBot.Contracts.UserManagement.Events;
-using UserMeasuresEvents = GrillBot.Contracts.UserMeasures.Events;
 
 namespace GrillBot.Core.AsyncMessaging.Topology;
 
@@ -140,15 +139,15 @@ public static class MessageTopology
         new(typeof(UserManagementEvents.NicknameChangedMessage), UserManagementEvents.MessagingConstants.Exchange,
             UserManagementEvents.MessagingConstants.RoutingKeys.NicknameChanged, Queues.UserManagementService),
 
-        // User measures
-        new(typeof(UserMeasuresEvents.MemberWarningPayload), UserMeasuresEvents.MessagingConstants.Exchange,
-            UserMeasuresEvents.MessagingConstants.RoutingKeys.MemberWarning, Queues.UserMeasuresService),
-        new(typeof(UserMeasuresEvents.TimeoutPayload), UserMeasuresEvents.MessagingConstants.Exchange,
-            UserMeasuresEvents.MessagingConstants.RoutingKeys.Timeout, Queues.UserMeasuresService),
-        new(typeof(UserMeasuresEvents.UnverifyPayload), UserMeasuresEvents.MessagingConstants.Exchange,
-            UserMeasuresEvents.MessagingConstants.RoutingKeys.Unverify, Queues.UserMeasuresService),
-        new(typeof(UserMeasuresEvents.UnverifyModifyPayload), UserMeasuresEvents.MessagingConstants.Exchange,
-            UserMeasuresEvents.MessagingConstants.RoutingKeys.UnverifyModify, Queues.UserMeasuresService)
+        // User management - infractions
+        new(typeof(UserManagementEvents.MemberWarningPayload), UserManagementEvents.MessagingConstants.Exchange,
+            UserManagementEvents.MessagingConstants.RoutingKeys.MemberWarning, Queues.UserManagementService),
+        new(typeof(UserManagementEvents.TimeoutPayload), UserManagementEvents.MessagingConstants.Exchange,
+            UserManagementEvents.MessagingConstants.RoutingKeys.Timeout, Queues.UserManagementService),
+        new(typeof(UserManagementEvents.UnverifyPayload), UserManagementEvents.MessagingConstants.Exchange,
+            UserManagementEvents.MessagingConstants.RoutingKeys.Unverify, Queues.UserManagementService),
+        new(typeof(UserManagementEvents.UnverifyModifyPayload), UserManagementEvents.MessagingConstants.Exchange,
+            UserManagementEvents.MessagingConstants.RoutingKeys.UnverifyModify, Queues.UserManagementService)
     ];
 
     /// <summary>

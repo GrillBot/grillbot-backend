@@ -39,7 +39,7 @@ public class GetServiceInfo(
             "points" => _serviceProvider.GetRequiredService<PointsService.IPointsServiceClient>(),
             "image-processing" => _serviceProvider.GetRequiredService<ImageProcessing.IImageProcessingClient>(),
             "audit-log" => _serviceProvider.GetRequiredService<IAuditLogServiceClient>(),
-            "user-measures" => _serviceProvider.GetRequiredService<UserMeasures.IUserMeasuresServiceClient>(),
+            "user-management" => _serviceProvider.GetRequiredService<UserManagementService.IUserManagementServiceClient>(),
             "emote" => _serviceProvider.GetRequiredService<Emote.IEmoteServiceClient>(),
             "remind" => _serviceProvider.GetRequiredService<RemindService.IRemindServiceClient>(),
             "searching" => _serviceProvider.GetRequiredService<SearchingService.ISearchingServiceClient>(),

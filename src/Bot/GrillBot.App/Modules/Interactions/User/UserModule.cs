@@ -48,7 +48,7 @@ public class UserModule : InteractionsModuleBase
         await SetResponseAsync(embed: result);
     }
 
-    [SlashCommand("warning", "Create user measures warning for user.")]
+    [SlashCommand("warning", "Create infraction warning for user.")]
     public async Task CreateWarningAsync(
         IGuildUser user,
         [Discord.Interactions.MaxLength(DiscordConfig.MaxMessageSize)]
@@ -56,7 +56,7 @@ public class UserModule : InteractionsModuleBase
         bool notification = true
     )
     {
-        using var command = GetCommand<Actions.Commands.UserMeasures.CreateUserMeasuresWarning>();
+        using var command = await GetCommandAsync<Actions.Commands.Infractions.CreateWarning>();
         await command.Command.ProcessAsync(user, message, notification);
 
         await SetResponseAsync(GetText(nameof(CreateWarningAsync), "Success"));

@@ -83,7 +83,6 @@ public static class ServicesExtensions
         services.RegisterService<ImageProcessing.IImageProcessingClient>(configuration);
         services.RegisterService<PointsService.IPointsServiceClient>(configuration);
         services.RegisterService<RubbergodService.IRubbergodServiceClient>(configuration);
-        services.RegisterService<UserMeasures.IUserMeasuresServiceClient>(configuration);
         services.RegisterService<RemindService.IRemindServiceClient>(configuration);
         services.RegisterService<SearchingService.ISearchingServiceClient>(configuration);
         services.RegisterService<Graphics.IGraphicsClient>(configuration);

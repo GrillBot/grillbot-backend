@@ -11,7 +11,7 @@ using GrillBot.Core.Services.Common.Executor;
 using Emote;
 using InviteService;
 using PointsService;
-using UserMeasures;
+using UserManagementService;
 using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Database.Models.Guilds;
 
@@ -28,12 +28,12 @@ public class GetGuildDetail : ApiAction
     private readonly IServiceClientExecutor<IEmoteServiceClient> _emoteService;
     private readonly IServiceClientExecutor<IAuditLogServiceClient> _auditLogServiceClient;
     private readonly IServiceClientExecutor<IPointsServiceClient> _pointsServiceClient;
-    private readonly IServiceClientExecutor<IUserMeasuresServiceClient> _userMeasuresService;
+    private readonly IServiceClientExecutor<IUserManagementServiceClient> _userManagementService;
     private readonly IServiceClientExecutor<IInviteServiceClient> _inviteServiceClient;
 
     public GetGuildDetail(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient discordClient, ITextsManager texts,
         IServiceClientExecutor<IPointsServiceClient> pointsServiceClient, IServiceClientExecutor<IAuditLogServiceClient> auditLogServiceClient,
-        IServiceClientExecutor<IUserMeasuresServiceClient> userMeasuresService, DataResolveManager dataResolve, IServiceClientExecutor<IEmoteServiceClient> emoteService,
+        IServiceClientExecutor<IUserManagementServiceClient> userManagementService, DataResolveManager dataResolve, IServiceClientExecutor<IEmoteServiceClient> emoteService,
         IServiceClientExecutor<IInviteServiceClient> inviteServiceClient) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
@@ -42,7 +42,7 @@ public class GetGuildDetail : ApiAction
         Texts = texts;
         _pointsServiceClient = pointsServiceClient;
         _auditLogServiceClient = auditLogServiceClient;
-        _userMeasuresService = userMeasuresService;
+        _userManagementService = userManagementService;
         _dataResolve = dataResolve;
         _emoteService = emoteService;
         _inviteServiceClient = inviteServiceClient;
@@ -104,7 +104,7 @@ public class GetGuildDetail : ApiAction
 
         report.AuditLogs = await _auditLogServiceClient.ExecuteRequestAsync((c, ctx) => c.GetItemsCountOfGuildAsync(guildId, ctx.CancellationToken));
         report.PointTransactions = await _pointsServiceClient.ExecuteRequestAsync((c, ctx) => c.GetTransactionsCountForGuildAsync(guildId.ToString(), ctx.CancellationToken));
-        report.UserMeasures = await _userMeasuresService.ExecuteRequestAsync((c, ctx) => c.GetItemsCountOfGuildAsync(guildId.ToString(), ctx.CancellationToken));
+        report.Infractions = await _userManagementService.ExecuteRequestAsync((c, ctx) => c.GetInfractionsCountOfGuildAsync(guildId.ToString(), ctx.CancellationToken));
         report.EmoteStats = await _emoteService.ExecuteRequestAsync((c, ctx) => c.GetStatisticsCountInGuildAsync(guildId.ToString(), ctx.CancellationToken));
         report.Invites = await _inviteServiceClient.ExecuteRequestAsync((c, ctx) => c.GetInvitesCountOfGuildAsync(guildId, ctx.CancellationToken));
 

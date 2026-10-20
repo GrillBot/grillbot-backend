@@ -19,7 +19,6 @@ public static class Queues
     public const string SearchingService = "searching_service";
     public const string UnverifyService = "unverify_service";
     public const string UserManagementService = "user_management_service";
-    public const string UserMeasuresService = "user_measures_service";
 
     public static readonly IReadOnlySet<string> All = new HashSet<string>
     {
@@ -34,7 +33,6 @@ public static class Queues
         RubbergodService,
         SearchingService,
         UnverifyService,
-        UserManagementService,
-        UserMeasuresService
+        UserManagementService
     };
 }

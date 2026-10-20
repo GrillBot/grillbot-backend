@@ -47,7 +47,7 @@ public partial class SetUnverifyHandler(
             await using var transaction = await DbContext.Database.BeginTransactionAsync(cancelToken);
 
             var logItem = await LogUnverifyAsync(session, currentUser, cancelToken);
-            await NotifyUserMeasuresAsync(session, logItem, currentUser, cancelToken);
+            await NotifyInfractionsAsync(session, logItem, currentUser, cancelToken);
 
             try
             {

@@ -30,8 +30,7 @@ FROM unnest(ARRAY[
     'RubbergodService',
     'SearchingService',
     'UnverifyService',
-    'UserManagementService',
-    'UserMeasuresService'
+    'UserManagementService'
 ]) AS db
 WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = db)
 \gexec

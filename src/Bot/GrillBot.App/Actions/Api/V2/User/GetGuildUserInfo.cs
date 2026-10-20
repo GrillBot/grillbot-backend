@@ -4,17 +4,17 @@ using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.Common.Exceptions;
 using GrillBot.Core.Services.Common.Executor;
-using UserMeasures;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Enums;
 using UnverifyService;
+using UserManagementService;
 
 namespace GrillBot.App.Actions.Api.V2.User;
 
 public class GetGuildUserInfo(
     ApiRequestContext apiContext,
     GrillBotDatabaseBuilder _databaseBuilder,
-    IServiceClientExecutor<IUserMeasuresServiceClient> _userMeasuresService,
+    IServiceClientExecutor<IUserManagementServiceClient> _userManagementService,
     IServiceClientExecutor<IUnverifyServiceClient> _unverifyClient,
     DataResolveManager _dataResolve
 ) : ApiAction(apiContext)
@@ -42,9 +42,9 @@ public class GetGuildUserInfo(
             SelfUnverifyCount = await ComputeSelfUnverifyCountAsync(guildId, userId)
         };
 
-        var userMeasuresInfo = await GetUserMeasuresInfoAsync(userId, guildId);
-        result.WarningCount = userMeasuresInfo?.WarningCount.TryGetValue(guildId, out var wCount) == true ? wCount : 0;
-        result.UnverifyCount = userMeasuresInfo?.UnverifyCount.TryGetValue(guildId, out var uCount) == true ? uCount : 0;
+        var infractions = await GetInfractionsSummaryAsync(userId, guildId);
+        result.WarningCount = infractions?.WarningCount.TryGetValue(guildId, out var wCount) == true ? wCount : 0;
+        result.UnverifyCount = infractions?.UnverifyCount.TryGetValue(guildId, out var uCount) == true ? uCount : 0;
 
         return ApiResult.Ok(result);
     }
@@ -66,12 +66,12 @@ public class GetGuildUserInfo(
         }
     }
 
-    private async Task<GrillBot.Contracts.UserMeasures.User.UserInfo?> GetUserMeasuresInfoAsync(string userId, string guildId)
+    private async Task<GrillBot.Contracts.UserManagement.Responses.UserInfractionsSummary?> GetInfractionsSummaryAsync(string userId, string guildId)
     {
         try
         {
-            return await _userMeasuresService.ExecuteRequestAsync(
-                (client, ctx) => client.GetUserInfoAsync(userId, guildId, ctx.CancellationToken),
+            return await _userManagementService.ExecuteRequestAsync(
+                (client, ctx) => client.GetUserInfractionsSummaryAsync(userId, guildId, ctx.CancellationToken),
                 CancellationToken
             );
         }

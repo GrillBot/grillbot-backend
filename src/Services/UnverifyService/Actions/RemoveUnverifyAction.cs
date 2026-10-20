@@ -16,7 +16,7 @@ using UnverifyService.Core.Entity.Logs;
 using GrillBot.Contracts.Unverify.Enums;
 using GrillBot.Contracts.Unverify;
 using GrillBot.Contracts.Unverify.Responses;
-using GrillBot.Contracts.UserMeasures.Events;
+using GrillBot.Contracts.UserManagement.Events;
 using Wolverine;
 
 
@@ -55,7 +55,7 @@ public class RemoveUnverifyAction(
             if (!isForceRemove)
             {
                 if (!isAutoRemove)
-                    await NotifyUserMeasuresAsync(unverify);
+                    await NotifyInfractionsAsync(unverify);
 
                 if (
                     session.MutedRole is not null &&
@@ -198,7 +198,7 @@ public class RemoveUnverifyAction(
         await ContextHelper.SaveChangesAsync(CancellationToken);
     }
 
-    private Task NotifyUserMeasuresAsync(ActiveUnverify unverify)
+    private Task NotifyInfractionsAsync(ActiveUnverify unverify)
     {
         var payload = new UnverifyModifyPayload(unverify.LogItem.LogNumber, DateTime.UtcNow);
         return _rabbitPublisher.PublishAsync(payload).AsTask();

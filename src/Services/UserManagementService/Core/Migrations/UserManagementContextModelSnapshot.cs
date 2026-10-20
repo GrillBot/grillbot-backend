@@ -65,6 +65,108 @@ namespace UserManagementService.Core.Migrations
                     b.ToTable("Nicknames");
                 });
 
+            modelBuilder.Entity("UserManagementService.Core.Entity.Infractions.TimeoutInfraction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("ExternalId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("GuildId")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("ModeratorId")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("UserId")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime>("ValidTo")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExternalId")
+                        .IsUnique();
+
+                    b.HasIndex("GuildId", "UserId");
+
+                    b.ToTable("Timeouts", "infractions");
+                });
+
+            modelBuilder.Entity("UserManagementService.Core.Entity.Infractions.UnverifyInfraction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("GuildId")
+                        .HasColumnType("numeric");
+
+                    b.Property<long>("LogSetId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("ModeratorId")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("UserId")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime>("ValidTo")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LogSetId")
+                        .IsUnique();
+
+                    b.HasIndex("GuildId", "UserId");
+
+                    b.ToTable("Unverifies", "infractions");
+                });
+
+            modelBuilder.Entity("UserManagementService.Core.Entity.Infractions.WarningInfraction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("GuildId")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("ModeratorId")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("UserId")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GuildId", "UserId");
+
+                    b.ToTable("Warnings", "infractions");
+                });
+
             modelBuilder.Entity("UserManagementService.Core.Entity.GuildUserNickname", b =>
                 {
                     b.HasOne("UserManagementService.Core.Entity.GuildUser", "GuildUser")

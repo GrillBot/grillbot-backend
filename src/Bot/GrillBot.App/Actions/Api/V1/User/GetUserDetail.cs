@@ -9,13 +9,12 @@ using GrillBot.Database.Enums.Internal;
 using GrillBot.Core.Infrastructure.Actions;
 using ApiModels = GrillBot.Data.Models.API;
 using Entity = GrillBot.Database.Entity;
-using UserMeasures;
 using GrillBot.Data.Enums;
 using GrillBot.App.Managers.DataResolve;
 using Emote;
 using GrillBot.Contracts.Emote.Requests;
 using GrillBot.Data.Extensions.Services;
-using GrillBot.Contracts.UserMeasures.Measures;
+using GrillBot.Contracts.UserManagement.Requests;
 using GrillBot.Core.Services.Common.Executor;
 using InviteService;
 using GrillBot.Contracts.Invite.Requests;
@@ -32,7 +31,6 @@ public class GetUserDetail(
     IDiscordClient _discordClient,
     ITextsManager _texts,
     IServiceClientExecutor<IPointsServiceClient> _pointsServiceClient,
-    IServiceClientExecutor<IUserMeasuresServiceClient> _userMeasuresService,
     DataResolveManager _dataResolveManager,
     IServiceClientExecutor<IEmoteServiceClient> _emoteServiceClient,
     IServiceClientExecutor<IInviteServiceClient> _inviteServiceClient,
@@ -101,7 +99,7 @@ public class GetUserDetail(
 
         await SetCreatedInvitesAsync(result, guildUserEntity);
         await SetUsedInviteAsync(result, guildUserEntity);
-        await SetUserMeasuresAsync(result, guildUserEntity);
+        await SetInfractionsAsync(result, guildUserEntity);
         await SetPointsInfoAsync(result, guildUserEntity);
         await SetEmotesAsync(result, guildUserEntity);
         SetUnverify(result, guildUserInfo);
@@ -139,9 +137,9 @@ public class GetUserDetail(
             .ToList();
     }
 
-    private async Task SetUserMeasuresAsync(ApiModels.Users.GuildUserDetail detail, Entity.GuildUser entity)
+    private async Task SetInfractionsAsync(ApiModels.Users.GuildUserDetail detail, Entity.GuildUser entity)
     {
-        var parameters = new MeasuresListParams
+        var parameters = new InfractionListParams
         {
             GuildId = entity.GuildId,
             UserId = entity.UserId,
@@ -152,24 +150,24 @@ public class GetUserDetail(
             }
         };
 
-        var measuresResult = await _userMeasuresService.ExecuteRequestAsync((c, ctx) => c.GetMeasuresListAsync(parameters, ctx.CancellationToken));
-        foreach (var measure in measuresResult.Data)
+        var infractions = await _userManagement.ExecuteRequestAsync((c, ctx) => c.GetInfractionsListAsync(parameters, ctx.CancellationToken));
+        foreach (var infraction in infractions.Data)
         {
-            var moderator = await _dataResolveManager.GetUserAsync(measure.ModeratorId.ToUlong());
+            var moderator = await _dataResolveManager.GetUserAsync(infraction.ModeratorId.ToUlong());
 
-            detail.UserMeasures.Add(new ApiModels.UserMeasures.UserMeasuresItem
+            detail.Infractions.Add(new ApiModels.Infractions.UserInfractionItem
             {
-                CreatedAt = measure.CreatedAtUtc.ToLocalTime(),
+                CreatedAt = infraction.CreatedAtUtc.ToLocalTime(),
                 Moderator = moderator!,
-                ValidTo = measure.ValidTo?.ToLocalTime(),
-                Type = measure.Type switch
+                ValidTo = infraction.ValidTo?.ToLocalTime(),
+                Type = infraction.Type switch
                 {
-                    "Warning" => UserMeasuresType.Warning,
-                    "Timeout" => UserMeasuresType.Timeout,
-                    "Unverify" => UserMeasuresType.Unverify,
+                    "Warning" => InfractionType.Warning,
+                    "Timeout" => InfractionType.Timeout,
+                    "Unverify" => InfractionType.Unverify,
                     _ => 0
                 },
-                Reason = measure.Reason
+                Reason = infraction.Reason
             });
         }
     }

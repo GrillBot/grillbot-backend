@@ -3,10 +3,10 @@ using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.Services.Common.Exceptions;
 using GrillBot.Core.Services.Common.Executor;
-using UserMeasures;
 using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.EntityFrameworkCore;
 using UnverifyService;
+using UserManagementService.Actions.Infractions;
 using UserManagementService.Core.Entity;
 using GrillBot.Contracts.UserManagement.Responses;
 
@@ -17,8 +17,7 @@ namespace UserManagementService.Actions;
 public class GetUserInfoAction(
     ICounterManager counterManager,
     UserManagementContext context,
-    IServiceClientExecutor<IUnverifyServiceClient> _unverifyClient,
-    IServiceClientExecutor<IUserMeasuresServiceClient> _userMeasures
+    IServiceClientExecutor<IUnverifyServiceClient> _unverifyClient
 ) : ApiAction<UserManagementContext>(counterManager, context)
 {
     public override async Task<ApiResult> ProcessAsync()
@@ -26,14 +25,14 @@ public class GetUserInfoAction(
         var userId = GetParameter<ulong>(0);
         var userData = await GetUserDataAsync(userId);
         var unverifyInfo = await GetUnverifyUserInfoAsync(userId);
-        var measuresInfo = await GetMeasuresUserInfoAsync(userId);
+        var infractions = await InfractionCounter.ComputeSummaryAsync(ContextHelper, userId, null, CancellationToken);
 
-        if (userData.Count == 0 && unverifyInfo is null && measuresInfo is null)
+        if (userData.Count == 0 && unverifyInfo is null && IsEmpty(infractions))
             return ApiResult.NotFound();
 
         var result = new UserInfo(
             userId.ToString(),
-            CreateGuildUserData(userData, unverifyInfo, measuresInfo),
+            CreateGuildUserData(userData, unverifyInfo, infractions),
             unverifyInfo?.SelfUnverifyMinimalTime
         );
 
@@ -64,25 +63,13 @@ public class GetUserInfoAction(
         }
     }
 
-    private async Task<GrillBot.Contracts.UserMeasures.User.UserInfo?> GetMeasuresUserInfoAsync(ulong userId)
-    {
-        try
-        {
-            return await _userMeasures.ExecuteRequestAsync(
-                async (client, ctx) => await client.GetUserInfoAsync(userId.ToString(), null, ctx.CancellationToken),
-                CancellationToken
-            );
-        }
-        catch (ClientNotFoundException)
-        {
-            return null;
-        }
-    }
+    private static bool IsEmpty(UserInfractionsSummary infractions)
+        => infractions.WarningCount.Count == 0 && infractions.UnverifyCount.Count == 0 && infractions.TimeoutCount.Count == 0;
 
     private static List<GrillBot.Contracts.UserManagement.Responses.GuildUser> CreateGuildUserData(
         List<Core.Entity.GuildUser> users,
         UnverifyServiceModels.UserInfo? unverifyInfo,
-        GrillBot.Contracts.UserMeasures.User.UserInfo? measuresInfo = null
+        UserInfractionsSummary infractions
     )
     {
         var result = new List<GrillBot.Contracts.UserManagement.Responses.GuildUser>();
@@ -91,9 +78,9 @@ public class GetUserInfoAction(
             .Concat(unverifyInfo?.CurrentUnverifies.Keys?.ToArray() ?? [])
             .Concat(unverifyInfo?.SelfUnverifyCount.Keys?.ToArray() ?? [])
             .Concat(unverifyInfo?.UnverifyCount.Keys?.ToArray() ?? [])
-            .Concat(measuresInfo?.TimeoutCount.Keys?.ToArray() ?? [])
-            .Concat(measuresInfo?.WarningCount.Keys?.ToArray() ?? [])
-            .Concat(measuresInfo?.UnverifyCount.Keys?.ToArray() ?? [])
+            .Concat(infractions.TimeoutCount.Keys)
+            .Concat(infractions.WarningCount.Keys)
+            .Concat(infractions.UnverifyCount.Keys)
             .Distinct();
 
         foreach (var guildId in guildIds)
@@ -101,9 +88,9 @@ public class GetUserInfoAction(
             var guildUser = users.Find(o => o.GuildId == guildId.ToUlong());
             var currentUnverify = unverifyInfo?.CurrentUnverifies.TryGetValue(guildId, out var value) == true ? value : null;
             var selfUnverifyCount = unverifyInfo?.SelfUnverifyCount.TryGetValue(guildId, out var count) == true ? count : 0;
-            var unverifyCount = measuresInfo?.UnverifyCount.TryGetValue(guildId, out var uCount) == true ? uCount : 0;
-            var timeoutCount = measuresInfo?.TimeoutCount.TryGetValue(guildId, out var tCount) == true ? tCount : 0;
-            var warningCount = measuresInfo?.WarningCount.TryGetValue(guildId, out var wCount) == true ? wCount : 0;
+            var unverifyCount = infractions.UnverifyCount.GetValueOrDefault(guildId);
+            var timeoutCount = infractions.TimeoutCount.GetValueOrDefault(guildId);
+            var warningCount = infractions.WarningCount.GetValueOrDefault(guildId);
 
             result.Add(new GrillBot.Contracts.UserManagement.Responses.GuildUser(
                 guildId,

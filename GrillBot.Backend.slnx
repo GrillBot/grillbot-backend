@@ -30,7 +30,6 @@
     <Project Path="src/Services/SearchingService/SearchingService.csproj" />
     <Project Path="src/Services/UnverifyService/UnverifyService.csproj" />
     <Project Path="src/Services/UserManagementService/UserManagementService.csproj" />
-    <Project Path="src/Services/UserMeasuresService/UserMeasuresService.csproj" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="tests/GrillBot.Core.Tests.Shared/GrillBot.Core.Tests.Shared.csproj" />

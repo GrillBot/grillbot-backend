@@ -1,4 +1,7 @@
-﻿namespace GrillBot.Database.Models.Guilds;
+﻿using Newtonsoft.Json;
+using System.Text.Json.Serialization;
+
+namespace GrillBot.Database.Models.Guilds;
 
 public class GuildDatabaseReport
 {
@@ -12,5 +15,8 @@ public class GuildDatabaseReport
     public int CacheIndexes { get; set; }
     public long EmoteStats { get; set; }
     public int PointTransactions { get; set; }
-    public int UserMeasures { get; set; }
+    // API V1 contract: the JSON name stays "userMeasures" for the legacy admin apps.
+    [JsonProperty("userMeasures")]
+    [JsonPropertyName("userMeasures")]
+    public int Infractions { get; set; }
 }

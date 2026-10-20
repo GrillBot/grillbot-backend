@@ -163,16 +163,6 @@
       "port": 5052,
       "paths": ["src/Services/UserManagementService/**"],
       "shares": ["all", "core", "contracts", "services"]
-    },
-    "user_measures_service": {
-      "image": "ghcr.io/grillbot/grillbot.services",
-      "tag": "user_measures_service",
-      "dockerfile": "docker/dotnet-service.Dockerfile",
-      "project": "src/Services/UserMeasuresService",
-      "assembly": "UserMeasuresService.dll",
-      "port": 5134,
-      "paths": ["src/Services/UserMeasuresService/**"],
-      "shares": ["all", "core", "contracts", "services"]
     }
   }
 }

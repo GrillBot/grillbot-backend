@@ -261,27 +261,9 @@ services:
       ConnectionStrings__BotToken: ${DISCORD_BOT_TOKEN:-}
       Redis__Endpoint: redis-ephemeral:6379
       Redis__Password: ${REDIS_PASSWORD:-grillbot}
-      Services__UserMeasures__Api: ${USER_MEASURES_API:-http://user_measures_service:5134/}
       Services__Unverify__Api: ${UNVERIFY_API:-http://unverify_service:5037/}
     ports:
       - "3017:5052"
-
-  user_measures_service:
-    <<: *service
-    image: ghcr.io/grillbot/grillbot.services:user_measures_service
-    build:
-      context: ..
-      dockerfile: docker/dotnet-service.Dockerfile
-      args:
-        PROJECT: src/Services/UserMeasuresService
-        ASSEMBLY: UserMeasuresService.dll
-        PORT: 5134
-    environment:
-      <<: *environment
-      ConnectionStrings__Default: Host=${DB_HOST:-host.docker.internal};Port=${DB_PORT:-5432};Database=UserMeasuresService;Username=${DB_USERNAME:-grillbot};Password=${DB_PASSWORD:-}
-      ConnectionStrings__BotToken: ${DISCORD_BOT_TOKEN:-}
-    ports:
-      - "3012:5134"
 
 networks:
   grillbot-dev:

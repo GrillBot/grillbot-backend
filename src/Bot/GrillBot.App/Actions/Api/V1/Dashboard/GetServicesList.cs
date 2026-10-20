@@ -31,7 +31,7 @@ public class GetServicesList : ApiAction
         await AddServiceStatusAsync<PointsService.IPointsServiceClient>(services, "points");
         await AddServiceStatusAsync<ImageProcessing.IImageProcessingClient>(services, "image-processing");
         await AddServiceStatusAsync<IAuditLogServiceClient>(services, "audit-log");
-        await AddServiceStatusAsync<UserMeasures.IUserMeasuresServiceClient>(services, "user-measures");
+        await AddServiceStatusAsync<UserManagementService.IUserManagementServiceClient>(services, "user-management");
         await AddServiceStatusAsync<Emote.IEmoteServiceClient>(services, "emote");
         await AddServiceStatusAsync<RemindService.IRemindServiceClient>(services, "remind");
         await AddServiceStatusAsync<SearchingService.ISearchingServiceClient>(services, "searching");

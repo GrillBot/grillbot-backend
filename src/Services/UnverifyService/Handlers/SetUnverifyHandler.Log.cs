@@ -3,8 +3,7 @@ using UnverifyService.Models;
 using GrillBot.Core.Infrastructure.Auth;
 using UnverifyService.Core.Entity.Logs;
 using GrillBot.Contracts.Unverify.Enums;
-using GrillBot.Contracts.Unverify;
-using GrillBot.Contracts.UserMeasures.Events;
+using GrillBot.Contracts.UserManagement.Events;
 
 namespace UnverifyService.Handlers;
 
@@ -64,7 +63,7 @@ public partial class SetUnverifyHandler
         return entity;
     }
 
-    private Task NotifyUserMeasuresAsync(UnverifySession session, UnverifyLogItem logItem, ICurrentUserProvider currentUser, CancellationToken cancellationToken = default)
+    private Task NotifyInfractionsAsync(UnverifySession session, UnverifyLogItem logItem, ICurrentUserProvider currentUser, CancellationToken cancellationToken = default)
     {
         if (session.IsSelfUnverify)
             return Task.CompletedTask;
@@ -72,9 +71,9 @@ public partial class SetUnverifyHandler
         var payload = new UnverifyPayload(
             session.StartAtUtc,
             session.Reason ?? "",
-            session.TargetUser.GuildId.ToString(),
-            currentUser.Id!,
-            session.TargetUser.Id.ToString(),
+            session.TargetUser.GuildId,
+            currentUser.Id.ToUlong(),
+            session.TargetUser.Id,
             session.EndAtUtc,
             logItem.LogNumber
         );

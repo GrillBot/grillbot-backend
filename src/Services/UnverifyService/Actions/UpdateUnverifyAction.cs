@@ -12,7 +12,7 @@ using UnverifyService.Core.Entity;
 using UnverifyService.Core.Entity.Logs;
 using GrillBot.Contracts.Unverify.Enums;
 using GrillBot.Contracts.Unverify.Requests;
-using GrillBot.Contracts.UserMeasures.Events;
+using GrillBot.Contracts.UserManagement.Events;
 using Wolverine;
 
 
@@ -49,7 +49,7 @@ public class UpdateUnverifyAction(
         unverify.EndAtUtc = logItem.UpdateOperation.NewEndAtUtc;
 
         await ContextHelper.SaveChangesAsync(CancellationToken);
-        await NotifyUserMeasuresAsync(unverify);
+        await NotifyInfractionsAsync(unverify);
         await SendUserNotificationAsync(unverify, logItem);
         await RecalculateMetricsAsync();
         return await CreateResultAsync(unverify, logItem);
@@ -91,7 +91,7 @@ public class UpdateUnverifyAction(
         return logItem;
     }
 
-    private Task NotifyUserMeasuresAsync(ActiveUnverify unverify)
+    private Task NotifyInfractionsAsync(ActiveUnverify unverify)
     {
         var payload = new UnverifyModifyPayload(unverify.LogItem.LogNumber, unverify.EndAtUtc);
         return _rabbitPublisher.PublishAsync(payload).AsTask();

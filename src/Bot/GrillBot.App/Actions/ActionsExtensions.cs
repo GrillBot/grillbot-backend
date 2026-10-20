@@ -19,7 +19,7 @@ public static class ActionsExtensions
         return services
             .AddScoped<Api.ServiceBridgeAction<AuditLog.IAuditLogServiceClient>>()
             .AddScoped<Api.ServiceBridgeAction<PointsService.IPointsServiceClient>>()
-            .AddScoped<Api.ServiceBridgeAction<UserMeasures.IUserMeasuresServiceClient>>()
+            .AddScoped<Api.ServiceBridgeAction<UserManagementService.IUserManagementServiceClient>>()
             .AddScoped<Api.ServiceBridgeAction<RemindService.IRemindServiceClient>>()
             .AddScoped<Api.ServiceBridgeAction<SearchingService.ISearchingServiceClient>>()
             .AddScoped<Api.ServiceBridgeAction<Emote.IEmoteServiceClient>>()
@@ -59,7 +59,7 @@ public static class ActionsExtensions
         services
             .AddScoped<Api.V1.Dashboard.GetActiveOperations>()
             .AddScoped<Api.V1.Dashboard.GetCommonInfo>()
-            .AddScoped<Api.V1.Dashboard.GetUserMeasuresDashboard>()
+            .AddScoped<Api.V1.Dashboard.GetInfractionsDashboard>()
             .AddScoped<Api.V1.Dashboard.GetOperationStats>()
             .AddScoped<Api.V1.Dashboard.GetServicesList>();
 
@@ -142,7 +142,7 @@ public static class ActionsExtensions
             .AddScoped<Api.V2.AuditLog.CreateAuditLogMessageAction>()
             .AddScoped<Api.V2.User.GetRubbergodUserKarma>()
             .AddScoped<Api.V2.User.GetGuildUserInfo>()
-            .AddScoped<Api.V2.User.CreateUserMeasuresTimeout>()
+            .AddScoped<Api.V2.User.CreateInfractionTimeout>()
             .AddScoped<Api.V2.User.StoreKarma>();
 
         // V3 API
@@ -205,9 +205,9 @@ public static class ActionsExtensions
             .AddScoped<Commands.Unverify.SetUnverify>()
             .AddScoped<Commands.Unverify.UnverifyList>();
 
-        // UserMeasures
+        // Infractions
         services
-            .AddScoped<Commands.UserMeasures.CreateUserMeasuresWarning>();
+            .AddScoped<Commands.Infractions.CreateWarning>();
 
         services
             .AddScoped<Commands.Permissions.PermissionsCleaner>()

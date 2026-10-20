@@ -16,7 +16,7 @@ GrillBot is a Discord bot for fun and management of the VUT FIT Discord server.
 | `src/Core/` | Shared libraries (`GrillBot.Core`, `.AsyncMessaging`, `.HealthCheck`, `.Metrics`, `.Redis`, `.Services`) |
 | `src/Contracts/` | `GrillBot.Contracts` — the integration events, requests and responses exchanged between services, one folder per bounded context |
 | `src/Bot/` | Discord bot host (`GrillBot.App` + `Cache`, `Common`, `Data`, `Database`) |
-| `src/Services/` | `GrillBot.Services.Common`, 12 .NET microservices and the Node/TypeScript `Graphics` service |
+| `src/Services/` | `GrillBot.Services.Common`, 11 .NET microservices and the Node/TypeScript `Graphics` service |
 | `tests/` | MSTest projects for the core libraries |
 | `docker/` | Dockerfiles and `deployables.json`, the manifest driving CI image builds |
 | `build/` | Build/CI helper scripts |
@@ -206,7 +206,7 @@ Swarm) for running parts of the backend on your machine:
 |---|---|---|
 | `compose/infrastructure.yml` | `grillbot-infra` | RabbitMQ (`5672`, UI `15672`), `redis-main` (`6379`), `redis-ephemeral` (`6380`) |
 | `compose/database.yml` | `grillbot-db` | Optional PostgreSQL 18 (`5432`) with the `grillbot` role and all databases |
-| `compose/grillbot.yml` | `grillbot` | The 13 microservices, on the development server's host ports `3005`–`3019` |
+| `compose/grillbot.yml` | `grillbot` | The 12 microservices, on the development server's host ports `3005`–`3019` |
 
 The infrastructure stack creates the `grillbot-dev` network, which the other two
 stacks join, so start it first.
@@ -240,7 +240,7 @@ docker compose -f compose/grillbot.yml up -d
   `localhost:6379` for `Redis:Endpoint`.
 - **One service in the IDE:** `stop` its container, run it from the IDE against
   `localhost` for RabbitMQ and Redis. If a container calls it (`GRAPHICS_API`,
-  `USER_MEASURES_API`, `UNVERIFY_API`), point that variable at
+  `UNVERIFY_API`), point that variable at
   `http://host.docker.internal:<port>/` and re-run `up -d` for the caller.
 
 ## Deployment

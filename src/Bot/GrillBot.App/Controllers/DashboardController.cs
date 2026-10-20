@@ -70,8 +70,8 @@ public class DashboardController(IServiceProvider serviceProvider) : Core.Infras
     [HttpGet("userMeasures")]
     [ProducesResponseType(typeof(List<DashboardInfoRow>), StatusCodes.Status200OK)]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-    public Task<IActionResult> GetNonCompliantUserMeasuresDashboardAsync()
-        => ProcessAsync<GetUserMeasuresDashboard>();
+    public Task<IActionResult> GetNonCompliantInfractionsDashboardAsync()
+        => ProcessAsync<GetInfractionsDashboard>();
 
     [HttpGet("common")]
     [ProducesResponseType(typeof(DashboardInfo), StatusCodes.Status200OK)]
