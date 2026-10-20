@@ -22,6 +22,7 @@ WORKDIR /usr/src/app
 EXPOSE 3000
 ENV NODE_ENV=production
 LABEL org.opencontainers.image.source=https://github.com/GrillBot/grillbot-backend
+LABEL org.opencontainers.image.licenses=MIT
 
 # Dependencies
 RUN apk add build-base g++ cairo-dev jpeg-dev pango-dev giflib-dev

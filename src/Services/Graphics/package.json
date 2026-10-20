@@ -8,7 +8,7 @@
     "watch": "tsc --build --clean && copyfiles -u 1 src/**/*.png dist/src/ && tsc --watch",
     "start": "nodemon dist/index.js"
   },
-  "author": "",
+  "author": "GrillBot contributors",
   "license": "MIT",
   "keywords": [],
   "dependencies": {

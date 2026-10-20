@@ -31,8 +31,8 @@ public static class OpenApiExtensions
 
                     License = new OpenApiLicense
                     {
-                        Name = "All rights reserved",
-                        Url = "https://gist.github.com/Techcable/e7bbc22ecbc0050efbcc"
+                        Name = "MIT",
+                        Url = "https://opensource.org/license/mit"
                     }
                 };
             };

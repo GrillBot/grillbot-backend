@@ -47,6 +47,7 @@ RUN if [ "${WITH_DIAGNOSTICS}" = "true" ]; then \
 # --------------------------------------------------------------------------- #
 FROM mcr.microsoft.com/dotnet/aspnet:${DOTNET_VERSION} AS final_image
 LABEL org.opencontainers.image.source=https://github.com/GrillBot/grillbot-backend
+LABEL org.opencontainers.image.licenses=MIT
 
 ARG ASSEMBLY
 ARG PORT

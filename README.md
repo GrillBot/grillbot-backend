@@ -1,5 +1,7 @@
 # GrillBot Backend
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Monorepo for the whole GrillBot backend: the Discord bot host, the shared core
 libraries and all microservices. It replaces the former
 [`grillbot`](https://github.com/grillbot/grillbot),
@@ -266,6 +268,8 @@ workflow needs no changes.
 
 ## Licence
 
-GrillBot is licensed as All Rights Reserved. The source code is available for
-reading and contribution. Owner consent is required for use in a production
-environment.
+GrillBot is released under the [MIT License](LICENSE). Contributions are accepted
+under the same terms, see [CONTRIBUTING.md](CONTRIBUTING.md). Dependencies that need
+attribution, or that are not plain MIT, are listed in
+[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). AutoMapper is pinned to its last
+MIT release and is planned for removal.

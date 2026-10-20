@@ -84,7 +84,12 @@
 
     <!-- Misc -->
     <ItemGroup>
-        <PackageVersion Include="AutoMapper" Version="15.0.1" />
+        <!--
+          DEPRECATED, planned for removal. 14.0.0 is the last MIT-licensed AutoMapper.
+          15.x and newer are RPL-1.5 / commercial, so do NOT upgrade. 14.0.0 is affected
+          by GHSA-rvv3-g6hj-g44x (the fixed releases are not MIT); see THIRD-PARTY-NOTICES.md.
+        -->
+        <PackageVersion Include="AutoMapper" Version="14.0.0" />
         <PackageVersion Include="Humanizer.Core.cs" Version="3.0.1" />
         <PackageVersion Include="Magick.NET-Q8-AnyCPU" Version="14.10.2" />
         <PackageVersion Include="Quartz.Extensions.Hosting" Version="3.15.1" />

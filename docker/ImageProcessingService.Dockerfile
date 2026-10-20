@@ -27,6 +27,7 @@ RUN dotnet publish "${PROJECT}" -c Release -o /publish \
 # --------------------------------------------------------------------------- #
 FROM mcr.microsoft.com/dotnet/aspnet:${DOTNET_VERSION} AS final_image
 LABEL org.opencontainers.image.source=https://github.com/GrillBot/grillbot-backend
+LABEL org.opencontainers.image.licenses=MIT
 
 ARG ASSEMBLY=ImageProcessingService.dll
 ARG PORT=5213

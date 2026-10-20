@@ -12,4 +12,20 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <!--
+      Accepted risk: AutoMapper is pinned to 14.0.0, the last MIT release, and every
+      patched release is RPL/commercial. Removal is planned, see THIRD-PARTY-NOTICES.md.
+      Suppresses only this one advisory; do not extend it to other packages.
+    -->
+    <ItemGroup>
+        <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-rvv3-g6hj-g44x" />
+    </ItemGroup>
+
+    <!-- Licensing metadata. The licence text itself is /LICENSE. -->
+    <PropertyGroup>
+        <Authors>GrillBot contributors</Authors>
+        <Copyright>Copyright (c) 2026 GrillBot contributors</Copyright>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    </PropertyGroup>
+
 </Project>
