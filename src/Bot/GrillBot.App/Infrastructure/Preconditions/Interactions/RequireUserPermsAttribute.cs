@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Infrastructure.Preconditions.Interactions;
 
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
 public class RequireUserPermsAttribute : PreconditionAttribute
 {
     public override async Task<PreconditionResult> CheckRequirementsAsync(IInteractionContext context, ICommandInfo commandInfo, IServiceProvider services)
@@ -20,8 +21,8 @@ public class RequireUserPermsAttribute : PreconditionAttribute
         {
             CheckDms(context, texts, commandInfo);
 
-            var user = (await repository.User.FindUserAsync(context.User, true))!;
-            if (user.HaveFlags(UserFlags.BotAdmin)) return PreconditionResult.FromSuccess();
+            var user = await repository.User.FindUserAsync(context.User, true);
+            if (user?.HaveFlags(UserFlags.BotAdmin) == true) return PreconditionResult.FromSuccess();
 
             CheckUserDisabled(user, texts, locale);
             if (context.Channel is IGuildChannel guildChannel)
@@ -41,16 +42,16 @@ public class RequireUserPermsAttribute : PreconditionAttribute
             throw new UnauthorizedAccessException(texts["Permissions/Preconditions/DmNotAllowed", context.Interaction.UserLocale]);
     }
 
-    private static void CheckUserDisabled(Database.Entity.User user, ITextsManager texts, string locale)
+    private static void CheckUserDisabled(Database.Entity.User? user, ITextsManager texts, string locale)
     {
-        if (user.HaveFlags(UserFlags.CommandsDisabled))
+        if (user?.HaveFlags(UserFlags.CommandsDisabled) == true)
             throw new UnauthorizedAccessException(texts["Permissions/Preconditions/UserCommandsDisabled", locale]);
     }
 
     private static async Task CheckChannelAsync(GrillBotRepository repository, IGuildChannel channel, ITextsManager texts, string locale)
     {
         var channelData = await repository.Channel.FindChannelByIdAsync(channel.Id, channel.GuildId, true);
-        if (channelData == null || channelData.HasFlag(ChannelFlag.CommandsDisabled))
+        if (channelData?.HasFlag(ChannelFlag.CommandsDisabled) != false)
             throw new UnauthorizedAccessException(texts["Permissions/Preconditions/ChannelDisabled", locale]);
     }
 }
