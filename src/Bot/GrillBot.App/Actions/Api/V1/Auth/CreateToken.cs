@@ -1,15 +1,15 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Security.Claims;
 using GrillBot.App.Managers.Auth;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Contracts.Identity;
+using GrillBot.Contracts.Identity.Requests;
 using GrillBot.Core.Infrastructure.Actions;
+using GrillBot.Core.Services.IdentityService;
 using GrillBot.Data.Models.API.OAuth2;
 using GrillBot.Database.Enums;
-using Microsoft.IdentityModel.Tokens;
 
 namespace GrillBot.App.Actions.Api.V1.Auth;
 
@@ -19,16 +19,18 @@ public class CreateToken : ApiAction
     private IDiscordClient DiscordClient { get; }
     private ITextsManager Texts { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private IConfiguration Configuration { get; }
+    private LegacyLoginCodes LoginCodes { get; }
+    private IIdentityTokenClient IdentityClient { get; }
 
     public CreateToken(ApiRequestContext apiContext, IHttpClientFactory httpClientFactory, IDiscordClient discordClient, ITextsManager texts, GrillBotDatabaseBuilder databaseBuilder,
-        IConfiguration configuration) : base(apiContext)
+        IIdentityTokenClient identityClient, LegacyLoginCodes loginCodes) : base(apiContext)
     {
         HttpClient = httpClientFactory.CreateClient();
         DiscordClient = discordClient;
         Texts = texts;
         DatabaseBuilder = databaseBuilder;
-        Configuration = configuration.GetRequiredSection("Auth:OAuth2");
+        LoginCodes = loginCodes;
+        IdentityClient = identityClient;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -67,14 +69,19 @@ public class CreateToken : ApiAction
         if (!string.IsNullOrEmpty(checkResult))
             return new OAuth2LoginToken(checkResult);
 
-        var (token, expiresAt) = CreateJwtToken(userEntity, isPublic);
+        var (token, expiresAt) = await CreateJwtTokenAsync(userEntity, isPublic);
         return new OAuth2LoginToken(token, expiresAt);
     }
 
     private async Task<ulong?> GetUserIdAsync(string sessionId)
     {
+        // sessionId is the one-time code from ProcessCallback; it stands for the Discord access token.
+        var discordAccessToken = await LoginCodes.RedeemAsync(sessionId);
+        if (discordAccessToken is null)
+            return null;
+
         using var message = new HttpRequestMessage(HttpMethod.Get, "https://discord.com/api/users/@me");
-        message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", sessionId);
+        message.Headers.Authorization = new AuthenticationHeaderValue("Bearer", discordAccessToken);
 
         using var response = await HttpClient.SendAsync(message);
         var json = await response.Content.ReadAsStringAsync();
@@ -100,32 +107,19 @@ public class CreateToken : ApiAction
         };
     }
 
-    private (string token, DateTimeOffset expiresAt) CreateJwtToken(Database.Entity.User user, bool isPublic)
+    private async Task<(string token, DateTimeOffset expiresAt)> CreateJwtTokenAsync(Database.Entity.User user, bool isPublic)
     {
-        var expiresAt = DateTimeOffset.Now.AddHours(3); // Token will be valid for 3 hours.
+        // Same claims as the V1 token always had (name, nameid, role); IdentityService signs it.
+        var request = new DelegatedTokenRequest(
+            Subject: user.Id,
+            Name: user.Username,
+            Role: isPublic ? "User" : "Admin",
+            Permissions: [],
+            Channel: IdentityProtocol.Channels.Legacy,
+            Lifetime: TimeSpan.FromHours(3)
+        );
 
-        var machineInfo = $"{Environment.MachineName}/{Environment.UserName}";
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Audience = $"GrillBot/{machineInfo}",
-            Expires = expiresAt.DateTime,
-            IssuedAt = DateTime.UtcNow,
-            Issuer = $"GrillBot/{machineInfo}",
-            SigningCredentials = new SigningCredentials(
-                new SymmetricSecurityKey(Encoding.ASCII.GetBytes($"{Configuration["ClientId"]}_{Configuration["ClientSecret"]}")),
-                SecurityAlgorithms.HmacSha256Signature
-            ),
-            Subject = new ClaimsIdentity(new[]
-            {
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Role, isPublic ? "User" : "Admin"),
-                new Claim(JwtTokenManager.IP_CLAIM_TYPE, ApiContext.RemoteIp)
-            })
-        };
-
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        return (tokenHandler.WriteToken(token), expiresAt);
+        var token = await IdentityClient.RequestDelegatedTokenAsync(request);
+        return (token.AccessToken, token.ExpiresAt);
     }
 }

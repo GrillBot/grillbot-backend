@@ -17,7 +17,9 @@ public static class ManagerExtensions
             .AddScoped<Points.PointsSynchronizationManager>()
             .AddScoped<Points.PointsValidationManager>()
             .AddScoped<LocalizationManager>()
-            .AddScoped<Auth.JwtTokenManager>();
+            .AddScoped<Auth.JwtTokenManager>()
+            .AddScoped<Auth.SessionManager>()
+            .AddScoped<Auth.LegacyLoginCodes>();
 
         return services;
     }

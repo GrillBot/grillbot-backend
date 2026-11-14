@@ -98,7 +98,7 @@ public abstract class Job(IServiceProvider serviceProvider) : IJob
     private async Task ProcessAuthenticationAsync()
     {
         var jwtManager = ResolveService<JwtTokenManager>();
-        var jwtToken = await jwtManager.CreateTokenForUserAsync(DiscordClient.CurrentUser, "cs-CZ", "127.0.0.1");
+        var jwtToken = await jwtManager.CreateTokenForUserAsync(DiscordClient.CurrentUser, "cs-CZ", channel: Contracts.Identity.IdentityProtocol.Channels.Job);
 
         if (string.IsNullOrEmpty(jwtToken?.ErrorMessage) && !string.IsNullOrEmpty(jwtToken?.AccessToken))
             ResolveService<ICurrentUserProvider>().SetCustomToken(jwtToken.AccessToken);

@@ -10,6 +10,7 @@ public static class Queues
     public const string Bot = "bot";
     public const string AuditLogService = "audit_log_service";
     public const string EmoteService = "emote_service";
+    public const string IdentityService = "identity_service";
     public const string ImageProcessingService = "image_processing_service";
     public const string InviteService = "invite_service";
     public const string MessageService = "message_service";
@@ -25,6 +26,7 @@ public static class Queues
         Bot,
         AuditLogService,
         EmoteService,
+        IdentityService,
         ImageProcessingService,
         InviteService,
         MessageService,

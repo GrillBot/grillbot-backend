@@ -18,7 +18,7 @@ public class CreateJwtTokenAction(
     {
         var token = ApiContext.LoggedUser is null
             ? UserNotFound
-            : await _jwtTokenManager.CreateTokenForUserAsync(ApiContext.LoggedUser, ApiContext.Language, ApiContext.RemoteIp);
+            : await _jwtTokenManager.CreateTokenForUserAsync(ApiContext.LoggedUser, ApiContext.Language);
 
         return ApiResult.Ok(token);
     }

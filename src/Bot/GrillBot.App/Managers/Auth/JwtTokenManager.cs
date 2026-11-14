@@ -1,28 +1,34 @@
 ﻿using GrillBot.App.Managers.Points;
 using GrillBot.Common.Managers.Localization;
+using GrillBot.Contracts.Identity;
+using GrillBot.Contracts.Identity.Requests;
+using GrillBot.Core.Services.IdentityService;
 using GrillBot.Data.Models.API.OAuth2;
 using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 
 namespace GrillBot.App.Managers.Auth;
 
+/// <summary>
+/// Decides who gets which role and permissions, then has IdentityService issue the token.
+/// The bot no longer signs tokens itself; until IdentityService owns the permission model,
+/// it passes the claims it computed here through the delegation grant.
+/// </summary>
 public class JwtTokenManager(
     GrillBotDatabaseBuilder _databaseBuilder,
     ITextsManager _texts,
     IServiceProvider _serviceProvider,
     IWebHostEnvironment _environment,
-    IConfiguration _configuration
+    IIdentityTokenClient _identityClient
 )
 {
-    public const string IP_CLAIM_TYPE = "https://grillbot.eu/claims/ip";
-
-    public async Task<OAuth2LoginToken> CreateTokenForUserAsync(IUser user, string language, string ip, IInteractionContext? interaction = null)
+    // channel = where the request comes from; ignored (always Discord) when an interaction is passed.
+    // lifetime = overrides the role-based token lifetime (browser sessions use short, renewed tokens).
+    public async Task<OAuth2LoginToken> CreateTokenForUserAsync(IUser user, string language, IInteractionContext? interaction = null, string channel = IdentityProtocol.Channels.Web,
+        TimeSpan? lifetime = null)
     {
         using var repository = _databaseBuilder.CreateRepository();
 
@@ -35,10 +41,31 @@ public class JwtTokenManager(
             return new OAuth2LoginToken(string.Format(_texts["Auth/CreateToken/PublicAdminBlocked", language], user.Username));
 
         await SynchronizeUserToServicesAsync(user);
-        return GenerateJwtToken(userEntity, userRole, interaction, null, ip);
+
+        var resolvedChannel = interaction is null ? channel : IdentityProtocol.Channels.Discord;
+        return await IssueTokenAsync(userEntity, userRole, interaction, null, resolvedChannel, lifetime);
     }
 
-    public OAuth2LoginToken CreateTokenForApiClient(ApiClient client, string language, string ip)
+    /// <summary>
+    /// Issues a fresh web token for an existing browser session. Role and permissions are computed
+    /// again, so a user who lost web access (or the account) is refused here.
+    /// </summary>
+    public async Task<OAuth2LoginToken> RenewTokenForUserAsync(ulong userId, string language, TimeSpan lifetime)
+    {
+        using var repository = _databaseBuilder.CreateRepository();
+
+        var userEntity = await repository.User.FindUserByIdAsync(userId, disableTracking: true);
+        if (userEntity is null)
+            return new(_texts["Auth/CreateToken/UserNotFound", language]);
+
+        var userRole = ResolveRole(userEntity, null);
+        if (string.IsNullOrEmpty(userRole))
+            return new OAuth2LoginToken(string.Format(_texts["Auth/CreateToken/PublicAdminBlocked", language], userEntity.Username));
+
+        return await IssueTokenAsync(userEntity, userRole, null, null, IdentityProtocol.Channels.Web, lifetime);
+    }
+
+    public Task<OAuth2LoginToken> CreateTokenForApiClientAsync(ApiClient client, string language)
     {
         var userAvatarId = SnowflakeUtils.ToSnowflake(DateTimeOffset.UtcNow);
         var userEntity = new User
@@ -51,7 +78,7 @@ public class JwtTokenManager(
             AvatarUrl = CDN.GetDefaultUserAvatarUrl(userAvatarId)
         };
 
-        return GenerateJwtToken(userEntity, "ApiV2", null, client, ip);
+        return IssueTokenAsync(userEntity, "ApiV2", null, client, IdentityProtocol.Channels.Api);
     }
 
     private static string? ResolveRole(User user, IInteractionContext? interaction)
@@ -64,60 +91,37 @@ public class JwtTokenManager(
         return user.HaveFlags(UserFlags.WebAdmin) ? "Administrator" : "User";
     }
 
-    private OAuth2LoginToken GenerateJwtToken(User user, string userRole, IInteractionContext? interaction, ApiClient? apiClient, string ip)
+    private async Task<OAuth2LoginToken> IssueTokenAsync(User user, string userRole, IInteractionContext? interaction, ApiClient? apiClient, string channel, TimeSpan? lifetime = null)
     {
-        var expiresAt = ResolveTokenExpiration(userRole);
-        var issuer = $"GrillBot/{Environment.MachineName}/{Environment.UserName}";
+        var request = new DelegatedTokenRequest(
+            Subject: user.Id,
+            Name: user.Username,
+            Role: userRole,
+            Permissions: [.. CreatePermissions(userRole, interaction, apiClient)],
+            Channel: channel,
+            Lifetime: lifetime ?? ResolveTokenLifetime(userRole),
+            AvatarUrl: string.IsNullOrEmpty(user.AvatarUrl) ? null : user.AvatarUrl,
+            ThirdPartyKey: apiClient?.Id
+        );
 
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Audience = issuer,
-            Expires = expiresAt.UtcDateTime,
-            IssuedAt = DateTime.UtcNow,
-            Issuer = issuer,
-            SigningCredentials = new SigningCredentials(
-                new SymmetricSecurityKey(Encoding.ASCII.GetBytes($"{_configuration["Auth:OAuth2:ClientId"]}_{_configuration["Auth:OAuth2:ClientSecret"]}")),
-                SecurityAlgorithms.HmacSha256Signature
-            ),
-            Subject = new ClaimsIdentity(ResolveClaims(user, userRole, interaction, apiClient, ip))
-        };
-
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-
-        return new OAuth2LoginToken(tokenHandler.WriteToken(token), expiresAt);
+        var token = await _identityClient.RequestDelegatedTokenAsync(request);
+        return new OAuth2LoginToken(token.AccessToken, token.ExpiresAt);
     }
 
-    private DateTimeOffset ResolveTokenExpiration(string userRole)
+    private TimeSpan ResolveTokenLifetime(string userRole)
     {
-        var now = DateTimeOffset.Now;
-
+        // IdentityService caps every lifetime at Identity:MaxDelegatedTokenLifetime (1 day by default).
         if (_environment.IsDevelopment())
-            return now.AddMonths(1);
+            return TimeSpan.FromDays(1);
 
         return userRole switch
         {
-            "Administrator" => now.AddDays(1),
-            "Command" => now.AddMinutes(20),
-            "ApiV2" => now.AddMinutes(10),
-            "User" => now.AddHours(4),
+            "Administrator" => TimeSpan.FromDays(1),
+            "Command" => TimeSpan.FromMinutes(20),
+            "ApiV2" => TimeSpan.FromMinutes(10),
+            "User" => TimeSpan.FromHours(4),
             _ => throw new NotSupportedException()
         };
-    }
-
-    private static IEnumerable<Claim> ResolveClaims(User user, string userRole, IInteractionContext? interaction, ApiClient? apiClient, string ip)
-    {
-        yield return new Claim(ClaimTypes.Name, user.Username);
-        yield return new Claim(ClaimTypes.NameIdentifier, user.Id);
-        yield return new Claim(ClaimTypes.Role, userRole);
-        yield return new Claim("GrillBot:Permissions", string.Join(",", CreatePermissions(userRole, interaction, apiClient)));
-        yield return new Claim(IP_CLAIM_TYPE, ip);
-
-        if (!string.IsNullOrEmpty(user.AvatarUrl))
-            yield return new Claim(ClaimTypes.UserData, user.AvatarUrl);
-
-        if (apiClient is not null)
-            yield return new Claim("GrillBot:ThirdPartyKey", apiClient.Id);
     }
 
     private static IEnumerable<string> CreatePermissions(string role, IInteractionContext? interaction, ApiClient? apiClient)

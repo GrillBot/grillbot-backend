@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Tokens;
 using NSwag;
 using NSwag.Generation.Processors.Security;
 using Quartz;
 using GrillBot.App.Infrastructure.OpenApi;
+using GrillBot.App.Infrastructure.Auth;
 using GrillBot.App.Infrastructure.Options;
 using GrillBot.App.Infrastructure.RequestProcessing;
 using GrillBot.App.Jobs;
@@ -43,8 +43,8 @@ using GrillBot.Core.Metrics;
 using System.Diagnostics.Metrics;
 using GrillBot.App.Telemetry;
 using GrillBot.Core.Metrics.Services;
-using GrillBot.App.Managers.Auth;
-using GrillBot.Common.Extensions;
+using GrillBot.Contracts.Identity;
+using GrillBot.Core.Services.IdentityService;
 using GrillBot.Core.AsyncMessaging;
 using GrillBot.Core.Configuration;
 
@@ -142,6 +142,7 @@ public class Startup
         services.AddValidatedOptions<ConnectionStringsOptions>(Configuration, ConnectionStringsOptions.SectionName);
         services.AddValidatedOptions<DiscordOptions>(Configuration, DiscordOptions.SectionName);
         services.AddValidatedOptions<OAuth2Options>(Configuration, OAuth2Options.SectionName);
+        services.AddValidatedOptions<WebSessionOptions>(Configuration, WebSessionOptions.SectionName);
 
         services
             .AddHandlers()
@@ -225,34 +226,13 @@ public class Startup
             .AddCookie()
             .AddJwtBearer(o =>
             {
+                // Tokens are issued and signed (ES256) by IdentityService. The signing keys and the
+                // issuer come from its discovery document, fetched over the LAN - hence plain HTTP.
+                o.Authority = Configuration[$"{IdentityClientOptions.SectionName}:Api"];
+                o.Audience = IdentityProtocol.DefaultAudience;
                 o.RequireHttpsMetadata = false;
                 o.SaveToken = true;
                 o.IncludeErrorDetails = true;
-
-                var machineInfo = $"{Environment.MachineName}/{Environment.UserName}";
-                o.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = $"GrillBot/{machineInfo}",
-                    ValidAudience = $"GrillBot/{machineInfo}",
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes($"{Configuration["Auth:OAuth2:ClientId"]}_{Configuration["Auth:OAuth2:ClientSecret"]}"))
-                };
-
-                o.Events = new JwtBearerEvents
-                {
-                    OnTokenValidated = context =>
-                    {
-                        var requestIp = context.HttpContext.GetRemoteIp();
-                        var loginIp = context.Principal?.FindFirst(JwtTokenManager.IP_CLAIM_TYPE)?.Value ?? "";
-
-                        if (!requestIp.Equals(loginIp, StringComparison.OrdinalIgnoreCase))
-                            context.Fail("IP address mismatch.");
-
-                        return Task.CompletedTask;
-                    }
-                };
             })
             .AddOAuth("Discord", opt =>
             {
@@ -352,6 +332,9 @@ public class Startup
         var corsOrigins = Configuration.GetSection("CORS:Origins").AsEnumerable()
             .Select(o => o.Value).Where(o => !string.IsNullOrEmpty(o)).ToArray();
         app.UseCors(policy => policy.WithMethods("GET", "POST", "PUT", "DELETE", "PATCH").AllowAnyHeader().WithOrigins(corsOrigins!).AllowCredentials());
+
+        // AdminWeb session cookie -> bearer token, before anything authenticates the request.
+        app.UseMiddleware<SessionTokenMiddleware>();
 
         app.UseResponseCaching();
         app.UseRouting();

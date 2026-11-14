@@ -1,4 +1,5 @@
 ﻿using System.Net.Http;
+using GrillBot.App.Managers.Auth;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Data.Models.API;
@@ -11,11 +12,13 @@ public class ProcessCallback : ApiAction
 {
     private IConfiguration Configuration { get; }
     private HttpClient HttpClient { get; }
+    private LegacyLoginCodes LoginCodes { get; }
 
-    public ProcessCallback(ApiRequestContext apiContext, IConfiguration configuration, IHttpClientFactory httpClientFactory) : base(apiContext)
+    public ProcessCallback(ApiRequestContext apiContext, IConfiguration configuration, IHttpClientFactory httpClientFactory, LegacyLoginCodes loginCodes) : base(apiContext)
     {
         Configuration = configuration.GetRequiredSection("Auth:OAuth2");
         HttpClient = httpClientFactory.CreateClient();
+        LoginCodes = loginCodes;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -31,7 +34,11 @@ public class ProcessCallback : ApiAction
         var uriBuilder = new UriBuilder(returnUrl);
 
         if (!string.IsNullOrEmpty(accessToken))
-            uriBuilder.Query = string.Join("&", $"sessionId={accessToken}", $"isPublic={state.IsPublic}");
+        {
+            // A one-time code, never the Discord access token itself: the URL ends up in browser history and logs.
+            var loginCode = await LoginCodes.IssueAsync(accessToken);
+            uriBuilder.Query = string.Join("&", $"sessionId={Uri.EscapeDataString(loginCode)}", $"isPublic={state.IsPublic}");
+        }
 
         return new ApiResult(StatusCodes.Status302Found, new RedirectResult(uriBuilder.ToString()));
     }

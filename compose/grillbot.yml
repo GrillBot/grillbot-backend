@@ -106,6 +106,26 @@ services:
     ports:
       - "3005:3000"
 
+  identity_service:
+    <<: *service
+    image: ghcr.io/grillbot/grillbot.services:identity_service
+    build:
+      context: ..
+      dockerfile: docker/dotnet-service.Dockerfile
+      args:
+        PROJECT: src/Services/IdentityService
+        ASSEMBLY: IdentityService.dll
+        PORT: 5110
+    environment:
+      <<: *environment
+      ConnectionStrings__Default: Host=${DB_HOST:-host.docker.internal};Port=${DB_PORT:-5432};Database=IdentityService;Username=${DB_USERNAME:-grillbot};Password=${DB_PASSWORD:-}
+      # Development runs on ephemeral signing/encryption keys: tokens die with the container.
+      # The issuer defaults to the URL a caller uses, so the bot (127.0.0.1:3012) and the
+      # services must reach it the same way once they validate tokens.
+      Identity__Clients__bot__Secret: ${IDENTITY_BOT_CLIENT_SECRET:-grillbot}
+    ports:
+      - "3012:5110"
+
   image_processing_service:
     <<: *service
     image: ghcr.io/grillbot/grillbot.services:image_processing_service

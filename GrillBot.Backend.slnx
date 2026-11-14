@@ -21,6 +21,7 @@
     <Project Path="src/Services/GrillBot.Services.Common/GrillBot.Services.Common.csproj" />
     <Project Path="src/Services/AuditLogService/AuditLogService.csproj" />
     <Project Path="src/Services/EmoteService/EmoteService.csproj" />
+    <Project Path="src/Services/IdentityService/IdentityService.csproj" />
     <Project Path="src/Services/ImageProcessingService/ImageProcessingService.csproj" />
     <Project Path="src/Services/InviteService/InviteService.csproj" />
     <Project Path="src/Services/MessageService/MessageService.csproj" />

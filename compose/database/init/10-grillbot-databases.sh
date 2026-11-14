@@ -23,6 +23,7 @@ FROM unnest(ARRAY[
     'GrillBotDev',
     'AuditLogService',
     'EmoteService',
+    'IdentityService',
     'InviteService',
     'MessageService',
     'PointsService',

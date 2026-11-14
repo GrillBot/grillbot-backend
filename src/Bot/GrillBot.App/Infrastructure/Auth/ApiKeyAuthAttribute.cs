@@ -39,7 +39,7 @@ public class ApiKeyAuthAttribute : Attribute, IAsyncActionFilter
         }
 
         await IncrementStatsAsync(apiClient, repository);
-        SetIdentification(context, apiClient);
+        await SetIdentificationAsync(context, apiClient);
         await next();
     }
 
@@ -78,13 +78,13 @@ public class ApiKeyAuthAttribute : Attribute, IAsyncActionFilter
         await repository.CommitAsync();
     }
 
-    private static void SetIdentification(ActionContext context, ApiClient client)
+    private static async Task SetIdentificationAsync(ActionContext context, ApiClient client)
     {
         var apiRequestContext = context.HttpContext.RequestServices.GetRequiredService<ApiRequestContext>();
         apiRequestContext.RemoteIp = context.HttpContext.GetRemoteIp();
 
-        var jwtToken = context.HttpContext.RequestServices.GetRequiredService<JwtTokenManager>()
-            .CreateTokenForApiClient(client, apiRequestContext.Language, apiRequestContext.RemoteIp);
+        var jwtToken = await context.HttpContext.RequestServices.GetRequiredService<JwtTokenManager>()
+            .CreateTokenForApiClientAsync(client, apiRequestContext.Language);
         if (!string.IsNullOrEmpty(jwtToken?.AccessToken))
             context.HttpContext.RequestServices.GetRequiredService<ICurrentUserProvider>().SetCustomToken(jwtToken.AccessToken);
 

@@ -18,7 +18,7 @@ GrillBot is a Discord bot for fun and management of the VUT FIT Discord server.
 | `src/Core/` | Shared libraries (`GrillBot.Core`, `.AsyncMessaging`, `.HealthCheck`, `.Metrics`, `.Redis`, `.Services`) |
 | `src/Contracts/` | `GrillBot.Contracts` — the integration events, requests and responses exchanged between services, one folder per bounded context |
 | `src/Bot/` | Discord bot host (`GrillBot.App` + `Cache`, `Common`, `Data`, `Database`) |
-| `src/Services/` | `GrillBot.Services.Common`, 11 .NET microservices and the Node/TypeScript `Graphics` service |
+| `src/Services/` | `GrillBot.Services.Common`, 12 .NET microservices and the Node/TypeScript `Graphics` service |
 | `tests/` | MSTest projects for the core libraries |
 | `docker/` | Dockerfiles and `deployables.json`, the manifest driving CI image builds |
 | `build/` | Build/CI helper scripts |
@@ -173,12 +173,15 @@ ImageProcessingService, which has neither — ships nothing and is left alone.
 | `Redis` | `Endpoint` (`Password` optional) | every host declaring the section |
 | `Discord` | `Token` | the bot |
 | `Auth:OAuth2` | `ClientId`, `ClientSecret` | the bot |
+| `Services:IdentityService` | `Api`, `ClientId`, `ClientSecret` | the bot |
+| `Identity` | `Issuer`, `SigningKeys`, `EncryptionKey` and every `Clients:<id>:Secret` (outside Development) | IdentityService |
 
 Mandatory for the bot:
 
 - `ConnectionStrings:Default` — main database
 - `Discord:Token` — Discord authentication token
-- `Auth:OAuth2:ClientId`, `Auth:OAuth2:ClientSecret` — admin login and JWT signing
+- `Auth:OAuth2:ClientId`, `Auth:OAuth2:ClientSecret` — Discord login for the admin sites
+- `Services:IdentityService:ClientSecret` — the bot's client secret at IdentityService, which issues every token
 - `RabbitMQ:Hostname`, `RabbitMQ:Username`, `RabbitMQ:Password`
 - `Redis:Endpoint` — distributed cache
 
@@ -199,6 +202,64 @@ through the same validator).
 
 When running the bot in Docker, bind `/GrillBotData` as a volume.
 
+### Identity and tokens
+
+`src/Services/IdentityService` issues every JWT in the system; the bot no longer
+signs tokens itself. It is an OAuth 2.0 token server built on
+[OpenIddict](https://documentation.openiddict.com/) (Apache-2.0), reachable only
+on the LAN behind the bot, so it serves plain HTTP.
+
+- **Endpoints:** `POST /connect/token`, the discovery document at
+  `/.well-known/openid-configuration` and the public signing keys at
+  `/.well-known/jwks`. The bot validates tokens against them
+  (`JwtBearer` with `Authority = Services:IdentityService:Api`).
+- **Grants:** `client_credentials` (service identity), `refresh_token`, and
+  `urn:grillbot:grant-type:delegation` - the bot authenticates as client `bot`
+  and asks for a token on behalf of a user or API client, supplying the role and
+  permissions it computed. That grant is temporary, until IdentityService owns
+  the permission model. Parameter and claim names are in
+  `GrillBot.Contracts.Identity.IdentityProtocol`; callers use
+  `IIdentityTokenClient` from `GrillBot.Core.Services`.
+- **Claims** keep the names the bot used to write (`nameid`, `unique_name`,
+  `role`, `GrillBot:Permissions`, ...), plus `sub`, `channel` and `aud=grillbot`,
+  so AdminWeb, the legacy admins and `CurrentUserProvider` need no change.
+- **Clients** are configured under `Identity:Clients:<id>` (secret + allowed grant
+  types) and synchronized into the database on startup.
+- **Token entries** are stored (that makes refresh tokens revocable) and pruned
+  hourly; see `Identity:TokenPrune*`.
+- **Refresh tokens rotate** on every use. Presenting a redeemed one again revokes
+  every token of that sign-in, after a grace period for concurrent refreshes
+  (`Identity:RefreshTokenReuseLeeway`, 30 s; `00:00:00` turns it off).
+
+Keys, provided as secrets outside Development (Development falls back to
+ephemeral keys, so tokens do not survive a restart):
+
+```bash
+# ES256 signing key -> Identity:SigningKeys:0:Pem (plus Identity:SigningKeys:0:KeyId)
+openssl ecparam -name prime256v1 -genkey -noout | openssl pkcs8 -topk8 -nocrypt
+# Refresh-token encryption key -> Identity:EncryptionKey
+openssl rand -base64 32
+```
+
+**AdminWeb sessions.** AdminWeb never holds a token. `GET /api/session/login`
+sends the browser to Discord and back, then the bot creates a server-side session
+in Redis and sets an HttpOnly `__Host-grillbot.sid` cookie (`SameSite=Strict`).
+`SessionTokenMiddleware` turns that cookie into the request's `Authorization`
+header, renewing the 10-minute access token - and re-checking the user's role -
+shortly before it expires. `GET /api/session/me` returns the signed-in user (204
+when nobody is), `POST /api/session/logout` ends the session. Settings live in
+`Auth:Session` (idle 7 days, absolute 30 days); in Development set
+`Auth:Session:FrontendUrl` to `https://localhost:4200`, where AdminWeb runs.
+
+The legacy admins keep `api/auth/token`, but the OAuth callback now hands them a
+one-time code (valid one minute) instead of the user's Discord access token.
+
+To rotate the signing key, put the new key first and keep the old one listed
+until the longest access token it signed has expired (one day at most); the first
+key signs, all of them are published. `Identity:Issuer` must be the URL the other
+hosts use to reach IdentityService, because the discovery document derives the
+JWKS address from it.
+
 ## Local development with Docker Compose
 
 `compose/` holds two standalone Docker Compose stacks (plain `docker compose`, not
@@ -208,7 +269,7 @@ Swarm) for running parts of the backend on your machine:
 |---|---|---|
 | `compose/infrastructure.yml` | `grillbot-infra` | RabbitMQ (`5672`, UI `15672`), `redis-main` (`6379`), `redis-ephemeral` (`6380`) |
 | `compose/database.yml` | `grillbot-db` | Optional PostgreSQL 18 (`5432`) with the `grillbot` role and all databases |
-| `compose/grillbot.yml` | `grillbot` | The 12 microservices, on the development server's host ports `3005`–`3019` |
+| `compose/grillbot.yml` | `grillbot` | The 13 microservices, on the development server's host ports `3005`–`3019` |
 
 The infrastructure stack creates the `grillbot-dev` network, which the other two
 stacks join, so start it first.

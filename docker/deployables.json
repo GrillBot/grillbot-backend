@@ -74,6 +74,16 @@
       "paths": ["src/Services/Graphics/**"],
       "shares": ["all"]
     },
+    "identity_service": {
+      "image": "ghcr.io/grillbot/grillbot.services",
+      "tag": "identity_service",
+      "dockerfile": "docker/dotnet-service.Dockerfile",
+      "project": "src/Services/IdentityService",
+      "assembly": "IdentityService.dll",
+      "port": 5110,
+      "paths": ["src/Services/IdentityService/**"],
+      "shares": ["all", "core", "contracts", "services"]
+    },
     "image_processing_service": {
       "image": "ghcr.io/grillbot/grillbot.services",
       "tag": "image_processing_service",
