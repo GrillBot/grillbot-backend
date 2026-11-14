@@ -13,7 +13,7 @@ namespace GrillBot.App.Infrastructure.Auth;
 /// </summary>
 public class SessionTokenMiddleware(RequestDelegate _next, IOptions<WebSessionOptions> _options, IHostEnvironment _environment)
 {
-    private static readonly HashSet<string> SafeMethods = [with(StringComparer.OrdinalIgnoreCase), "GET", "HEAD", "OPTIONS"];
+    private static readonly HashSet<string> SafeMethods = new(["GET", "HEAD", "OPTIONS"], StringComparer.OrdinalIgnoreCase);
 
     public async Task InvokeAsync(HttpContext context, SessionManager sessionManager)
     {
