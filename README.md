@@ -262,6 +262,10 @@ dependency edges that project references create — a change under `src/Core/` o
 rebuilds every .NET service — so only the affected images are built, pushed, deployed via
 `deploy-grillbot.sh <name>` over SSH, and health-checked.
 
+> **Temporarily paused:** the `Deploy` and `Verify` jobs are disabled (`false &&`
+> in their `if:`) while the deploy target is unavailable. CI still builds and
+> pushes the images; deploy them by hand until the jobs are re-enabled.
+
 To add a new service: create the project under `src/Services/`, add it to
 `GrillBot.Backend.slnx`, and add an entry to `docker/deployables.json`. The
 workflow needs no changes.

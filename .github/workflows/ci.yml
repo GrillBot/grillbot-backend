@@ -38,7 +38,7 @@ jobs:
       Node: ${{ steps.select.outputs.node }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Build path filters from docker/deployables.json
         id: generate
@@ -113,7 +113,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Markdown lint
         uses: nosborn/github-action-markdown-cli@v3.5.0
         with:
@@ -150,7 +150,7 @@ jobs:
 
           exit "${status}"
       - name: Setup python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - name: Cross-check localization texts
@@ -167,7 +167,7 @@ jobs:
     if: needs.Changes.outputs.Dotnet == 'true'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Setup dotnet
         uses: actions/setup-dotnet@v5
         with:
@@ -192,7 +192,7 @@ jobs:
     if: needs.Changes.outputs.Dotnet == 'true'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Setup dotnet
         uses: actions/setup-dotnet@v5
         with:
@@ -218,7 +218,7 @@ jobs:
         working-directory: src/Services/Graphics
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
@@ -260,7 +260,7 @@ jobs:
         deployable: ${{ fromJson(needs.Changes.outputs.Deployables) }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Read manifest entry for ${{ matrix.deployable }}
         id: manifest
@@ -317,8 +317,10 @@ jobs:
     runs-on: ubuntu-latest
     environment: Production
     needs: [Changes, Images]
+    # TEMPORARY: CD paused (deploy target unavailable) - images are still built
+    # and pushed, deploy them by hand. Remove "false &&" to re-enable.
     if: |
-      always()
+      false && always()
       && !contains(needs.*.result, 'failure')
       && !contains(needs.*.result, 'cancelled')
       && needs.Changes.outputs.HasDeployables == 'true'
@@ -326,7 +328,7 @@ jobs:
       && github.event_name != 'pull_request'
     steps:
       - name: Deploy ${{ needs.Changes.outputs.DeployablesList }} via SSH
-        uses: appleboy/ssh-action@v1.2.4
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
@@ -350,8 +352,10 @@ jobs:
   Verify:
     runs-on: ubuntu-latest
     needs: [Changes, Deploy]
+    # TEMPORARY: paused together with Deploy - a skipped Deploy is not a failure,
+    # so this would otherwise health-check the old deployment. Remove "false &&".
     if: |
-      always()
+      false && always()
       && !contains(needs.*.result, 'failure')
       && !contains(needs.*.result, 'cancelled')
       && needs.Changes.outputs.HasDeployables == 'true'
