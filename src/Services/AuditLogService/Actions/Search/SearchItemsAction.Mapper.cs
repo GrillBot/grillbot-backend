@@ -90,6 +90,9 @@ public partial class SearchItemsAction
             case LogType.RoleDeleted:
                 await SetRoleDeletedPreviewAsync(result);
                 break;
+            case LogType.Identity:
+                await SetIdentityEventPreviewAsync(result);
+                break;
         }
 
         return result;
@@ -349,6 +352,17 @@ public partial class SearchItemsAction
             Name = entity.RoleInfo.Name,
             RoleId = entity.RoleInfo.RoleId
         });
+    }
+
+    private async Task SetIdentityEventPreviewAsync(LogListItem result)
+    {
+        result.Preview = await CreatePreviewAsync<IdentityEvent, IdentityEventPreview>(result, entity => new IdentityEventPreview
+        {
+            EventType = entity.EventType,
+            Channel = entity.Channel
+        });
+
+        result.IsDetailAvailable = result.Preview is not null;
     }
 
     private async Task<TPreview?> CreatePreviewAsync<TEntity, TPreview>(LogListItem item, Expression<Func<TEntity, TPreview>> projection) where TEntity : ChildEntityBase where TPreview : class

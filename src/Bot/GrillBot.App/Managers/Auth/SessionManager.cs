@@ -1,4 +1,6 @@
 using GrillBot.App.Infrastructure.Options;
+using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.Identity;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
@@ -16,7 +18,8 @@ public class SessionManager(
     IDistributedCache _cache,
     JwtTokenManager _jwtTokenManager,
     IOptions<WebSessionOptions> _options,
-    TimeProvider _timeProvider
+    TimeProvider _timeProvider,
+    IdentityAuditLog _auditLog
 )
 {
     private const string KeyPrefix = "auth:session:";
@@ -58,6 +61,7 @@ public class SessionManager(
         if (string.IsNullOrEmpty(token.AccessToken))
         {
             await EndAsync(sessionId, cancellationToken);
+            await _auditLog.WriteAsync(IdentityEventType.SessionRevoked, session.UserId, IdentityProtocol.Channels.Web, token.ErrorMessage);
             return null;
         }
 
@@ -68,6 +72,15 @@ public class SessionManager(
 
     public Task EndAsync(string sessionId, CancellationToken cancellationToken = default)
         => _cache.RemoveAsync(CreateKey(sessionId), cancellationToken);
+
+    /// <summary>Ends the session at the user's request.</summary>
+    /// <returns>Whose session it was, or <c>null</c> when it no longer existed.</returns>
+    public async Task<ulong?> SignOutAsync(string sessionId, CancellationToken cancellationToken = default)
+    {
+        var session = await LoadAsync(sessionId, cancellationToken);
+        await EndAsync(sessionId, cancellationToken);
+        return session?.UserId;
+    }
 
     public CookieOptions CreateCookieOptions()
     {

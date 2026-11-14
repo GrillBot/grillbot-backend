@@ -2,6 +2,8 @@ using GrillBot.App.Infrastructure.Options;
 using GrillBot.App.Managers.Auth;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Contracts.AuditLog.Enums;
+using GrillBot.Contracts.Identity;
 using GrillBot.Core.Infrastructure.Actions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -20,7 +22,8 @@ public class StartSessionAction(
     ApiRequestContext _apiContext,
     SessionManager _sessionManager,
     ITextsManager _texts,
-    IOptions<WebSessionOptions> _options
+    IOptions<WebSessionOptions> _options,
+    IdentityAuditLog _auditLog
 ) : ApiAction(_apiContext)
 {
     public override async Task<ApiResult> ProcessAsync()
@@ -31,12 +34,21 @@ public class StartSessionAction(
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
         if (ApiContext.LoggedUser is null)
-            return RedirectToLogin(_texts["Auth/CreateToken/UserNotFound", ApiContext.Language]);
+        {
+            var notFound = _texts["Auth/CreateToken/UserNotFound", ApiContext.Language];
+            var discordUserId = ApiContext.GetUserId();
+            await _auditLog.WriteAsync(IdentityEventType.SignInRefused, discordUserId == 0 ? null : discordUserId, IdentityProtocol.Channels.Web, notFound);
+            return RedirectToLogin(notFound);
+        }
 
         var (sessionId, error) = await _sessionManager.StartAsync(ApiContext.LoggedUser, ApiContext.Language);
         if (sessionId is null)
+        {
+            await _auditLog.WriteAsync(IdentityEventType.SignInRefused, ApiContext.LoggedUser.Id, IdentityProtocol.Channels.Web, error);
             return RedirectToLogin(error);
+        }
 
+        await _auditLog.WriteAsync(IdentityEventType.SignIn, ApiContext.LoggedUser.Id, IdentityProtocol.Channels.Web);
         HttpContext.Response.Cookies.Append(_options.Value.CookieName, sessionId, _sessionManager.CreateCookieOptions());
         return Redirect(SafeReturnPath(returnUrl));
     }

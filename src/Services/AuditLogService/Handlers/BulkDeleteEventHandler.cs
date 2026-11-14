@@ -125,6 +125,9 @@ public class BulkDeleteEventHandler(
                 case LogType.Unban:
                     ExecuteDeletion<Unban>(logItemIds);
                     break;
+                case LogType.Identity:
+                    ExecuteDeletion<IdentityEvent>(logItemIds);
+                    break;
                 case LogType.MemberUpdated:
                     {
                         var childItems = await ExecuteDeletionAsync<MemberUpdated>(logItemIds, q => q.Include(o => o.After).Include(o => o.Before), cancellationToken);

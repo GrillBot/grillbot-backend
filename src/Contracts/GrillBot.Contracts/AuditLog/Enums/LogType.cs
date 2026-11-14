@@ -127,5 +127,10 @@ public enum LogType
     /// <summary>
     /// User alerts for suspicious activity.
     /// </summary>
-    MemberWarning = 26
+    MemberWarning = 26,
+
+    /// <summary>
+    /// Identity and access event: sign-in, refused sign-in, sign-out, revoked session.
+    /// </summary>
+    Identity = 27
 }

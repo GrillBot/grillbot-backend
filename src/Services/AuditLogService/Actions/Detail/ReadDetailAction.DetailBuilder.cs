@@ -308,4 +308,15 @@ public partial class ReadDetailAction
             RoleId = entity.RoleInfo.RoleId
         });
     }
+
+    private async Task<IdentityEventDetail?> CreateIdentityEventDetailAsync(LogItem header)
+    {
+        return await CreateDetailAsync<IdentityEvent, IdentityEventDetail>(header, entity => new IdentityEventDetail
+        {
+            EventType = entity.EventType,
+            Channel = entity.Channel,
+            Reason = entity.Reason,
+            IpAddress = entity.IpAddress
+        });
+    }
 }

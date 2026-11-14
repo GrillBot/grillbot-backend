@@ -30,6 +30,7 @@ public class LogRequest
     public DiffRequest<ThreadInfoRequest>? ThreadUpdated { get; set; }
     public MemberUpdatedRequest? MemberUpdated { get; set; }
     public RoleDeletedRequest? RoleDeleted { get; set; }
+    public IdentityEventRequest? IdentityEvent { get; set; }
 
     public LogRequest()
     {

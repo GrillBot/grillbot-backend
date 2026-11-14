@@ -1,6 +1,7 @@
 using GrillBot.Contracts.Identity;
 using IdentityService.Core.Entity;
 using IdentityService.Options;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -16,6 +17,12 @@ public static class IdentityServerExtensions
         var isDevelopment = string.Equals(configuration[HostDefaults.EnvironmentKey], Environments.Development, StringComparison.OrdinalIgnoreCase);
 
         ValidateOptions(options, isDevelopment);
+
+        // The shared telemetry setup logs whole request and response bodies. Here those are the
+        // token responses (access and refresh tokens) and the token requests (client secrets),
+        // so this service logs only the request line, headers (redacted by default) and status.
+        services.Configure<HttpLoggingOptions>(opt => opt.LoggingFields =
+            HttpLoggingFields.RequestPropertiesAndHeaders | HttpLoggingFields.ResponsePropertiesAndHeaders | HttpLoggingFields.Duration);
 
         services.Configure<IdentityServerOptions>(section);
         services.AddScoped<ClientRegistrar>();

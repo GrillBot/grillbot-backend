@@ -17,7 +17,7 @@ namespace AuditLogService.Core.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.18")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -415,6 +415,32 @@ namespace AuditLogService.Core.Migrations
                     b.HasIndex("BeforeId");
 
                     b.ToTable("GuildUpdatedItems");
+                });
+
+            modelBuilder.Entity("AuditLogService.Core.Entity.IdentityEvent", b =>
+                {
+                    b.Property<Guid>("LogItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Channel")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<int>("EventType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.HasKey("LogItemId");
+
+                    b.ToTable("IdentityEvents");
                 });
 
             modelBuilder.Entity("AuditLogService.Core.Entity.InteractionCommand", b =>
@@ -1118,6 +1144,17 @@ namespace AuditLogService.Core.Migrations
                     b.Navigation("LogItem");
                 });
 
+            modelBuilder.Entity("AuditLogService.Core.Entity.IdentityEvent", b =>
+                {
+                    b.HasOne("AuditLogService.Core.Entity.LogItem", "LogItem")
+                        .WithOne("IdentityEvent")
+                        .HasForeignKey("AuditLogService.Core.Entity.IdentityEvent", "LogItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LogItem");
+                });
+
             modelBuilder.Entity("AuditLogService.Core.Entity.InteractionCommand", b =>
                 {
                     b.HasOne("AuditLogService.Core.Entity.LogItem", "LogItem")
@@ -1394,6 +1431,8 @@ namespace AuditLogService.Core.Migrations
                     b.Navigation("Files");
 
                     b.Navigation("GuildUpdated");
+
+                    b.Navigation("IdentityEvent");
 
                     b.Navigation("InteractionCommand");
 

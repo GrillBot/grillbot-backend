@@ -19,6 +19,8 @@ public class RequestFilter(
     UserManager _userManager
 ) : IAsyncActionFilter
 {
+    private static readonly HashSet<string> RedactedHeaders = new(["Authorization", "ApiKey", "Cookie"], StringComparer.OrdinalIgnoreCase);
+
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         SetApiRequest(context);
@@ -95,7 +97,9 @@ public class RequestFilter(
             _apiRequestContext.LogRequest.AddParameter(item.Key, item.Value.ToString());
         foreach (var (name, values) in context.HttpContext.Request.Headers)
         {
-            if (name is "Authorization" or "ApiKey")
+            // Credentials never reach the audit log; Cookie carries the AdminWeb session ID.
+            // HTTP/2 sends header names in lower case, hence the case-insensitive match.
+            if (RedactedHeaders.Contains(name))
                 _apiRequestContext.LogRequest.AddHeaders(name, $"<{name} header removed>");
             else
                 _apiRequestContext.LogRequest.AddHeaders(name, values);

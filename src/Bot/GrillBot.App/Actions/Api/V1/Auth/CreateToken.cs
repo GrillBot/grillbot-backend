@@ -4,6 +4,7 @@ using GrillBot.App.Managers.Auth;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
+using GrillBot.Contracts.AuditLog.Enums;
 using GrillBot.Contracts.Identity;
 using GrillBot.Contracts.Identity.Requests;
 using GrillBot.Core.Infrastructure.Actions;
@@ -21,9 +22,10 @@ public class CreateToken : ApiAction
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private LegacyLoginCodes LoginCodes { get; }
     private IIdentityTokenClient IdentityClient { get; }
+    private IdentityAuditLog AuditLog { get; }
 
     public CreateToken(ApiRequestContext apiContext, IHttpClientFactory httpClientFactory, IDiscordClient discordClient, ITextsManager texts, GrillBotDatabaseBuilder databaseBuilder,
-        IIdentityTokenClient identityClient, LegacyLoginCodes loginCodes) : base(apiContext)
+        IIdentityTokenClient identityClient, LegacyLoginCodes loginCodes, IdentityAuditLog auditLog) : base(apiContext)
     {
         HttpClient = httpClientFactory.CreateClient();
         DiscordClient = discordClient;
@@ -31,6 +33,7 @@ public class CreateToken : ApiAction
         DatabaseBuilder = databaseBuilder;
         LoginCodes = loginCodes;
         IdentityClient = identityClient;
+        AuditLog = auditLog;
     }
 
     public override async Task<ApiResult> ProcessAsync()
@@ -57,20 +60,27 @@ public class CreateToken : ApiAction
         var user = await FindUserAsync(userId);
 
         if (user is null)
-            return new OAuth2LoginToken(Texts["Auth/CreateToken/UserNotFound", ApiContext.Language]);
+            return await RefuseAsync(userId, Texts["Auth/CreateToken/UserNotFound", ApiContext.Language]);
 
         using var repository = DatabaseBuilder.CreateRepository();
 
         var userEntity = await repository.User.FindUserAsync(user, true);
         if (userEntity is null)
-            return new OAuth2LoginToken(Texts["Auth/CreateToken/UserNotFound", ApiContext.Language]);
+            return await RefuseAsync(user.Id, Texts["Auth/CreateToken/UserNotFound", ApiContext.Language]);
 
         var checkResult = CheckUserLogin(userEntity, isPublic);
         if (!string.IsNullOrEmpty(checkResult))
-            return new OAuth2LoginToken(checkResult);
+            return await RefuseAsync(user.Id, checkResult);
 
         var (token, expiresAt) = await CreateJwtTokenAsync(userEntity, isPublic);
+        await AuditLog.WriteAsync(IdentityEventType.SignIn, user.Id, IdentityProtocol.Channels.Legacy);
         return new OAuth2LoginToken(token, expiresAt);
+    }
+
+    private async Task<OAuth2LoginToken> RefuseAsync(ulong? userId, string reason)
+    {
+        await AuditLog.WriteAsync(IdentityEventType.SignInRefused, userId, IdentityProtocol.Channels.Legacy, reason);
+        return new OAuth2LoginToken(reason);
     }
 
     private async Task<ulong?> GetUserIdAsync(string sessionId)

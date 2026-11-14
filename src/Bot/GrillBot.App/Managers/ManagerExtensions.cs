@@ -19,6 +19,7 @@ public static class ManagerExtensions
             .AddScoped<LocalizationManager>()
             .AddScoped<Auth.JwtTokenManager>()
             .AddScoped<Auth.SessionManager>()
+            .AddScoped<Auth.IdentityAuditLog>()
             .AddScoped<Auth.LegacyLoginCodes>();
 
         return services;

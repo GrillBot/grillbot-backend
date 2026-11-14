@@ -254,6 +254,14 @@ when nobody is), `POST /api/session/logout` ends the session. Settings live in
 The legacy admins keep `api/auth/token`, but the OAuth callback now hands them a
 one-time code (valid one minute) instead of the user's Discord access token.
 
+**Audit.** The bot writes every sign-in, refused sign-in (with the reason),
+sign-out and session it ends itself (access revoked while renewing the token) to
+AuditLogService as `LogType.Identity` (`IdentityAuditLog`), with the channel
+(`web` / `legacy`) and the client IP. A token, cookie or session ID never goes into
+the audit log or the logs: the API request log drops the `Authorization`,
+`ApiKey` and `Cookie` headers, and IdentityService logs requests without their
+bodies, which hold the tokens and client secrets.
+
 To rotate the signing key, put the new key first and keep the old one listed
 until the longest access token it signed has expired (one day at most); the first
 key signs, all of them are published. `Identity:Issuer` must be the URL the other

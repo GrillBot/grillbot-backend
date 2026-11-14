@@ -69,6 +69,9 @@ public partial class ReadDetailAction(
             case LogType.RoleDeleted:
                 result.Data = await CreateRoleDeletedDetailAsync(logHeader);
                 break;
+            case LogType.Identity:
+                result.Data = await CreateIdentityEventDetailAsync(logHeader);
+                break;
         }
 
         return ApiResult.Ok(result);

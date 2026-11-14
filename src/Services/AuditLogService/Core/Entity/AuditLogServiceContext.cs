@@ -38,6 +38,7 @@ public class AuditLogServiceContext(DbContextOptions<AuditLogServiceContext> opt
             WithForeignKeyReference(b, o => o.ThreadDeleted);
             WithForeignKeyReference(b, o => o.MemberUpdated);
             WithForeignKeyReference(b, o => o.RoleDeleted);
+            WithForeignKeyReference(b, o => o.IdentityEvent);
 
             b.HasMany(o => o.MemberRolesUpdated).WithOne(o => o.LogItem).HasForeignKey(o => o.LogItemId);
         });
@@ -126,4 +127,5 @@ public class AuditLogServiceContext(DbContextOptions<AuditLogServiceContext> opt
     public DbSet<MemberUpdated> MemberUpdatedItems => Set<MemberUpdated>();
     public DbSet<RoleInfo> RoleInfos => Set<RoleInfo>();
     public DbSet<RoleDeleted> RoleDeleted => Set<RoleDeleted>();
+    public DbSet<IdentityEvent> IdentityEvents => Set<IdentityEvent>();
 }

@@ -108,6 +108,9 @@ public partial class CreateArchivationDataAction
             case LogType.RoleDeleted:
                 await SetLogDataAsync(headers, DbContext.RoleDeleted.Include(o => o.RoleInfo), (header, item) => header.RoleDeleted = item);
                 break;
+            case LogType.Identity:
+                await SetLogDataAsync(headers, DbContext.IdentityEvents, (header, item) => header.IdentityEvent = item);
+                break;
         }
     }
 

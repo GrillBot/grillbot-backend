@@ -34,6 +34,7 @@ public partial class CreateArchivationDataAction
             LogType.Api => CreateApiRequestItem(item),
             LogType.ThreadUpdated => CreateThreadUpdatedItem(item),
             LogType.RoleDeleted => CreateRoleDeletedItem(item),
+            LogType.Identity => CreateIdentityEventItem(item),
             _ => null
         };
     }
@@ -578,6 +579,25 @@ public partial class CreateArchivationDataAction
         {
             ["Role"] = CreateRoleInfoItems(item.RoleDeleted.RoleInfo)
         };
+    }
+
+    private static JsonObject? CreateIdentityEventItem(LogItem item)
+    {
+        if (item.IdentityEvent is null)
+            return null;
+
+        var json = new JsonObject
+        {
+            ["EventType"] = item.IdentityEvent.EventType.ToString(),
+            ["Channel"] = item.IdentityEvent.Channel
+        };
+
+        if (!string.IsNullOrEmpty(item.IdentityEvent.Reason))
+            json["Reason"] = item.IdentityEvent.Reason;
+        if (!string.IsNullOrEmpty(item.IdentityEvent.IpAddress))
+            json["IpAddress"] = item.IdentityEvent.IpAddress;
+
+        return json;
     }
 
     private static JsonObject CreateRoleInfoItems(RoleInfo info)
