@@ -7,7 +7,12 @@
     -->
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
-        <LangVersion>latest</LangVersion>
+        <!--
+          Pinned to the C# version of the .NET 10 SDK that CI and the Docker images build with.
+          "latest" follows whatever SDK is installed locally, so a newer local SDK would accept
+          syntax the CI/Docker build rejects. Raise it together with DOTNET_VERSION.
+        -->
+        <LangVersion>14</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>

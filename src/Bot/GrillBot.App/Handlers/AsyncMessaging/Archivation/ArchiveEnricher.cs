@@ -48,7 +48,7 @@ public static class ArchiveEnricher
                 ["Name"] = o.Name
             });
 
-        return [with([.. items])];
+        return new JsonArray([.. items]);
     }
 
     private static JsonArray TransformUsers(IEnumerable<User?> users)
@@ -58,7 +58,7 @@ public static class ArchiveEnricher
             .DistinctBy(o => o!.Id)
             .Select(o => (JsonNode)TransformUser(o!));
 
-        return [with([.. items])];
+        return new JsonArray([.. items]);
     }
 
     private static JsonObject TransformUser(User user)
@@ -102,6 +102,6 @@ public static class ArchiveEnricher
                 return (JsonNode)channel;
             });
 
-        return [with([.. items])];
+        return new JsonArray([.. items]);
     }
 }
