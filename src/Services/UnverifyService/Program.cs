@@ -5,6 +5,7 @@ using GrillBot.Services.Common.EntityFramework.Extensions;
 using GrillBot.Services.Common.Providers;
 using GrillBot.Services.Common.Telemetry.Database.Initializers;
 using System.Reflection;
+using UnverifyService.Core.Archivation;
 using UnverifyService.Core.Entity;
 using UnverifyService.Options;
 using UnverifyService.Telemetry;
@@ -22,6 +23,7 @@ var application = await ServiceBuilder.CreateWebAppAsync<AppOptions>(
         services.AddTelemetryInitializer<DefaultDatabaseInitializer<UnverifyContext>>();
         services.AddTelemetryCollector<UnverifyTelemetryCollector>();
         services.AddTelemetryInitializer<ArchivationInitializer>();
+        services.AddSingleton<UnverifyLogRetention>();
         services.AddTelemetryInitializer<ActiveUnverifyInitializer>();
     },
     configureHealthChecks: (healthCheckBuilder, configuration) =>

@@ -93,6 +93,9 @@ public partial class SearchItemsAction
             case LogType.Identity:
                 await SetIdentityEventPreviewAsync(result);
                 break;
+            case LogType.Archivation:
+                await SetArchivationPreviewAsync(result);
+                break;
         }
 
         return result;
@@ -360,6 +363,17 @@ public partial class SearchItemsAction
         {
             EventType = entity.EventType,
             Channel = entity.Channel
+        });
+
+        result.IsDetailAvailable = result.Preview is not null;
+    }
+
+    private async Task SetArchivationPreviewAsync(LogListItem result)
+    {
+        result.Preview = await CreatePreviewAsync<ArchivationLog, ArchivationPreview>(result, entity => new ArchivationPreview
+        {
+            ProcessName = entity.ProcessName,
+            TotalRecordsCount = entity.TotalRecordsCount
         });
 
         result.IsDetailAvailable = result.Preview is not null;

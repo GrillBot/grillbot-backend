@@ -1,17 +1,16 @@
 ﻿using AuditLogService.Core.Entity;
-using AuditLogService.Core.Options;
+using AuditLogService.Core.Archivation;
 using GrillBot.Contracts.AuditLog.Responses.Info;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Services.Common.Infrastructure.Api;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace AuditLogService.Actions.Info;
 
 public class GetStatusInfoAction(
     AuditLogServiceContext context,
-    IOptions<AppOptions> _options,
+    AuditLogRetention _retention,
     ICounterManager counterManager
 ) : ApiAction<AuditLogServiceContext>(counterManager, context)
 {
@@ -27,8 +26,7 @@ public class GetStatusInfoAction(
 
     private async Task<int> ReadItemsToArchiveCountAsync()
     {
-        var expirationDate = DateTime.UtcNow.AddMonths(-_options.Value.ExpirationMonths);
-        var query = DbContext.LogItems.Where(o => o.CreatedAt <= expirationDate || o.IsDeleted).AsNoTracking();
+        var query = _retention.WhereExpired(DbContext.LogItems.AsNoTracking());
 
         return await ContextHelper.ReadCountAsync(query);
     }

@@ -31,6 +31,7 @@ public class LogRequest
     public MemberUpdatedRequest? MemberUpdated { get; set; }
     public RoleDeletedRequest? RoleDeleted { get; set; }
     public IdentityEventRequest? IdentityEvent { get; set; }
+    public ArchivationRequest? Archivation { get; set; }
 
     public LogRequest()
     {

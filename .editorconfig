@@ -1,0 +1,7 @@
+# Repository-wide analyzer settings. Nested .editorconfig files add to these,
+# except where they declare root = true (src/Core/GrillBot.Core.Services).
+
+[*.cs]
+# S1192 (string literal duplicated): JSON property names, log templates and routing
+# keys repeat by nature; extracting them into constants hurts readability.
+dotnet_diagnostic.S1192.severity = none

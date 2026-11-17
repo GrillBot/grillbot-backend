@@ -72,6 +72,9 @@ public partial class ReadDetailAction(
             case LogType.Identity:
                 result.Data = await CreateIdentityEventDetailAsync(logHeader);
                 break;
+            case LogType.Archivation:
+                result.Data = await CreateArchivationDetailAsync(logHeader);
+                break;
         }
 
         return ApiResult.Ok(result);

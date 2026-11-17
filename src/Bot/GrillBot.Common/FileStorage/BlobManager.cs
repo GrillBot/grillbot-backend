@@ -76,6 +76,29 @@ public class BlobManager(
         }
     }
 
+    /// <summary>Uploads the stream, replacing a blob of the same name when <paramref name="overwrite"/> is set.</summary>
+    public async Task UploadAsync(string filename, Stream contentStream, bool overwrite, CancellationToken cancellationToken = default)
+    {
+        using (CreateCounter("Upload"))
+        {
+            var blobClient = _client.GetBlobClient(filename);
+            await blobClient.UploadAsync(contentStream, overwrite, cancellationToken);
+        }
+    }
+
+    /// <summary>
+    /// Streams the blob into <paramref name="destination"/> without buffering it in memory.
+    /// Check <see cref="ExistsAsync"/> first; a missing blob throws.
+    /// </summary>
+    public async Task DownloadToAsync(string filename, Stream destination, CancellationToken cancellationToken = default)
+    {
+        using (CreateCounter("Download"))
+        {
+            var blobClient = _client.GetBlobClient(filename);
+            await blobClient.DownloadToAsync(destination, cancellationToken);
+        }
+    }
+
     public async Task<bool> ExistsAsync(string filename)
     {
         using (CreateCounter("Exists"))

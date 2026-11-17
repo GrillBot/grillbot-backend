@@ -29,7 +29,6 @@ public static class SearchRequestExtensions
             LogType.MemberUpdated => request.AdvancedSearch.MemberUpdated,
             LogType.MemberRoleUpdated => request.AdvancedSearch.MemberRolesUpdated,
             LogType.MessageDeleted => request.AdvancedSearch.MessageDeleted,
-            LogType.MemberWarning => request.AdvancedSearch.MemberWarning,
             _ => null
         };
 

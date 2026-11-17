@@ -15,7 +15,7 @@ public class BulkDeleteEventHandler(
     DataRecalculationManager _dataRecalculation
 ) : EventHandlerBaseWithDb<AuditLogServiceContext>(serviceProvider)
 {
-    public async Task HandleAsync(BulkDeletePayload message, CancellationToken cancellationToken)
+    public async Task HandleAsync(DeleteAuditLogRecordsCommand message, CancellationToken cancellationToken)
     {
         foreach (var chunk in message.Ids.Distinct().Chunk(100))
         {
@@ -34,8 +34,6 @@ public class BulkDeleteEventHandler(
             if (filesForDelete.Count > 0)
                 await Publisher.PublishAllAsync(filesForDelete);
         }
-
-        return;
     }
 
     private async Task<List<LogItem>> ReadLogItemsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
@@ -127,6 +125,9 @@ public class BulkDeleteEventHandler(
                     break;
                 case LogType.Identity:
                     ExecuteDeletion<IdentityEvent>(logItemIds);
+                    break;
+                case LogType.Archivation:
+                    ExecuteDeletion<ArchivationLog>(logItemIds);
                     break;
                 case LogType.MemberUpdated:
                     {

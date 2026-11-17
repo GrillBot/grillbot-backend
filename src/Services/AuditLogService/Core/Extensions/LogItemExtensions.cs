@@ -16,7 +16,8 @@ public static class LogItemExtensions
         CancellationToken cancellationToken = default
     ) where TData : ChildEntityBase
     {
-        var ids = headers.Select(o => o.Id).ToList();
+        var headersById = headers.ToDictionary(o => o.Id);
+        var ids = headersById.Keys.ToList();
 
         query = query.Where(o => ids.Contains(o.LogItemId));
         if (disableTracking)
@@ -25,8 +26,7 @@ public static class LogItemExtensions
         var data = await contextHelper.ReadEntitiesAsync(query, cancellationToken);
         foreach (var item in data)
         {
-            var header = headers.First(o => o.Id == item.LogItemId);
-            setData(header, item);
+            setData(headersById[item.LogItemId], item);
         }
     }
 
@@ -35,20 +35,21 @@ public static class LogItemExtensions
         IQueryable<TData> query,
         Action<LogItem, TData> setData,
         ContextHelper<AuditLogServiceContext> contextHelper,
-        bool disableTracking
+        bool disableTracking,
+        CancellationToken cancellationToken = default
     ) where TData : ChildEntityBaseWithoutKey
     {
-        var ids = headers.Select(o => o.Id).ToList();
+        var headersById = headers.ToDictionary(o => o.Id);
+        var ids = headersById.Keys.ToList();
 
         query = query.Where(o => ids.Contains(o.LogItemId));
         if (disableTracking)
             query = query.AsNoTracking();
 
-        var data = await contextHelper.ReadEntitiesAsync(query);
+        var data = await contextHelper.ReadEntitiesAsync(query, cancellationToken);
         foreach (var item in data)
         {
-            var header = headers.First(o => o.Id == item.LogItemId);
-            setData(header, item);
+            setData(headersById[item.LogItemId], item);
         }
     }
 }

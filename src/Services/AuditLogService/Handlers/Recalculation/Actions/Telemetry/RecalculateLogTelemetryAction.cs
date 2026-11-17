@@ -1,8 +1,7 @@
-using AuditLogService.Core.Options;
+using AuditLogService.Core.Archivation;
 using GrillBot.Contracts.AuditLog.Events.Recalculation;
 using AuditLogService.Telemetry;
 using GrillBot.Services.Common.EntityFramework.Extensions;
-using Microsoft.Extensions.Options;
 
 namespace AuditLogService.Handlers.Recalculation.Actions.Telemetry;
 
@@ -11,8 +10,8 @@ public class RecalculateLogTelemetryAction(IServiceProvider serviceProvider) : R
     private readonly AuditLogTelemetryCollector _telemetryCollector
         = serviceProvider.GetRequiredService<AuditLogTelemetryCollector>();
 
-    private readonly AppOptions _options
-        = serviceProvider.GetRequiredService<IOptions<AppOptions>>().Value;
+    private readonly AuditLogRetention _retention
+        = serviceProvider.GetRequiredService<AuditLogRetention>();
 
     public override async Task ProcessAsync(RecalculationPayload payload)
     {
@@ -21,8 +20,7 @@ public class RecalculateLogTelemetryAction(IServiceProvider serviceProvider) : R
 
     private async Task RecalculateItemsToArchiveAsync()
     {
-        var expirationDate = DateTime.UtcNow.AddMonths(-_options.ExpirationMonths);
-        var query = DbContext.LogItems.Where(o => o.CreatedAt <= expirationDate || o.IsDeleted);
+        var query = _retention.WhereExpired(DbContext.LogItems);
         var count = await query.CountAsync();
 
         _telemetryCollector.ItemsOfArchive.Set(count);

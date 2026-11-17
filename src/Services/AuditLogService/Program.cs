@@ -1,3 +1,4 @@
+using AuditLogService.Core.Archivation;
 using AuditLogService.Core.Entity;
 using AuditLogService.Core.Entity.Statistics;
 using AuditLogService.Core.Options;
@@ -29,6 +30,10 @@ var application = await ServiceBuilder.CreateWebAppAsync<AppOptions>(
         services.AddManagers();
 
         services.AddScoped<RequestProcessorFactory>();
+        services.AddSingleton<AuditLogRetention>();
+        services.AddOptions<AppOptions>()
+            .Validate(AuditLogRetention.IsValid, "Archivation options are invalid: every retention rule needs a positive RetentionMonths value.")
+            .ValidateOnStart();
 
         services.AddTelemetryCollector<AuditLogTelemetryCollector>();
         services.AddTelemetryInitializer<FilesInitializer>();

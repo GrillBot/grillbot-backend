@@ -1,14 +1,13 @@
 ﻿using System.Text.Json.Nodes;
 using AuditLogService.Core.Entity;
 using GrillBot.Contracts.AuditLog.Enums;
-using GrillBot.Contracts.AuditLog.Responses;
 using Discord;
 
-namespace AuditLogService.Actions.Archivation;
+namespace AuditLogService.Handlers.Archivation;
 
-public partial class CreateArchivationDataAction
+public partial class StartArchivationHandler
 {
-    private static JsonObject? ProcessData(LogItem item, ArchivationResult result)
+    private static JsonObject? ProcessData(LogItem item, ArchiveData result)
     {
         return item.Type switch
         {
@@ -35,6 +34,7 @@ public partial class CreateArchivationDataAction
             LogType.ThreadUpdated => CreateThreadUpdatedItem(item),
             LogType.RoleDeleted => CreateRoleDeletedItem(item),
             LogType.Identity => CreateIdentityEventItem(item),
+            LogType.Archivation => CreateArchivationItem(item),
             _ => null
         };
     }
@@ -109,13 +109,13 @@ public partial class CreateArchivationDataAction
         };
     }
 
-    private static JsonObject? CreateOverwriteCreatedItem(LogItem item, ArchivationResult result)
+    private static JsonObject? CreateOverwriteCreatedItem(LogItem item, ArchiveData result)
         => item.OverwriteCreated is null ? null : new JsonObject { ["OverwriteInfo"] = CreateOverwriteInfoItems(item.OverwriteCreated.OverwriteInfo, result) };
 
-    private static JsonObject? CreateOverwriteDeletedItem(LogItem item, ArchivationResult result)
+    private static JsonObject? CreateOverwriteDeletedItem(LogItem item, ArchiveData result)
         => item.OverwriteDeleted is null ? null : new JsonObject { ["OverwriteInfo"] = CreateOverwriteInfoItems(item.OverwriteDeleted.OverwriteInfo, result) };
 
-    private static JsonObject? CreateOverwriteUpdatedItem(LogItem item, ArchivationResult result)
+    private static JsonObject? CreateOverwriteUpdatedItem(LogItem item, ArchiveData result)
     {
         if (item.OverwriteUpdated is null)
             return null;
@@ -127,7 +127,7 @@ public partial class CreateArchivationDataAction
         };
     }
 
-    private static JsonObject CreateOverwriteInfoItems(OverwriteInfo info, ArchivationResult result)
+    private static JsonObject CreateOverwriteInfoItems(OverwriteInfo info, ArchiveData result)
     {
         var json = new JsonObject
         {
@@ -147,7 +147,7 @@ public partial class CreateArchivationDataAction
         return json;
     }
 
-    private static JsonObject? CreateUnbanItem(LogItem item, ArchivationResult result)
+    private static JsonObject? CreateUnbanItem(LogItem item, ArchiveData result)
     {
         if (item.Unban is null)
             return null;
@@ -161,7 +161,7 @@ public partial class CreateArchivationDataAction
         };
     }
 
-    private static JsonObject? CreateMemberUpdatedItem(LogItem item, ArchivationResult result)
+    private static JsonObject? CreateMemberUpdatedItem(LogItem item, ArchiveData result)
     {
         if (item.MemberUpdated is null)
             return null;
@@ -173,7 +173,7 @@ public partial class CreateArchivationDataAction
         };
     }
 
-    private static JsonObject CreateMemberInfoItems(MemberInfo info, ArchivationResult result)
+    private static JsonObject CreateMemberInfoItems(MemberInfo info, ArchiveData result)
     {
         var json = new JsonObject
         {
@@ -199,7 +199,7 @@ public partial class CreateArchivationDataAction
         return json;
     }
 
-    private static JsonObject? CreateMemberRoleUpdatedItems(LogItem item, ArchivationResult result)
+    private static JsonObject? CreateMemberRoleUpdatedItems(LogItem item, ArchiveData result)
     {
         if (item.MemberRolesUpdated is null || item.MemberRolesUpdated.Count == 0)
             return null;
@@ -226,7 +226,7 @@ public partial class CreateArchivationDataAction
         };
     }
 
-    private static JsonObject? CreateGuildUpdatedItems(LogItem item, ArchivationResult result)
+    private static JsonObject? CreateGuildUpdatedItems(LogItem item, ArchiveData result)
     {
         if (item.GuildUpdated is null)
             return null;
@@ -234,11 +234,11 @@ public partial class CreateArchivationDataAction
         return new JsonObject
         {
             ["Before"] = CreateGuildUpdatedItems(item.GuildUpdated.Before, result),
-            ["After"] = CreateGuildUpdatedItems(item.GuildUpdated.Before, result)
+            ["After"] = CreateGuildUpdatedItems(item.GuildUpdated.After, result)
         };
     }
 
-    private static JsonObject CreateGuildUpdatedItems(GuildInfo info, ArchivationResult result)
+    private static JsonObject CreateGuildUpdatedItems(GuildInfo info, ArchiveData result)
     {
         var json = new JsonObject
         {
@@ -253,48 +253,20 @@ public partial class CreateArchivationDataAction
             ["NsfwLevel"] = info.NsfwLevel.ToString()
         };
 
-        if (!string.IsNullOrEmpty(info.Description))
-            json["Description"] = info.Description;
-        if (!string.IsNullOrEmpty(info.VanityUrl))
-            json["VanityUrl"] = info.VanityUrl;
-        if (!string.IsNullOrEmpty(info.BannerId))
-            json["BannerId"] = info.BannerId;
-        if (!string.IsNullOrEmpty(info.DiscoverySplashId))
-            json["DiscoverySplashId"] = info.DiscoverySplashId;
-        if (!string.IsNullOrEmpty(info.SplashId))
-            json["SplashId"] = info.SplashId;
-        if (!string.IsNullOrEmpty(info.IconId))
-            json["IconId"] = info.IconId;
+        SetIfNotEmpty(json, "Description", info.Description);
+        SetIfNotEmpty(json, "VanityUrl", info.VanityUrl);
+        SetIfNotEmpty(json, "BannerId", info.BannerId);
+        SetIfNotEmpty(json, "DiscoverySplashId", info.DiscoverySplashId);
+        SetIfNotEmpty(json, "SplashId", info.SplashId);
+        SetIfNotEmpty(json, "IconId", info.IconId);
+
         if (info.IconData is not null)
             json["IconData"] = Convert.ToBase64String(info.IconData);
 
-        if (!string.IsNullOrEmpty(info.PublicUpdatesChannelId))
-        {
-            if (!result.ChannelIds.Contains(info.PublicUpdatesChannelId))
-                result.ChannelIds.Add(info.PublicUpdatesChannelId);
-            json["PublicUpdatesChannelId"] = info.PublicUpdatesChannelId;
-        }
-
-        if (!string.IsNullOrEmpty(info.RulesChannelId))
-        {
-            if (!result.ChannelIds.Contains(info.RulesChannelId))
-                result.ChannelIds.Add(info.RulesChannelId);
-            json["RulesChannelId"] = info.RulesChannelId;
-        }
-
-        if (!string.IsNullOrEmpty(info.SystemChannelId))
-        {
-            if (!result.ChannelIds.Contains(info.SystemChannelId))
-                result.ChannelIds.Add(info.SystemChannelId);
-            json["SystemChannelId"] = info.SystemChannelId;
-        }
-
-        if (!string.IsNullOrEmpty(info.AfkChannelId))
-        {
-            if (!result.ChannelIds.Contains(info.AfkChannelId))
-                result.ChannelIds.Add(info.AfkChannelId);
-            json["AfkChannelId"] = info.AfkChannelId;
-        }
+        SetChannelIfNotEmpty(json, "PublicUpdatesChannelId", info.PublicUpdatesChannelId, result);
+        SetChannelIfNotEmpty(json, "RulesChannelId", info.RulesChannelId, result);
+        SetChannelIfNotEmpty(json, "SystemChannelId", info.SystemChannelId, result);
+        SetChannelIfNotEmpty(json, "AfkChannelId", info.AfkChannelId, result);
 
         var features = Enum.GetValues<GuildFeature>()
             .Where(f => (info.Features & f) != GuildFeature.None)
@@ -306,7 +278,23 @@ public partial class CreateArchivationDataAction
         return json;
     }
 
-    private static JsonObject? CreateUserLeftItem(LogItem item, ArchivationResult result)
+    private static void SetIfNotEmpty(JsonObject json, string propertyName, string? value)
+    {
+        if (!string.IsNullOrEmpty(value))
+            json[propertyName] = value;
+    }
+
+    /// <summary>Like <see cref="SetIfNotEmpty"/>, and records the channel so the bot adds its details to the archive.</summary>
+    private static void SetChannelIfNotEmpty(JsonObject json, string propertyName, string? channelId, ArchiveData result)
+    {
+        if (string.IsNullOrEmpty(channelId))
+            return;
+
+        result.ChannelIds.Add(channelId);
+        json[propertyName] = channelId;
+    }
+
+    private static JsonObject? CreateUserLeftItem(LogItem item, ArchiveData result)
     {
         if (item.UserLeft is null)
             return null;
@@ -350,13 +338,12 @@ public partial class CreateArchivationDataAction
         };
     }
 
-    private static JsonObject? CreateMessageDeletedItem(LogItem item, ArchivationResult result)
+    private static JsonObject? CreateMessageDeletedItem(LogItem item, ArchiveData result)
     {
         if (item.MessageDeleted is null)
             return null;
 
-        if (!result.UserIds.Contains(item.MessageDeleted.AuthorId))
-            result.UserIds.Add(item.MessageDeleted.AuthorId);
+        result.UserIds.Add(item.MessageDeleted.AuthorId);
 
         var json = new JsonObject
         {
@@ -364,47 +351,39 @@ public partial class CreateArchivationDataAction
             ["MessageCreatedAt"] = item.MessageDeleted.MessageCreatedAt
         };
 
-        if (!string.IsNullOrEmpty(item.MessageDeleted.Content))
-            json["Content"] = item.MessageDeleted.Content;
+        SetIfNotEmpty(json, "Content", item.MessageDeleted.Content);
 
-        var embeds = new JsonArray();
-        foreach (var embed in item.MessageDeleted.Embeds)
+        json["Embeds"] = new JsonArray([.. item.MessageDeleted.Embeds.Select(CreateEmbedItem)]);
+        return json;
+    }
+
+    private static JsonObject CreateEmbedItem(EmbedInfo embed)
+    {
+        var json = new JsonObject
         {
-            var embedJson = new JsonObject
-            {
-                ["Type"] = embed.Type,
-                ["ContainsFooter"] = embed.ContainsFooter
-            };
+            ["Type"] = embed.Type,
+            ["ContainsFooter"] = embed.ContainsFooter
+        };
 
-            if (!string.IsNullOrEmpty(embed.Title))
-                embedJson["Title"] = embed.Title;
-            if (!string.IsNullOrEmpty(embed.ImageInfo))
-                embedJson["ImageInfo"] = embed.ImageInfo;
-            if (!string.IsNullOrEmpty(embed.VideoInfo))
-                embedJson["VideoInfo"] = embed.VideoInfo;
-            if (!string.IsNullOrEmpty(embed.AuthorName))
-                embedJson["Author"] = embed.AuthorName;
-            if (!string.IsNullOrEmpty(embed.ProviderName))
-                embedJson["Provider"] = embed.ProviderName;
-            if (!string.IsNullOrEmpty(embed.ThumbnailInfo))
-                embedJson["ThumbnailInfo"] = embed.ThumbnailInfo;
+        SetIfNotEmpty(json, "Title", embed.Title);
+        SetIfNotEmpty(json, "ImageInfo", embed.ImageInfo);
+        SetIfNotEmpty(json, "VideoInfo", embed.VideoInfo);
+        SetIfNotEmpty(json, "Author", embed.AuthorName);
+        SetIfNotEmpty(json, "Provider", embed.ProviderName);
+        SetIfNotEmpty(json, "ThumbnailInfo", embed.ThumbnailInfo);
 
-            if (embed.Fields.Count > 0)
-            {
-                embedJson["Fields"] = new JsonArray(
-                    [.. embed.Fields.Select(f => new JsonObject
-                    {
-                        ["Name"] = f.Name,
-                        ["Value"] = f.Value,
-                        ["Inline"] = f.Inline
-                    })]
-                );
-            }
-
-            embeds.Add(embedJson);
+        if (embed.Fields.Count > 0)
+        {
+            json["Fields"] = new JsonArray(
+                [.. embed.Fields.Select(f => new JsonObject
+                {
+                    ["Name"] = f.Name,
+                    ["Value"] = f.Value,
+                    ["Inline"] = f.Inline
+                })]
+            );
         }
 
-        json["Embeds"] = embeds;
         return json;
     }
 
@@ -486,7 +465,7 @@ public partial class CreateArchivationDataAction
         return json;
     }
 
-    private static JsonObject? CreateJobCompletedItem(LogItem item, ArchivationResult result)
+    private static JsonObject? CreateJobCompletedItem(LogItem item, ArchiveData result)
     {
         if (item.Job is null)
             return null;
@@ -596,6 +575,29 @@ public partial class CreateArchivationDataAction
             json["Reason"] = item.IdentityEvent.Reason;
         if (!string.IsNullOrEmpty(item.IdentityEvent.IpAddress))
             json["IpAddress"] = item.IdentityEvent.IpAddress;
+
+        return json;
+    }
+
+    private static JsonObject? CreateArchivationItem(LogItem item)
+    {
+        if (item.Archivation is null)
+            return null;
+
+        var json = new JsonObject
+        {
+            ["ProcessName"] = item.Archivation.ProcessName,
+            ["TotalRecordsCount"] = item.Archivation.TotalRecordsCount,
+            ["JsonSize"] = item.Archivation.JsonSize,
+            ["ArchiveSize"] = item.Archivation.ArchiveSize
+        };
+
+        if (!string.IsNullOrEmpty(item.Archivation.Details))
+            json["Details"] = item.Archivation.Details;
+        if (item.Archivation.DeletedFilesCount is not null)
+            json["DeletedFilesCount"] = item.Archivation.DeletedFilesCount;
+        if (item.Archivation.DeletedFilesSize is not null)
+            json["DeletedFilesSize"] = item.Archivation.DeletedFilesSize;
 
         return json;
     }

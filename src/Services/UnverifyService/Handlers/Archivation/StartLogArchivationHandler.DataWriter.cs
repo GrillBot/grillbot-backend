@@ -1,13 +1,12 @@
 ﻿using System.Text.Json.Nodes;
 using UnverifyService.Core.Entity.Logs;
 using GrillBot.Contracts.Unverify.Enums;
-using GrillBot.Contracts.Unverify.Responses;
 
-namespace UnverifyService.Actions.Archivation;
+namespace UnverifyService.Handlers.Archivation;
 
-public partial class CreateArchivationDataAction
+public partial class StartLogArchivationHandler
 {
-    private static JsonObject? ProcessData(UnverifyLogItem item, ArchivationResult result)
+    private static JsonObject? ProcessData(UnverifyLogItem item, ArchiveData result)
     {
         return item.OperationType switch
         {
@@ -35,7 +34,7 @@ public partial class CreateArchivationDataAction
         return json;
     }
 
-    private static JsonObject? CreateUnverifySetItem(UnverifyLogItem item, ArchivationResult result)
+    private static JsonObject? CreateUnverifySetItem(UnverifyLogItem item, ArchiveData result)
     {
         if (item.SetOperation is null)
             return null;
@@ -72,18 +71,13 @@ public partial class CreateArchivationDataAction
                 ))
             );
 
-            result.ChannelIds.AddRange(
-                item.SetOperation.Channels
-                    .Select(o => o.ChannelId.Value)
-                    .Where(id => !result.ChannelIds.Contains(id))
-                    .Distinct()
-            );
+            result.ChannelIds.UnionWith(item.SetOperation.Channels.Select(o => o.ChannelId.Value));
         }
 
         return json;
     }
 
-    private static JsonObject? CreateUnverifyRemoveItem(UnverifyLogItem item, ArchivationResult result)
+    private static JsonObject? CreateUnverifyRemoveItem(UnverifyLogItem item, ArchiveData result)
     {
         if (item.RemoveOperation is null)
             return null;
@@ -111,12 +105,7 @@ public partial class CreateArchivationDataAction
                 ))
             );
 
-            result.ChannelIds.AddRange(
-                item.RemoveOperation.Channels
-                    .Select(o => o.ChannelId.Value)
-                    .Where(id => !result.ChannelIds.Contains(id))
-                    .Distinct()
-            );
+            result.ChannelIds.UnionWith(item.RemoveOperation.Channels.Select(o => o.ChannelId.Value));
         }
 
         return json;

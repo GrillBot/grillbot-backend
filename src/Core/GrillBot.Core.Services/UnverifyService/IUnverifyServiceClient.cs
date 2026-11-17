@@ -49,9 +49,6 @@ public interface IUnverifyServiceClient : IServiceClient
     [Get("/api/logs/{id}")]
     Task<UnverifyLogDetail?> GetUnverifyLogDetailAsync(Guid id, CancellationToken cancellationToken = default);
 
-    [Get("/api/logs/archive")]
-    Task<ArchivationResult?> CreateArchivationDataAsync(CancellationToken cancellationToken = default);
-
     [Post("/api/logs/import-legacy")]
     Task ImportLegacyLogItemAsync([Body] JsonObject jsonData, CancellationToken cancellationToken = default);
 

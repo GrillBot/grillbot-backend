@@ -1,6 +1,5 @@
 ﻿using GrillBot.Core.Models.Pagination;
 using GrillBot.Contracts.AuditLog.Requests.Search;
-using GrillBot.Contracts.AuditLog.Responses;
 using GrillBot.Contracts.AuditLog.Responses.Detail;
 using GrillBot.Contracts.AuditLog.Responses.Info;
 using GrillBot.Contracts.AuditLog.Responses.Info.Dashboard;
@@ -20,9 +19,6 @@ public interface IAuditLogServiceClient : IServiceClient
 
     [Get("/api/logItem/{id}")]
     Task<Detail?> GetDetailAsync(Guid id, CancellationToken cancellationToken = default);
-
-    [Post("/api/archivation")]
-    Task<ArchivationResult?> CreateArchivationDataAsync(CancellationToken cancellationToken = default);
 
     [Get("/api/statistics/api/stats")]
     Task<ApiStatistics> GetApiStatisticsAsync(CancellationToken cancellationToken = default);

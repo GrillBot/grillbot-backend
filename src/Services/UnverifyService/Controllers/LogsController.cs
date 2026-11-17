@@ -1,9 +1,7 @@
 ﻿using GrillBot.Core.Models.Pagination;
 using Microsoft.AspNetCore.Mvc;
-using UnverifyService.Actions.Archivation;
 using UnverifyService.Actions.Logs;
 using GrillBot.Contracts.Unverify.Requests.Logs;
-using GrillBot.Contracts.Unverify.Responses;
 using GrillBot.Contracts.Unverify.Responses.Logs;
 using GrillBot.Contracts.Unverify.Responses.Logs.Detail;
 
@@ -22,10 +20,4 @@ public class LogsController(IServiceProvider serviceProvider) : GrillBot.Core.In
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public Task<IActionResult> GetUnverifyLogDetailAsync(Guid id)
         => ProcessAsync<GetUnverifyLogDetailAction>(id);
-
-    [HttpGet("archive")]
-    [ProducesResponseType<ArchivationResult>(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public Task<IActionResult> CreateArchivationDataAsync()
-        => ProcessAsync<CreateArchivationDataAction>();
 }

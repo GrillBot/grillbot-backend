@@ -118,6 +118,39 @@ namespace AuditLogService.Core.Migrations
                     b.ToTable("ApiRequests");
                 });
 
+            modelBuilder.Entity("AuditLogService.Core.Entity.ArchivationLog", b =>
+                {
+                    b.Property<Guid>("LogItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("ArchiveSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("DeletedFilesCount")
+                        .HasColumnType("integer");
+
+                    b.Property<long?>("DeletedFilesSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Details")
+                        .HasColumnType("text");
+
+                    b.Property<long>("JsonSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ProcessName")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<int>("TotalRecordsCount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("LogItemId");
+
+                    b.ToTable("ArchivationLogs");
+                });
+
             modelBuilder.Entity("AuditLogService.Core.Entity.ChannelCreated", b =>
                 {
                     b.Property<Guid>("LogItemId")
@@ -586,6 +619,8 @@ namespace AuditLogService.Core.Migrations
 
                     b.HasIndex("CreatedAt", "IsDeleted");
 
+                    b.HasIndex("Type", "CreatedAt");
+
                     b.ToTable("LogItems");
                 });
 
@@ -1008,6 +1043,17 @@ namespace AuditLogService.Core.Migrations
                     b.Navigation("LogItem");
                 });
 
+            modelBuilder.Entity("AuditLogService.Core.Entity.ArchivationLog", b =>
+                {
+                    b.HasOne("AuditLogService.Core.Entity.LogItem", "LogItem")
+                        .WithOne("Archivation")
+                        .HasForeignKey("AuditLogService.Core.Entity.ArchivationLog", "LogItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LogItem");
+                });
+
             modelBuilder.Entity("AuditLogService.Core.Entity.ChannelCreated", b =>
                 {
                     b.HasOne("AuditLogService.Core.Entity.ChannelInfo", "ChannelInfo")
@@ -1419,6 +1465,8 @@ namespace AuditLogService.Core.Migrations
             modelBuilder.Entity("AuditLogService.Core.Entity.LogItem", b =>
                 {
                     b.Navigation("ApiRequest");
+
+                    b.Navigation("Archivation");
 
                     b.Navigation("ChannelCreated");
 

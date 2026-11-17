@@ -11,7 +11,7 @@ public class LogBulkDeleteHandler(
     IServiceProvider serviceProvider
 ) : EventHandlerBaseWithDb<UnverifyContext>(serviceProvider)
 {
-    public async Task HandleAsync(LogBulkDeleteMessage message, CancellationToken cancellationToken)
+    public async Task HandleAsync(DeleteUnverifyLogRecordsCommand message, CancellationToken cancellationToken)
     {
         if (message.Ids.Count == 0)
             return;
@@ -23,7 +23,6 @@ public class LogBulkDeleteHandler(
         DbContext.RemoveRange(logItems);
         await ContextHelper.SaveChangesAsync(cancellationToken);
         await Publisher.PublishAsync(new RecalculateMetricsMessage());
-        return;
     }
 
     private async Task<List<UnverifyLogItem>> ReadLogItemsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)

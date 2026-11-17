@@ -1,8 +1,7 @@
-using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Contracts.Unverify.Events;
 using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
 using Microsoft.EntityFrameworkCore;
-using UnverifyService.Actions.Archivation;
+using UnverifyService.Core.Archivation;
 using UnverifyService.Core.Entity;
 using GrillBot.Contracts.Unverify.Enums;
 using UnverifyService.Telemetry;
@@ -12,15 +11,13 @@ namespace UnverifyService.Handlers;
 public class RecalculateMetricsHandler(
     IServiceProvider serviceProvider,
     UnverifyTelemetryCollector _collector,
-    CreateArchivationDataAction _archivationAction
+    UnverifyLogRetention _retention
 ) : EventHandlerBaseWithDb<UnverifyContext>(serviceProvider)
 {
-    public async Task HandleAsync(RecalculateMetricsMessage message, CancellationToken cancellationToken)
+    public async Task HandleAsync(RecalculateMetricsMessage _, CancellationToken cancellationToken)
     {
         await RecalculateActiveUnverifiesAsync(cancellationToken);
         await RecalculateUnverifyLogsAsync(cancellationToken);
-
-        return;
     }
 
     private async Task RecalculateActiveUnverifiesAsync(CancellationToken cancellationToken = default)
@@ -37,8 +34,7 @@ public class RecalculateMetricsHandler(
 
     private async Task RecalculateUnverifyLogsAsync(CancellationToken cancellationToken = default)
     {
-        _archivationAction.SetCancellationToken(cancellationToken);
-
-        _collector.ItemsToArchive.Set(await _archivationAction.CountAsync());
+        var query = _retention.WhereExpired(DbContext.LogItems.AsNoTracking());
+        _collector.ItemsToArchive.Set(await ContextHelper.ReadCountAsync(query, cancellationToken));
     }
 }

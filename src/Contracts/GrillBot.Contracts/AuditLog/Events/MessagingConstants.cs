@@ -10,9 +10,11 @@ public static class MessagingConstants
 
     public static class RoutingKeys
     {
+        public const string ArchiveDataPrepared = "archive-data-prepared";
         public const string BulkDelete = "bulk-delete";
         public const string CreateItems = "create-items";
         public const string FileDelete = "file-delete";
+        public const string StartArchivation = "start-archivation";
         public const string UserRecalculation = "user-recalculation";
     }
 }

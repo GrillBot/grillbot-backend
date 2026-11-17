@@ -35,8 +35,13 @@ public static class MessageTopology
     public static readonly IReadOnlyList<MessageRoute> Routes =
     [
         // Audit log
-        new(typeof(AuditLogEvents.BulkDeletePayload), AuditLogEvents.MessagingConstants.Exchange,
+        new(typeof(AuditLogEvents.DeleteAuditLogRecordsCommand), AuditLogEvents.MessagingConstants.Exchange,
             AuditLogEvents.MessagingConstants.RoutingKeys.BulkDelete, Queues.AuditLogService),
+        new(typeof(AuditLogEvents.StartAuditLogArchivationCommand), AuditLogEvents.MessagingConstants.Exchange,
+            AuditLogEvents.MessagingConstants.RoutingKeys.StartArchivation, Queues.AuditLogService),
+        // The bot enriches the archive with its own data and owns the blob storage it is stored to.
+        new(typeof(AuditLogEvents.AuditLogArchiveDataPreparedEvent), AuditLogEvents.MessagingConstants.Exchange,
+            AuditLogEvents.MessagingConstants.RoutingKeys.ArchiveDataPrepared, Queues.Bot),
         new(typeof(AuditLogCreate.CreateItemsMessage), AuditLogEvents.MessagingConstants.Exchange,
             AuditLogEvents.MessagingConstants.RoutingKeys.CreateItems, Queues.AuditLogService),
         new(typeof(AuditLogRecalculation.RecalculationPayload), AuditLogEvents.MessagingConstants.Exchange,
@@ -124,8 +129,12 @@ public static class MessageTopology
         // Unverify
         new(typeof(UnverifyEvents.GuildUserLeftMessage), UnverifyEvents.MessagingConstants.Exchange,
             UnverifyEvents.MessagingConstants.RoutingKeys.GuildUserLeft, Queues.UnverifyService),
-        new(typeof(UnverifyEvents.LogBulkDeleteMessage), UnverifyEvents.MessagingConstants.Exchange,
+        new(typeof(UnverifyEvents.DeleteUnverifyLogRecordsCommand), UnverifyEvents.MessagingConstants.Exchange,
             UnverifyEvents.MessagingConstants.RoutingKeys.LogBulkDelete, Queues.UnverifyService),
+        new(typeof(UnverifyEvents.StartUnverifyLogArchivationCommand), UnverifyEvents.MessagingConstants.Exchange,
+            UnverifyEvents.MessagingConstants.RoutingKeys.StartLogArchivation, Queues.UnverifyService),
+        new(typeof(UnverifyEvents.UnverifyLogArchiveDataPreparedEvent), UnverifyEvents.MessagingConstants.Exchange,
+            UnverifyEvents.MessagingConstants.RoutingKeys.LogArchiveDataPrepared, Queues.Bot),
         new(typeof(UnverifyEvents.RecalculateMetricsMessage), UnverifyEvents.MessagingConstants.Exchange,
             UnverifyEvents.MessagingConstants.RoutingKeys.RecalculateMetrics, Queues.UnverifyService),
         new(typeof(UnverifyEvents.RecoverAccessMessage), UnverifyEvents.MessagingConstants.Exchange,

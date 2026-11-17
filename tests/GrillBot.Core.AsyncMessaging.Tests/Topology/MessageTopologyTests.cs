@@ -83,12 +83,13 @@ public class MessageTopologyTests
     }
 
     /// <summary>
-    /// An integration event is a record whose name ends in Payload or Message and that is not
+    /// An integration event is a record whose name ends in Payload, Message, Command or Event and that is not
     /// a nested item of another payload (those live in child namespaces such as Events.Users).
     /// </summary>
     private static bool IsIntegrationEvent(Type type)
     {
-        if (!type.Name.EndsWith("Payload") && !type.Name.EndsWith("Message"))
+        string[] suffixes = ["Payload", "Message", "Command", "Event"];
+        if (!Array.Exists(suffixes, type.Name.EndsWith))
             return false;
 
         // Records get a compiler-generated clone method; plain DTO classes do not.

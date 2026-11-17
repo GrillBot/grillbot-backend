@@ -205,11 +205,10 @@ public class Startup
             q.AddTriggeredJob<UnverifyCronJob>(Configuration, "Unverify:CheckPeriodTime");
             q.AddTriggeredJob<UserSynchronizationJob>(Configuration, "UserSyncPeriodTime");
             q.AddTriggeredJob<CacheCleanerJob>(Configuration, "CacheCleanerInterval");
-            q.AddTriggeredJob<UnverifyLogArchivationJob>(Configuration, "Unverify:LogArchivePeriod");
             q.AddTriggeredJob<EmoteSuggestionsJob>(Configuration, "EmoteSuggestions:JobInterval");
 
             q.AddCronJob<BirthdayCronJob>("0 0 12 * * ?"); // Run every day at 12:00 PM
-            q.AddCronJob<AuditLogClearingJob>("0 0 2 ? * * *"); // Run every day at 2:00 AM
+            q.AddCronJob<ArchivationJob>("0 0 2 ? * * *"); // Run every day at 2:00 AM (audit log + unverify log)
             q.AddCronJob<PointsJob>("0 0 3 ? * * *"); // Run every day at 3:00 AM
         });
 

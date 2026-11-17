@@ -39,6 +39,7 @@ public sealed class RequestProcessorFactory(IServiceProvider _serviceProvider) :
             LogType.ThreadUpdated => new ThreadUpdatedProcessor(_serviceProvider),
             LogType.RoleDeleted => new RoleDeletedProcessor(_serviceProvider),
             LogType.Identity => new IdentityEventProcessor(_serviceProvider),
+            LogType.Archivation => new ArchivationProcessor(_serviceProvider),
             _ => throw new NotSupportedException($"Unsupported type {type}")
         };
 

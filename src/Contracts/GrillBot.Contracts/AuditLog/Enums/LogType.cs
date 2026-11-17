@@ -127,10 +127,19 @@ public enum LogType
     /// <summary>
     /// User alerts for suspicious activity.
     /// </summary>
+    /// <remarks>
+    /// No longer used: member warnings moved to UserManagementService (infractions) long ago.
+    /// The value stays reserved so stored numbers keep their meaning. Never log it.
+    /// </remarks>
     MemberWarning = 26,
 
     /// <summary>
     /// Identity and access event: sign-in, refused sign-in, sign-out, revoked session.
     /// </summary>
-    Identity = 27
+    Identity = 27,
+
+    /// <summary>
+    /// Report of a finished archivation run (audit log or unverify log).
+    /// </summary>
+    Archivation = 28
 }

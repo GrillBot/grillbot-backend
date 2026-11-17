@@ -4,6 +4,9 @@ root = true
 # C# files
 [*.cs]
 
+# Same as the repository root .editorconfig, which this file does not inherit (root = true).
+dotnet_diagnostic.S1192.severity = none
+
 #### Core EditorConfig Options ####
 
 # Indentation and spacing

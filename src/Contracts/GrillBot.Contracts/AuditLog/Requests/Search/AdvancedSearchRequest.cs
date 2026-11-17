@@ -17,7 +17,6 @@ public class AdvancedSearchRequest : IDictionaryObject
     public UserIdSearchRequest? MemberRolesUpdated { get; set; }
     public UserIdSearchRequest? MemberUpdated { get; set; }
     public MessageDeletedSearchRequest? MessageDeleted { get; set; }
-    public UserIdSearchRequest? MemberWarning { get; set; }
 
     public bool IsAnySet()
     {
@@ -25,7 +24,7 @@ public class AdvancedSearchRequest : IDictionaryObject
         {
             Info, Warning, Error, Interaction, Job, Api,
             OverwriteCreated, OverwriteDeleted, OverwriteUpdated,
-            MemberRolesUpdated, MemberUpdated, MessageDeleted, MemberWarning
+            MemberRolesUpdated, MemberUpdated, MessageDeleted
         };
 
         return Array.Exists(items, o => o?.IsSet() == true);
@@ -47,8 +46,6 @@ public class AdvancedSearchRequest : IDictionaryObject
         result.MergeDictionaryObjects(MemberRolesUpdated, nameof(MemberRolesUpdated));
         result.MergeDictionaryObjects(MemberUpdated, nameof(MemberUpdated));
         result.MergeDictionaryObjects(MessageDeleted, nameof(MessageDeleted));
-        result.MergeDictionaryObjects(MemberWarning, nameof(MemberWarning));
-
         return result;
     }
 }

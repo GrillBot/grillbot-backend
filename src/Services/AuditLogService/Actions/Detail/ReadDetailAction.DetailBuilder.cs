@@ -319,4 +319,18 @@ public partial class ReadDetailAction
             IpAddress = entity.IpAddress
         });
     }
+
+    private async Task<ArchivationDetail?> CreateArchivationDetailAsync(LogItem header)
+    {
+        return await CreateDetailAsync<ArchivationLog, ArchivationDetail>(header, entity => new ArchivationDetail
+        {
+            ProcessName = entity.ProcessName,
+            TotalRecordsCount = entity.TotalRecordsCount,
+            JsonSize = entity.JsonSize,
+            ArchiveSize = entity.ArchiveSize,
+            Details = entity.Details,
+            DeletedFilesCount = entity.DeletedFilesCount,
+            DeletedFilesSize = entity.DeletedFilesSize
+        });
+    }
 }

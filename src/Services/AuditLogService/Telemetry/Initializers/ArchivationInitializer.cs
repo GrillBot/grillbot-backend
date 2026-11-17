@@ -1,4 +1,6 @@
-﻿using AuditLogService.Actions.Archivation;
+﻿using AuditLogService.Core.Archivation;
+using AuditLogService.Core.Entity;
+using Microsoft.EntityFrameworkCore;
 using GrillBot.Services.Common.Telemetry;
 
 namespace AuditLogService.Telemetry.Initializers;
@@ -10,7 +12,9 @@ public class ArchivationInitializer(
 {
     protected override async Task ExecuteInternalAsync(IServiceProvider provider, CancellationToken cancellationToken = default)
     {
-        var action = provider.GetRequiredService<CreateArchivationDataAction>();
-        _collector.ItemsOfArchive.Set(await action.CountAsync());
+        var retention = provider.GetRequiredService<AuditLogRetention>();
+        var dbContext = provider.GetRequiredService<AuditLogServiceContext>();
+
+        _collector.ItemsOfArchive.Set(await retention.WhereExpired(dbContext.LogItems.AsNoTracking()).CountAsync(cancellationToken));
     }
 }

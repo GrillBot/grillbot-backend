@@ -8,6 +8,7 @@ namespace AuditLogService.Core.Entity;
 [Index(nameof(CreatedAt))]
 [Index(nameof(GuildId))]
 [Index(nameof(CreatedAt), nameof(IsDeleted))]
+[Index(nameof(Type), nameof(CreatedAt))]
 public class LogItem
 {
     [Key]
@@ -61,6 +62,7 @@ public class LogItem
     public MemberUpdated? MemberUpdated { get; set; }
     public RoleDeleted? RoleDeleted { get; set; }
     public IdentityEvent? IdentityEvent { get; set; }
+    public ArchivationLog? Archivation { get; set; }
 
     #endregion
 
