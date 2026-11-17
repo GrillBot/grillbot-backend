@@ -19,4 +19,10 @@ public class ArchivationOptions
 
     /// <summary>Compressed archives bigger than this are still published, but logged as a warning (broker message size limit).</summary>
     public long CompressedSizeWarningThreshold { get; set; } = 10 * 1024 * 1024;
+
+    /// <summary>
+    /// How often the count of records to archive (the <c>items_to_archive</c> metric) is recalculated.
+    /// Records age into the retention window continuously, so the count grows between archivation runs.
+    /// </summary>
+    public TimeSpan TelemetryRefreshInterval { get; set; } = TimeSpan.FromMinutes(15);
 }

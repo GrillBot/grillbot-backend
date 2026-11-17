@@ -1,7 +1,9 @@
+using AuditLogService.Core.Archivation;
 using AuditLogService.Core.Entity;
 using GrillBot.Contracts.AuditLog.Enums;
 using AuditLogService.Core.Extensions;
 using AuditLogService.Managers;
+using AuditLogService.Telemetry;
 using GrillBot.Contracts.AuditLog.Events;
 using GrillBot.Core.AsyncMessaging.Extensions;
 using GrillBot.Core.Infrastructure.Auth;
@@ -12,10 +14,18 @@ namespace AuditLogService.Handlers;
 
 public class BulkDeleteEventHandler(
     IServiceProvider serviceProvider,
-    DataRecalculationManager _dataRecalculation
+    DataRecalculationManager _dataRecalculation,
+    AuditLogRetention _retention,
+    AuditLogTelemetryCollector _telemetryCollector
 ) : EventHandlerBaseWithDb<AuditLogServiceContext>(serviceProvider)
 {
     public async Task HandleAsync(DeleteAuditLogRecordsCommand message, CancellationToken cancellationToken)
+    {
+        await DeleteAsync(message, cancellationToken);
+        _telemetryCollector.ItemsOfArchive.Set(await ContextHelper.ReadCountAsync(_retention.QueryExpired(DbContext), cancellationToken));
+    }
+
+    private async Task DeleteAsync(DeleteAuditLogRecordsCommand message, CancellationToken cancellationToken)
     {
         foreach (var chunk in message.Ids.Distinct().Chunk(100))
         {

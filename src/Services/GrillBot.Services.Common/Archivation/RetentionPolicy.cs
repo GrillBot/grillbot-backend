@@ -40,34 +40,29 @@ public sealed class RetentionPolicy<TEntity>
     }
 
     /// <summary>
-    /// Builds <c>alwaysExpired || (createdAt &lt;= newestCutoff &amp;&amp; ((rule1 &amp;&amp; createdAt &lt;= cutoff1) || (!rule1 &amp;&amp; rule2 &amp;&amp; createdAt &lt;= cutoff2) || ... || (!anyRule &amp;&amp; createdAt &lt;= defaultCutoff)))</c>.
+    /// Builds <c>alwaysExpired || (createdAt &lt;= newestCutoff &amp;&amp; (rule1 ? createdAt &lt;= cutoff1 : rule2 ? createdAt &lt;= cutoff2 : ... : createdAt &lt;= defaultCutoff))</c>,
+    /// which translates to SQL as <c>CASE WHEN rule1 THEN ... WHEN rule2 THEN ... ELSE ... END</c>.
     /// </summary>
+    /// <remarks>
+    /// The conditional chain is first-match-wins by itself, so every rule appears once. Expressing the same
+    /// thing as an OR of branches needs each branch to negate all earlier rules, which repeats every rule's
+    /// condition (often a subquery) once per later branch and multiplies the work and the plan size.
+    /// </remarks>
     public Expression<Func<TEntity, bool>> BuildExpiredPredicate(DateTime nowUtc)
     {
         var parameter = _createdAt.Parameters[0];
         var createdAt = _createdAt.Body;
 
-        Expression? rulesResult = null;
-        Expression? noPreviousMatch = null;
-
-        foreach (var rule in Rules)
+        Expression rulesResult = IsCreatedBefore(createdAt, DefaultRetention.GetCutoff(nowUtc));
+        for (var i = Rules.Count - 1; i >= 0; i--)
         {
-            var match = Rebind(rule.Match, parameter);
-            Expression branch = Expression.AndAlso(match, IsCreatedBefore(createdAt, rule.Retention.GetCutoff(nowUtc)));
-            if (noPreviousMatch is not null)
-                branch = Expression.AndAlso(noPreviousMatch, branch);
-
-            rulesResult = rulesResult is null ? branch : Expression.OrElse(rulesResult, branch);
-
-            var notMatch = Expression.Not(match);
-            noPreviousMatch = noPreviousMatch is null ? notMatch : Expression.AndAlso(noPreviousMatch, notMatch);
+            var rule = Rules[i];
+            rulesResult = Expression.Condition(
+                Rebind(rule.Match, parameter),
+                IsCreatedBefore(createdAt, rule.Retention.GetCutoff(nowUtc)),
+                rulesResult
+            );
         }
-
-        Expression defaultBranch = IsCreatedBefore(createdAt, DefaultRetention.GetCutoff(nowUtc));
-        if (noPreviousMatch is not null)
-            defaultBranch = Expression.AndAlso(noPreviousMatch, defaultBranch);
-
-        rulesResult = rulesResult is null ? defaultBranch : Expression.OrElse(rulesResult, defaultBranch);
 
         // Nothing newer than the newest cutoff can be expired by age. A plain range condition up front
         // lets the database use the CreatedAt index before it evaluates the rules.

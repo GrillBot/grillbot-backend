@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using AuditLogService.Core.Entity;
 using AuditLogService.Core.Extensions;
 using GrillBot.Contracts.AuditLog.Enums;
@@ -10,24 +9,20 @@ namespace AuditLogService.Handlers.Archivation;
 public partial class StartArchivationHandler
 {
     /// <summary>
-    /// Yields expired records oldest first, at most <c>MaxItemsToArchivePerRun</c>. Reads one page at a time
-    /// (keyset on CreatedAt), loads the per-type data for that page and drops it before reading the next one.
+    /// Yields the records of <paramref name="ids"/> in the given order. Reads one page at a time by primary key,
+    /// loads the per-type data for that page and drops it before reading the next one.
     /// </summary>
     private async IAsyncEnumerable<LogItem> ReadItemsToArchiveAsync(
-        Expression<Func<LogItem, bool>> expired,
+        List<Guid> ids,
         [EnumeratorCancellation] CancellationToken cancellationToken
     )
     {
-        var remaining = Options.MaxItemsToArchivePerRun;
-        DateTime? lastCreatedAt = null;
-        var lastIds = new List<Guid>();
+        var pageNumber = 0;
+        var pagesCount = (ids.Count + Options.ReadPageSize - 1) / Options.ReadPageSize;
 
-        while (remaining > 0)
+        foreach (var pageIds in ids.Chunk(Options.ReadPageSize))
         {
-            var pageSize = Math.Min(Options.ReadPageSize, remaining);
-            var page = await ReadPageAsync(expired, lastCreatedAt, lastIds, pageSize, cancellationToken);
-            if (page.Count == 0)
-                yield break;
+            var page = await ReadPageAsync(pageIds, cancellationToken);
 
             foreach (var typeGroup in page.GroupBy(o => o.Type))
                 await FillItemsAsync(typeGroup, typeGroup.Key, cancellationToken);
@@ -35,46 +30,21 @@ public partial class StartArchivationHandler
             foreach (var item in page)
                 yield return item;
 
-            remaining -= page.Count;
-            if (page.Count < pageSize)
-                yield break;
-
-            // Records sharing the boundary timestamp are excluded by id on the next page.
-            var boundary = page[^1].CreatedAt;
-            if (boundary != lastCreatedAt)
-                lastIds.Clear();
-
-            lastCreatedAt = boundary;
-            lastIds.AddRange(page.Where(o => o.CreatedAt == boundary).Select(o => o.Id));
+            pageNumber++;
+            if (Logger.IsEnabled(LogLevel.Debug))
+                Logger.LogDebug("Audit log archivation read page {Page} of {Pages}.", pageNumber, pagesCount);
         }
     }
 
-    private async Task<List<LogItem>> ReadPageAsync(
-        Expression<Func<LogItem, bool>> expired,
-        DateTime? lastCreatedAt,
-        List<Guid> lastIds,
-        int pageSize,
-        CancellationToken cancellationToken
-    )
+    private Task<List<LogItem>> ReadPageAsync(Guid[] pageIds, CancellationToken cancellationToken)
     {
         var query = DbContext.LogItems.AsNoTracking()
             .Include(o => o.Files)
-            .Where(expired);
-
-        if (lastCreatedAt is not null)
-        {
-            var createdAt = lastCreatedAt.Value;
-            var excludedIds = lastIds.ToList();
-
-            query = query.Where(o => o.CreatedAt > createdAt || (o.CreatedAt == createdAt && !excludedIds.Contains(o.Id)));
-        }
-
-        query = query
+            .Where(o => pageIds.Contains(o.Id))
             .OrderBy(o => o.CreatedAt)
-            .ThenBy(o => o.Id)
-            .Take(pageSize);
+            .ThenBy(o => o.Id);
 
-        return await ContextHelper.ReadEntitiesAsync(query, cancellationToken);
+        return ContextHelper.ReadEntitiesAsync(query, cancellationToken);
     }
 
     private async Task FillItemsAsync(IEnumerable<LogItem> headers, LogType type, CancellationToken cancellationToken)

@@ -32,7 +32,7 @@ var application = await ServiceBuilder.CreateWebAppAsync<AppOptions>(
         services.AddScoped<RequestProcessorFactory>();
         services.AddSingleton<AuditLogRetention>();
         services.AddOptions<AppOptions>()
-            .Validate(AuditLogRetention.IsValid, "Archivation options are invalid: every retention rule needs a positive RetentionMonths value.")
+            .Validate(AuditLogRetention.IsValid, "Archivation options are invalid: every retention rule needs a positive RetentionMonths value, and MaxItemsToArchivePerRun, ReadPageSize and TelemetryRefreshInterval must be positive.")
             .ValidateOnStart();
 
         services.AddTelemetryCollector<AuditLogTelemetryCollector>();
@@ -41,7 +41,7 @@ var application = await ServiceBuilder.CreateWebAppAsync<AppOptions>(
         services.AddTelemetryInitializer<DefaultDatabaseInitializer<AuditLogStatisticsContext>>();
         services.AddTelemetryInitializer<ApiStatisticsInitializer>();
         services.AddTelemetryInitializer<JobStatisticsInitializer>();
-        services.AddTelemetryInitializer<ArchivationInitializer>();
+        services.AddHostedService<ArchivationTelemetryWorker>();
     },
     configureHealthChecks: (builder, configuration) =>
     {

@@ -26,7 +26,7 @@ public class GetStatusInfoAction(
 
     private async Task<int> ReadItemsToArchiveCountAsync()
     {
-        var query = _retention.WhereExpired(DbContext.LogItems.AsNoTracking());
+        var query = _retention.QueryExpired(DbContext);
 
         return await ContextHelper.ReadCountAsync(query);
     }

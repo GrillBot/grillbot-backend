@@ -44,8 +44,9 @@ public class RecalculationHandler(IServiceProvider serviceProvider)
                 yield return new JobInfoRecalculationAction(ServiceProvider);
         }
 
+        // The count of records to archive is not recalculated here: this runs for every created record, and the
+        // count also changes as time passes, without any message. ArchivationTelemetryWorker refreshes it on a timer.
         yield return new InvalidStatsRecalculationAction(ServiceProvider);
-        yield return new RecalculateLogTelemetryAction(ServiceProvider);
 
         if (payload.FilesCount > 0)
             yield return new RecalculateFilesTelemetryAction(ServiceProvider);
