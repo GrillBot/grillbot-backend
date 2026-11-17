@@ -75,8 +75,9 @@ every day at 02:00. The job only publishes `StartAuditLogArchivationCommand` and
 
 1. The service counts the expired records. Below its minimum it stops and
    publishes nothing.
-2. Otherwise it streams the oldest expired records (at most one capped batch per
-   run, read page by page) into Brotli-compressed JSON and publishes
+2. Otherwise it selects the ids of the oldest expired records once (at most one
+   capped batch per run), reads them by id page by page, streams them into
+   Brotli-compressed JSON and publishes
    `AuditLogArchiveDataPreparedEvent` / `UnverifyLogArchiveDataPreparedEvent` to
    the bot.
 3. The bot adds guilds, channels and users from its database, writes the ZIP
@@ -89,10 +90,28 @@ Audit log retention is a list of rules in
 `src/Services/AuditLogService/Core/Archivation/AuditLogRetention.cs` (conditions,
 first match wins) with durations in `Archivation:RetentionMonths`; unmatched
 records use `Archivation:DefaultRetentionMonths`. The generic policy that turns
-the rules into one SQL predicate is `RetentionPolicy<T>` in
+the rules into one SQL predicate (a first-match `CASE WHEN rule1 THEN ... ELSE
+default END`, so each rule appears once) is `RetentionPolicy<T>` in
 `GrillBot.Services.Common`. Unverify keeps a single period,
 `Archivation:ExpirationMilestone`, and never archives records of an active
 unverify.
+
+When adding an audit log rule:
+
+- Test a child table with a correlated subquery over the context's set
+  (`logMessages.Any(m => m.LogItemId == o.Id && ...)`), never through a
+  navigation such as `o.LogMessage.Message` - a navigation becomes a `LEFT JOIN`
+  of the whole child table into every query.
+- Start the condition with the type test, so the subquery runs only for records
+  of that type.
+- Don't search whole log messages: they hold full stack traces stored in TOAST,
+  and a `LIKE` over them decompresses all of it. The `GatewayReconnect` rule
+  searches only the first 1000 characters.
+
+The `items_to_archive` metric is not recalculated per created record - the
+count also grows as records age, without any message. `ArchivationTelemetryWorker`
+refreshes it every `Archivation:TelemetryRefreshInterval` (15 minutes), and the
+archivation run and the bulk delete refresh it after they change it.
 
 ## Requirements
 
@@ -204,7 +223,7 @@ ImageProcessingService, which has neither — ships nothing and is left alone.
 | `Auth:OAuth2` | `ClientId`, `ClientSecret` | the bot |
 | `Services:IdentityService` | `Api`, `ClientId`, `ClientSecret` | the bot |
 | `Identity` | `Issuer`, `SigningKeys`, `EncryptionKey` and every `Clients:<id>:Secret` (outside Development) | IdentityService |
-| `Archivation` | every rule of `AuditLogRetention` has a positive `RetentionMonths` value; batch and page sizes are positive | AuditLogService |
+| `Archivation` | every rule of `AuditLogRetention` has a positive `RetentionMonths` value; batch and page sizes and `TelemetryRefreshInterval` are positive | AuditLogService |
 
 Mandatory for the bot:
 
