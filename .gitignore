@@ -712,3 +712,6 @@ coverage*.[ji][sn][of][no]
 
 # Local-only app configuration (secrets are supplied at deploy time)
 /src/Bot/GrillBot.App/appsettings.*.json
+
+# Local shared storage of the compose stack (archivation files)
+compose/.data/

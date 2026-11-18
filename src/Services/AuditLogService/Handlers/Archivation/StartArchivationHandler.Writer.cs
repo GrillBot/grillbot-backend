@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Nodes;
+using System.Text.Json.Nodes;
 using AuditLogService.Core.Entity;
 using GrillBot.Contracts.AuditLog.Events;
 using GrillBot.Core.IO;
@@ -22,15 +22,15 @@ public partial class StartArchivationHandler
     }
 
     /// <summary>
-    /// Writes <c>{ CreatedAt, Items: [...], Count }</c>. Each record is turned into a small JSON object,
-    /// written to the compressed stream and forgotten.
+    /// Writes <c>{ CreatedAt, Items: [...], Count }</c> compressed into <paramref name="target"/>. Each record is turned
+    /// into a small JSON object, written to the compressed stream and forgotten. The caller fills in the shared file name.
     /// </summary>
-    private static async Task<AuditLogArchiveDataPreparedEvent> CreateArchiveAsync(IAsyncEnumerable<LogItem> items, CancellationToken cancellationToken)
+    private static async Task<AuditLogArchiveDataPreparedEvent> CreateArchiveAsync(IAsyncEnumerable<LogItem> items, Stream target, CancellationToken cancellationToken)
     {
         var data = new ArchiveData();
         var createdAt = DateTime.UtcNow;
 
-        await using var json = new CompressedJsonWriter();
+        await using var json = new CompressedJsonWriter(target);
         var writer = json.Writer;
 
         writer.WriteStartObject();
@@ -47,12 +47,12 @@ public partial class StartArchivationHandler
         writer.WriteNumber("Count", data.Ids.Count);
         writer.WriteEndObject();
 
-        var content = await json.CompleteAsync(cancellationToken);
+        await json.CompleteAsync(cancellationToken);
 
         return new AuditLogArchiveDataPreparedEvent
         {
             CreatedAtUtc = createdAt,
-            CompressedContent = content,
+            CompressedSize = json.CompressedSize,
             JsonSize = json.UncompressedSize,
             ItemsCount = data.Ids.Count,
             Ids = data.Ids,

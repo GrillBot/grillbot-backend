@@ -2,6 +2,7 @@ using AuditLogService.Core.Archivation;
 using AuditLogService.Core.Entity;
 using GrillBot.Contracts.AuditLog.Enums;
 using AuditLogService.Core.Extensions;
+using AuditLogService.Core.Options;
 using AuditLogService.Managers;
 using AuditLogService.Telemetry;
 using GrillBot.Contracts.AuditLog.Events;
@@ -9,6 +10,7 @@ using GrillBot.Core.AsyncMessaging.Extensions;
 using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Services.Common.Infrastructure.AsyncMessaging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace AuditLogService.Handlers;
 
@@ -16,22 +18,59 @@ public class BulkDeleteEventHandler(
     IServiceProvider serviceProvider,
     DataRecalculationManager _dataRecalculation,
     AuditLogRetention _retention,
-    AuditLogTelemetryCollector _telemetryCollector
+    AuditLogTelemetryCollector _telemetryCollector,
+    IOptions<AppOptions> _options
 ) : EventHandlerBaseWithDb<AuditLogServiceContext>(serviceProvider)
 {
     public async Task HandleAsync(DeleteAuditLogRecordsCommand message, CancellationToken cancellationToken)
     {
-        await DeleteAsync(message, cancellationToken);
-        _telemetryCollector.ItemsOfArchive.Set(await ContextHelper.ReadCountAsync(_retention.QueryExpired(DbContext), cancellationToken));
+        var deleted = await DeleteAsync(message, cancellationToken);
+
+        var remaining = await ContextHelper.ReadCountAsync(_retention.QueryExpired(DbContext), cancellationToken);
+        _telemetryCollector.ItemsOfArchive.Set(remaining);
+
+        if (message.ContinueArchivationSequence is { } sequence)
+            await ContinueArchivationAsync(sequence, deleted, remaining);
     }
 
-    private async Task DeleteAsync(DeleteAuditLogRecordsCommand message, CancellationToken cancellationToken)
+    /// <summary>
+    /// Starts the next archivation run while expired records remain. Published from here, into this service's
+    /// own queue, so the run starts only after this delete. Stops when nothing was deleted (the next run would
+    /// select the same records again) or after <see cref="ArchivationOptions.MaxChainedRuns"/> runs.
+    /// </summary>
+    private async Task ContinueArchivationAsync(int sequence, int deleted, int remaining)
     {
+        var options = _options.Value.Archivation;
+        var next = sequence + 1;
+
+        if (deleted == 0 || remaining == 0 || remaining < options.MinimalItemsToArchive)
+        {
+            if (Logger.IsEnabled(LogLevel.Information))
+                Logger.LogInformation("Audit log archivation finished after {Runs} runs. Deleted in the last run: {Deleted}, expired records left: {Remaining}.", next, deleted, remaining);
+            return;
+        }
+
+        if (next >= options.MaxChainedRuns)
+        {
+            Logger.LogWarning("Audit log archivation stopped after {Runs} chained runs; {Remaining} expired records wait for the next scheduled run.", next, remaining);
+            return;
+        }
+
+        await Publisher.PublishAsync(new StartAuditLogArchivationCommand { Sequence = next });
+    }
+
+    /// <returns>How many records were deleted.</returns>
+    private async Task<int> DeleteAsync(DeleteAuditLogRecordsCommand message, CancellationToken cancellationToken)
+    {
+        var deleted = 0;
+
         foreach (var chunk in message.Ids.Distinct().Chunk(100))
         {
             var logItems = await ReadLogItemsAsync(chunk, cancellationToken);
             if (logItems.Count == 0)
                 continue;
+
+            deleted += logItems.Count;
 
             DbContext.RemoveRange(logItems);
             await DeleteChildDataAsync(logItems, cancellationToken);
@@ -44,6 +83,8 @@ public class BulkDeleteEventHandler(
             if (filesForDelete.Count > 0)
                 await Publisher.PublishAllAsync(filesForDelete);
         }
+
+        return deleted;
     }
 
     private async Task<List<LogItem>> ReadLogItemsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)

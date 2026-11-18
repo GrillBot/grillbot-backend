@@ -5,16 +5,18 @@ using GrillBot.Database.Services.Repository;
 namespace GrillBot.App.Handlers.AsyncMessaging.Archivation;
 
 /// <summary>
-/// Adds what the services do not know to an archive: the guilds, channels and users it references,
-/// read from the bot's database.
+/// What the services do not know about an archive: the guilds, channels and users it references, read from
+/// the bot's database. Stored as a separate <c>lookups.json</c> next to the service's data, so the data itself
+/// never has to be parsed.
 /// </summary>
 public static class ArchiveEnricher
 {
     private const int ChunkSize = 100;
 
-    public static async Task EnrichAsync(
+    /// <summary>Loads guild, channel and user details for the given IDs from the bot's database, in chunks.</summary>
+    /// <returns><c>{ Guilds: [...], Channels: [...], Users: [...] }</c></returns>
+    public static async Task<JsonObject> CreateLookupsAsync(
         GrillBotRepository repository,
-        JsonObject json,
         IEnumerable<string> guildIds,
         IEnumerable<string> channelIds,
         IEnumerable<string> userIds
@@ -32,9 +34,12 @@ public static class ArchiveEnricher
         foreach (var chunk in userIds.Distinct().Chunk(ChunkSize))
             users.AddRange(await repository.User.GetUsersByIdsAsync([.. chunk]));
 
-        json["Guilds"] = TransformGuilds(guilds);
-        json["Channels"] = TransformChannels(channels);
-        json["Users"] = TransformUsers(users);
+        return new JsonObject
+        {
+            ["Guilds"] = TransformGuilds(guilds),
+            ["Channels"] = TransformChannels(channels),
+            ["Users"] = TransformUsers(users)
+        };
     }
 
     private static JsonArray TransformGuilds(IEnumerable<Guild?> guilds)

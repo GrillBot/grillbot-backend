@@ -1,4 +1,4 @@
-﻿namespace UnverifyService.Options;
+namespace UnverifyService.Options;
 
 public class ArchivationOptions
 {
@@ -13,4 +13,16 @@ public class ArchivationOptions
 
     /// <summary>How many records are read from the database at once while the archive is built.</summary>
     public int ReadPageSize { get; set; } = 100;
+
+    /// <summary>
+    /// How many runs one night may chain: after the delete of an archive, the next run starts at once while expired
+    /// records remain. The rest waits for the next scheduled run.
+    /// </summary>
+    public int MaxChainedRuns { get; set; } = 20;
+
+    /// <summary>
+    /// Archive files in the shared storage older than this are deleted at the start of a run: leftovers of crashed
+    /// runs and of events that were never consumed.
+    /// </summary>
+    public TimeSpan SharedFileRetention { get; set; } = TimeSpan.FromDays(3);
 }

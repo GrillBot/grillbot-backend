@@ -1,4 +1,5 @@
 using GrillBot.Core;
+using GrillBot.Core.IO.SharedStorage;
 using GrillBot.Core.Metrics;
 using GrillBot.Services.Common;
 using GrillBot.Services.Common.EntityFramework.Extensions;
@@ -24,6 +25,13 @@ var application = await ServiceBuilder.CreateWebAppAsync<AppOptions>(
         services.AddTelemetryCollector<UnverifyTelemetryCollector>();
         services.AddTelemetryInitializer<ArchivationInitializer>();
         services.AddSingleton<UnverifyLogRetention>();
+        services.AddSharedFileStorage(configuration);
+        services.AddOptions<AppOptions>()
+            .Validate(
+                o => o.Archivation.MaxItemsPerRun > 0 && o.Archivation.ReadPageSize > 0 && o.Archivation.MaxChainedRuns > 0 && o.Archivation.SharedFileRetention > TimeSpan.Zero,
+                "Archivation options are invalid: MaxItemsPerRun, ReadPageSize, MaxChainedRuns and SharedFileRetention must be positive."
+            )
+            .ValidateOnStart();
         services.AddTelemetryInitializer<ActiveUnverifyInitializer>();
     },
     configureHealthChecks: (healthCheckBuilder, configuration) =>

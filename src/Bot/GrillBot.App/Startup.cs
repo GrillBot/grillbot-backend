@@ -47,6 +47,7 @@ using GrillBot.Contracts.Identity;
 using GrillBot.Core.Services.IdentityService;
 using GrillBot.Core.AsyncMessaging;
 using GrillBot.Core.Configuration;
+using GrillBot.Core.IO.SharedStorage;
 
 using GrillBot.Core.HealthCheck;
 
@@ -109,6 +110,7 @@ public class Startup
             .AddMemoryCache()
             .AddActions()
             .AddSingleton<BlobManagerFactory>()
+            .AddSharedFileStorage(Configuration)
             .AddControllers(c =>
             {
                 c.Filters.Add<ExceptionFilter>();

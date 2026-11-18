@@ -22,6 +22,12 @@
 
 name: grillbot
 
+# Shared storage of the archivation (claim check): AuditLogService and UnverifyService write
+# the archive here, the bot reads it by file name. The bot runs in the IDE, so this is a
+# host folder: point the bot's SharedStorage:Path (appsettings.Development.json) at the
+# same folder, as an absolute path.
+x-archivation-volume: &archivation-volume ${SHARED_STORAGE_PATH:-./.data/archivation}:/data/shared/archivation
+
 x-service: &service
   restart: on-failure
   pull_policy: missing
@@ -71,6 +77,8 @@ services:
       ConnectionStrings__BotToken: ${DISCORD_BOT_TOKEN:-}
     ports:
       - "3011:5071"
+    volumes:
+      - *archivation-volume
 
   emote_service:
     <<: *service
@@ -264,6 +272,8 @@ services:
       Redis__Password: ${REDIS_PASSWORD:-grillbot}
     ports:
       - "3019:5037"
+    volumes:
+      - *archivation-volume
 
   user_management_service:
     <<: *service

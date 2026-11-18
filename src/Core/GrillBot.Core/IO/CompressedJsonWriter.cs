@@ -5,9 +5,9 @@ using System.Text.Json;
 namespace GrillBot.Core.IO;
 
 /// <summary>
-/// Streams JSON through Brotli into memory, so only the compressed form is ever held in full.
-/// Write with <see cref="Writer"/>, call <see cref="FlushIfNeededAsync"/> between items to keep the
-/// writer's own buffer small, and finish with <see cref="CompleteAsync"/>.
+/// Streams JSON through Brotli into a target stream (typically a shared file), so the document is never held
+/// in memory. Write with <see cref="Writer"/>, call <see cref="FlushIfNeededAsync"/> between items to keep the
+/// writer's own buffer small, and finish with <see cref="CompleteAsync"/>. The target stream is left open.
 /// </summary>
 public sealed class CompressedJsonWriter : IAsyncDisposable
 {
@@ -23,21 +23,25 @@ public sealed class CompressedJsonWriter : IAsyncDisposable
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
 
-    private readonly MemoryStream _buffer = new();
+    private readonly CountingStream _compressedCounter;
     private readonly BrotliStream _compressor;
-    private readonly CountingStream _counter;
+    private readonly CountingStream _uncompressedCounter;
     private bool _completed;
 
     public Utf8JsonWriter Writer { get; }
 
     /// <summary>Uncompressed bytes written so far (exact after <see cref="CompleteAsync"/>).</summary>
-    public long UncompressedSize => _counter.BytesWritten;
+    public long UncompressedSize => _uncompressedCounter.BytesWritten;
 
-    public CompressedJsonWriter(CompressionLevel compressionLevel = CompressionLevel.Optimal)
+    /// <summary>Compressed bytes written to the target so far (exact after <see cref="CompleteAsync"/>).</summary>
+    public long CompressedSize => _compressedCounter.BytesWritten;
+
+    public CompressedJsonWriter(Stream target, CompressionLevel compressionLevel = CompressionLevel.Optimal)
     {
-        _compressor = new BrotliStream(_buffer, compressionLevel, leaveOpen: true);
-        _counter = new CountingStream(_compressor, leaveOpen: true);
-        Writer = new Utf8JsonWriter(_counter, Options);
+        _compressedCounter = new CountingStream(target, leaveOpen: true);
+        _compressor = new BrotliStream(_compressedCounter, compressionLevel, leaveOpen: true);
+        _uncompressedCounter = new CountingStream(_compressor, leaveOpen: true);
+        Writer = new Utf8JsonWriter(_uncompressedCounter, Options);
     }
 
     public async Task FlushIfNeededAsync(CancellationToken cancellationToken = default)
@@ -46,22 +50,24 @@ public sealed class CompressedJsonWriter : IAsyncDisposable
             await Writer.FlushAsync(cancellationToken);
     }
 
-    /// <summary>Flushes everything and returns the compressed bytes. The writer can not be used afterwards.</summary>
-    public async Task<byte[]> CompleteAsync(CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Flushes everything and finishes the compressed stream. The writer can not be used afterwards;
+    /// the target stream stays open.
+    /// </summary>
+    public async Task CompleteAsync(CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(_completed, this);
 
         await Writer.FlushAsync(cancellationToken);
         await CloseStreamsAsync();
-
-        return _buffer.ToArray();
     }
 
     private async Task CloseStreamsAsync()
     {
         await Writer.DisposeAsync();
-        await _counter.DisposeAsync();
+        await _uncompressedCounter.DisposeAsync();
         await _compressor.DisposeAsync();
+        await _compressedCounter.DisposeAsync();
         _completed = true;
     }
 
@@ -69,7 +75,5 @@ public sealed class CompressedJsonWriter : IAsyncDisposable
     {
         if (!_completed)
             await CloseStreamsAsync();
-
-        await _buffer.DisposeAsync();
     }
 }

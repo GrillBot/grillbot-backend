@@ -8,6 +8,7 @@ using AuditLogService.Processors;
 using AuditLogService.Telemetry;
 using AuditLogService.Telemetry.Initializers;
 using GrillBot.Core;
+using GrillBot.Core.IO.SharedStorage;
 using GrillBot.Core.Metrics;
 using GrillBot.Services.Common;
 using GrillBot.Services.Common.EntityFramework.Extensions;
@@ -31,8 +32,9 @@ var application = await ServiceBuilder.CreateWebAppAsync<AppOptions>(
 
         services.AddScoped<RequestProcessorFactory>();
         services.AddSingleton<AuditLogRetention>();
+        services.AddSharedFileStorage(configuration);
         services.AddOptions<AppOptions>()
-            .Validate(AuditLogRetention.IsValid, "Archivation options are invalid: every retention rule needs a positive RetentionMonths value, and MaxItemsToArchivePerRun, ReadPageSize and TelemetryRefreshInterval must be positive.")
+            .Validate(AuditLogRetention.IsValid, "Archivation options are invalid: every retention rule needs a positive RetentionMonths value, and MaxItemsToArchivePerRun, ReadPageSize, TelemetryRefreshInterval, MaxChainedRuns and SharedFileRetention must be positive.")
             .ValidateOnStart();
 
         services.AddTelemetryCollector<AuditLogTelemetryCollector>();

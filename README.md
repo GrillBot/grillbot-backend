@@ -76,15 +76,37 @@ every day at 02:00. The job only publishes `StartAuditLogArchivationCommand` and
 1. The service counts the expired records. Below its minimum it stops and
    publishes nothing.
 2. Otherwise it selects the ids of the oldest expired records once (at most one
-   capped batch per run), reads them by id page by page, streams them into
-   Brotli-compressed JSON and publishes
-   `AuditLogArchiveDataPreparedEvent` / `UnverifyLogArchiveDataPreparedEvent` to
-   the bot.
-3. The bot adds guilds, channels and users from its database, writes the ZIP
-   (audit log attachments streamed in one by one), uploads it to the
+   capped batch per run), reads them by id page by page and streams them into a
+   Brotli-compressed JSON file in the shared storage. The event
+   (`AuditLogArchiveDataPreparedEvent` / `UnverifyLogArchiveDataPreparedEvent`)
+   carries only the file name and the metadata, so it stays small whatever the
+   archive size (RabbitMQ 4 rejects messages over 16 MiB).
+3. The bot streams the file into the ZIP unparsed as `data.json`, writes the
+   guilds, channels and users from its database into `lookups.json`, adds the
+   audit log attachments one by one, uploads the ZIP to the
    `audit-log-archives-*` / `unverify-log-archives-*` blob container, publishes
-   `DeleteAuditLogRecordsCommand` / `DeleteUnverifyLogRecordsCommand` and records
-   the run as an audit log item of type `Archivation`.
+   `DeleteAuditLogRecordsCommand` / `DeleteUnverifyLogRecordsCommand`, records
+   the run as an audit log item of type `Archivation` and deletes the file.
+   Archives made before this layout hold a single JSON with the lookups merged in.
+4. After the delete the service starts the next run by itself while expired
+   records remain (`ContinueArchivationSequence` on the delete command), so a
+   backlog drains in one night. It is started from the delete handler, in the
+   service's own queue, because only that guarantees it runs after the delete.
+   The chain stops when nothing was deleted, below the minimum, or after
+   `Archivation:MaxChainedRuns` runs.
+
+**Shared storage.** `SharedStorage:Path` (default `/data/shared/archivation`) is
+the `archivation` volume, mounted into `audit_log_service`, `unverify_service`
+and `bot`. It works only because every container runs on one host - a multi-node
+setup needs a different transport. Files are written as `*.partial` and renamed
+when complete; a file name taken from a message must be a plain name inside the
+directory (`SharedFileStorage` in `GrillBot.Core`). Each run deletes its own
+leftovers older than `Archivation:SharedFileRetention` (crashed runs, events that
+were never consumed). Locally the folder is `compose/.data/archivation`
+(`SHARED_STORAGE_PATH`); a bot or service started from the IDE needs the same
+folder as an absolute path in `SharedStorage:Path`. The folder is never created:
+it must exist at startup, so a missing mount fails the start instead of giving
+each container its own private folder.
 
 Audit log retention is a list of rules in
 `src/Services/AuditLogService/Core/Archivation/AuditLogRetention.cs` (conditions,
@@ -223,7 +245,9 @@ ImageProcessingService, which has neither — ships nothing and is left alone.
 | `Auth:OAuth2` | `ClientId`, `ClientSecret` | the bot |
 | `Services:IdentityService` | `Api`, `ClientId`, `ClientSecret` | the bot |
 | `Identity` | `Issuer`, `SigningKeys`, `EncryptionKey` and every `Clients:<id>:Secret` (outside Development) | IdentityService |
-| `Archivation` | every rule of `AuditLogRetention` has a positive `RetentionMonths` value; batch and page sizes and `TelemetryRefreshInterval` are positive | AuditLogService |
+| `Archivation` | every rule of `AuditLogRetention` has a positive `RetentionMonths` value; batch and page sizes, `TelemetryRefreshInterval`, `MaxChainedRuns` and `SharedFileRetention` are positive | AuditLogService |
+| `Archivation` | `MaxItemsPerRun`, `ReadPageSize`, `MaxChainedRuns` and `SharedFileRetention` are positive | UnverifyService |
+| `SharedStorage` | `Path` is absolute and writable (the `archivation` volume is mounted) | the bot, AuditLogService, UnverifyService |
 
 Mandatory for the bot:
 

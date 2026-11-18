@@ -1,4 +1,6 @@
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using GrillBot.Core.IO;
 
 namespace GrillBot.Core.Tests.IO;
@@ -9,12 +11,13 @@ public class CompressedJsonTests
     public TestContext TestContext { get; set; }
 
     [TestMethod]
-    public async Task RoundTrip_ReturnsWrittenJsonAndExactUncompressedSize()
+    public async Task RoundTrip_ReturnsWrittenJsonAndExactSizes()
     {
-        byte[] content;
+        using var target = new MemoryStream();
         long size;
+        long compressedSize;
 
-        await using (var writer = new CompressedJsonWriter())
+        await using (var writer = new CompressedJsonWriter(target))
         {
             writer.Writer.WriteStartObject();
             writer.Writer.WriteString("Name", "Archivation");
@@ -28,35 +31,41 @@ public class CompressedJsonTests
             writer.Writer.WriteEndArray();
             writer.Writer.WriteEndObject();
 
-            content = await writer.CompleteAsync(TestContext.CancellationToken);
+            await writer.CompleteAsync(TestContext.CancellationToken);
             size = writer.UncompressedSize;
+            compressedSize = writer.CompressedSize;
         }
 
-        var json = await CompressedJson.ParseAsync(content, TestContext.CancellationToken);
+        Assert.IsTrue(target.CanWrite, "The target stream must stay open.");
+        Assert.AreEqual(target.Length, compressedSize);
+
+        target.Position = 0;
+        await using var stream = CompressedJson.OpenRead(target, leaveOpen: true);
+        var json = await JsonNode.ParseAsync(stream, cancellationToken: TestContext.CancellationToken);
         Assert.IsNotNull(json);
         Assert.AreEqual("Archivation", json["Name"]!.GetValue<string>());
         Assert.AreEqual(5000, json["Items"]!.AsArray().Count);
         Assert.AreEqual(4999, json["Items"]![4999]!.GetValue<int>());
 
-        await using var stream = CompressedJson.OpenRead(content);
-        using var reader = new StreamReader(stream, Encoding.UTF8);
-        var raw = await reader.ReadToEndAsync(TestContext.CancellationToken);
-
-        Assert.AreEqual(Encoding.UTF8.GetByteCount(raw), size);
-        Assert.IsLessThan(size, content.LongLength);
+        Assert.AreEqual(Encoding.UTF8.GetByteCount(json.ToJsonString(new JsonSerializerOptions { Encoder = CompressedJsonWriter.Options.Encoder })), size);
+        Assert.IsLessThan(size, compressedSize);
     }
 
     [TestMethod]
     public async Task NonAsciiText_IsNotEscaped()
     {
-        await using var writer = new CompressedJsonWriter();
-        writer.Writer.WriteStartObject();
-        writer.Writer.WriteString("Name", "Příliš žluťoučký kůň");
-        writer.Writer.WriteEndObject();
+        using var target = new MemoryStream();
+        await using (var writer = new CompressedJsonWriter(target))
+        {
+            writer.Writer.WriteStartObject();
+            writer.Writer.WriteString("Name", "Příliš žluťoučký kůň");
+            writer.Writer.WriteEndObject();
 
-        var content = await writer.CompleteAsync(TestContext.CancellationToken);
+            await writer.CompleteAsync(TestContext.CancellationToken);
+        }
 
-        await using var stream = CompressedJson.OpenRead(content);
+        target.Position = 0;
+        await using var stream = CompressedJson.OpenRead(target, leaveOpen: true);
         using var reader = new StreamReader(stream, Encoding.UTF8);
         var raw = await reader.ReadToEndAsync(TestContext.CancellationToken);
 
@@ -66,7 +75,8 @@ public class CompressedJsonTests
     [TestMethod]
     public async Task CompleteAsync_Twice_Throws()
     {
-        await using var writer = new CompressedJsonWriter();
+        using var target = new MemoryStream();
+        await using var writer = new CompressedJsonWriter(target);
         writer.Writer.WriteStartObject();
         writer.Writer.WriteEndObject();
 
@@ -75,14 +85,16 @@ public class CompressedJsonTests
     }
 
     [TestMethod]
-    public async Task Dispose_WithoutComplete_ClosesTheWriter()
+    public async Task Dispose_WithoutComplete_ClosesTheWriter_ButNotTheTarget()
     {
-        var writer = new CompressedJsonWriter();
+        using var target = new MemoryStream();
+        var writer = new CompressedJsonWriter(target);
         writer.Writer.WriteStartObject();
 
         await writer.DisposeAsync();
 
         await Assert.ThrowsExactlyAsync<ObjectDisposedException>(() => writer.CompleteAsync(TestContext.CancellationToken));
+        Assert.IsTrue(target.CanWrite);
     }
 
     [TestMethod]

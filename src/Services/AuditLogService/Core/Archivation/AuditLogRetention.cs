@@ -92,6 +92,8 @@ public class AuditLogRetention(IOptionsMonitor<AppOptions> _options)
             && RuleNames.All(name => archivation.RetentionMonths.TryGetValue(name, out var months) && months > 0)
             && archivation.MaxItemsToArchivePerRun > 0
             && archivation.ReadPageSize > 0
-            && archivation.TelemetryRefreshInterval > TimeSpan.Zero;
+            && archivation.TelemetryRefreshInterval > TimeSpan.Zero
+            && archivation.MaxChainedRuns > 0
+            && archivation.SharedFileRetention > TimeSpan.Zero;
     }
 }

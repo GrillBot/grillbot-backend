@@ -8,8 +8,20 @@ public sealed record AuditLogArchiveDataPreparedEvent
 {
     public DateTime CreatedAtUtc { get; init; }
 
-    /// <summary>Brotli-compressed UTF-8 JSON of the archived records.</summary>
-    public byte[] CompressedContent { get; init; } = [];
+    /// <summary>
+    /// Name of the Brotli-compressed UTF-8 JSON of the archived records in the shared storage
+    /// (<c>SharedStorage:Path</c>). A plain file name, never a path; the consumer deletes the file when done.
+    /// </summary>
+    public string ContentFileName { get; init; } = "";
+
+    /// <summary>Size of the compressed file in bytes.</summary>
+    public long CompressedSize { get; init; }
+
+    /// <summary>Position of the run in a chain, copied from the start command.</summary>
+    public int Sequence { get; init; }
+
+    /// <summary>More expired records remained than this archive holds; the delete command continues the chain.</summary>
+    public bool HasMore { get; init; }
 
     /// <summary>Size of the uncompressed JSON in bytes.</summary>
     public long JsonSize { get; init; }

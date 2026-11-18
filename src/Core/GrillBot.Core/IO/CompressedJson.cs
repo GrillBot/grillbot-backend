@@ -1,5 +1,4 @@
 using System.IO.Compression;
-using System.Text.Json.Nodes;
 
 namespace GrillBot.Core.IO;
 
@@ -8,12 +7,7 @@ namespace GrillBot.Core.IO;
 /// </summary>
 public static class CompressedJson
 {
-    public static Stream OpenRead(byte[] compressedContent)
-        => new BrotliStream(new MemoryStream(compressedContent, writable: false), CompressionMode.Decompress);
-
-    public static async Task<JsonNode?> ParseAsync(byte[] compressedContent, CancellationToken cancellationToken = default)
-    {
-        await using var stream = OpenRead(compressedContent);
-        return await JsonNode.ParseAsync(stream, cancellationToken: cancellationToken);
-    }
+    /// <summary>A stream of the uncompressed JSON. Disposing it disposes <paramref name="compressed"/> unless <paramref name="leaveOpen"/>.</summary>
+    public static Stream OpenRead(Stream compressed, bool leaveOpen = false)
+        => new BrotliStream(compressed, CompressionMode.Decompress, leaveOpen);
 }

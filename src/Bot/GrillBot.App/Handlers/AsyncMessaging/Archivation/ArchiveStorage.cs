@@ -7,32 +7,45 @@ using GrillBot.Core.IO;
 namespace GrillBot.App.Handlers.AsyncMessaging.Archivation;
 
 /// <summary>
-/// Builds an archive ZIP in a temporary file and uploads it. The JSON is written straight into the ZIP entry,
-/// never materialized as a string, and other files are streamed in one at a time.
+/// Builds an archive ZIP in a temporary file and uploads it. Layout:
+/// <list type="bullet">
+/// <item><c>data.json</c> - the records exactly as the service wrote them, streamed in without being parsed;</item>
+/// <item><c>lookups.json</c> - guilds, channels and users the records reference (<see cref="ArchiveEnricher"/>);</item>
+/// <item>further entries from the callback (audit log attachments).</item>
+/// </list>
+/// Archives made before this layout hold one <c>{name}.json</c> with the lookups merged into the data.
 /// </summary>
 public static class ArchiveStorage
 {
+    public const string DataEntryName = "data.json";
+    public const string LookupsEntryName = "lookups.json";
+
     public sealed record Result(string ArchiveName, long JsonSize, long ArchiveSize);
 
+    /// <summary>Name of the uploaded archive for <paramref name="baseName"/>.</summary>
+    public static string GetArchiveName(string baseName) => $"{baseName}.zip";
+
     /// <summary>
-    /// Writes the JSON (and optional further entries) into a temporary ZIP, uploads it to <paramref name="target"/>
-    /// under <c>{baseName}.zip</c>, replacing an earlier upload of the same name, and deletes the temporary file.
+    /// Writes the entries into a temporary ZIP, uploads it to <paramref name="target"/> under
+    /// <see cref="GetArchiveName"/>, replacing an earlier upload of the same name, and deletes the temporary file.
     /// </summary>
-    /// <returns>The uploaded archive name, the uncompressed JSON size and the ZIP size, both in bytes.</returns>
+    /// <returns>The uploaded archive name, the uncompressed size of both JSON entries and the ZIP size, in bytes.</returns>
     /// <param name="target">Blob container the archive is uploaded to.</param>
-    /// <param name="baseName">Name of the archive and of the JSON inside it, without extension. Must be deterministic per archive, so a retried upload replaces the first one.</param>
-    /// <param name="json">The archive content.</param>
+    /// <param name="baseName">Name of the archive without extension. Must be deterministic per archive, so a retried upload replaces the first one.</param>
+    /// <param name="data">Uncompressed JSON of the records, copied into <see cref="DataEntryName"/> as it is.</param>
+    /// <param name="lookups">Content of <see cref="LookupsEntryName"/>.</param>
     /// <param name="addFilesAsync">Optional callback adding further entries (attachments).</param>
     /// <param name="cancellationToken">Cancels building and uploading.</param>
     public static async Task<Result> StoreAsync(
         BlobManager target,
         string baseName,
-        JsonNode json,
+        Stream data,
+        JsonObject lookups,
         Func<ZipArchive, CancellationToken, Task>? addFilesAsync,
         CancellationToken cancellationToken
     )
     {
-        var archiveName = $"{baseName}.zip";
+        var archiveName = GetArchiveName(baseName);
         var zipPath = Path.Combine(Path.GetTempPath(), $"{baseName}_{Guid.NewGuid():N}.zip");
 
         try
@@ -40,7 +53,8 @@ public static class ArchiveStorage
             long jsonSize;
             await using (var zipArchive = await ZipFile.OpenAsync(zipPath, ZipArchiveMode.Create, cancellationToken))
             {
-                jsonSize = await WriteJsonEntryAsync(zipArchive, json, $"{baseName}.json", cancellationToken);
+                jsonSize = await WriteDataEntryAsync(zipArchive, data, cancellationToken);
+                jsonSize += await WriteJsonEntryAsync(zipArchive, lookups, LookupsEntryName, cancellationToken);
 
                 if (addFilesAsync is not null)
                     await addFilesAsync(zipArchive, cancellationToken);
@@ -60,12 +74,18 @@ public static class ArchiveStorage
         }
     }
 
+    private static async Task<long> WriteDataEntryAsync(ZipArchive archive, Stream data, CancellationToken cancellationToken)
+    {
+        await using var entryStream = await CreateEntryAsync(archive, DataEntryName, cancellationToken);
+        await using var counter = new CountingStream(entryStream, leaveOpen: true);
+
+        await data.CopyToAsync(counter, cancellationToken);
+        return counter.BytesWritten;
+    }
+
     private static async Task<long> WriteJsonEntryAsync(ZipArchive archive, JsonNode json, string entryName, CancellationToken cancellationToken)
     {
-        var entry = archive.CreateEntry(entryName);
-        entry.LastWriteTime = DateTimeOffset.UtcNow;
-
-        await using var entryStream = await entry.OpenAsync(cancellationToken);
+        await using var entryStream = await CreateEntryAsync(archive, entryName, cancellationToken);
         await using var counter = new CountingStream(entryStream, leaveOpen: true);
         await using (var writer = new Utf8JsonWriter(counter, CompressedJsonWriter.Options))
         {
@@ -74,5 +94,13 @@ public static class ArchiveStorage
         }
 
         return counter.BytesWritten;
+    }
+
+    private static Task<Stream> CreateEntryAsync(ZipArchive archive, string entryName, CancellationToken cancellationToken)
+    {
+        var entry = archive.CreateEntry(entryName);
+        entry.LastWriteTime = DateTimeOffset.UtcNow;
+
+        return entry.OpenAsync(cancellationToken);
     }
 }
